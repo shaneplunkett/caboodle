@@ -41,7 +41,7 @@
           # Official Cloudflare CLI (beta) isn't in nixpkgs yet, so run the
           # pinned npm release. Bump the version here when upgrading.
           cf = pkgs.writeShellScriptBin "cf" ''
-            exec ${pkgs.nodejs_22}/bin/npx --yes cf@1.0.0-beta.13 "$@"
+            exec ${pkgs.nodejs_22}/bin/npx --yes cf@1.0.0-beta.14 "$@"
           '';
         in
         {
