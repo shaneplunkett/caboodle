@@ -185,10 +185,16 @@ rec {
       targets,
       defaults ? percent,
       stacked ? false,
+      datasource ? prometheus,
     }:
     panel {
       type = "timeseries";
-      inherit title gridPos targets;
+      inherit
+        title
+        gridPos
+        targets
+        datasource
+        ;
       defaults = defaults // {
         custom = {
           lineWidth = 1;

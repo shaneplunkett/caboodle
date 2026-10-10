@@ -10,6 +10,7 @@ let
   dashboards = {
     hosts = import ./dashboards/hosts.nix { inherit lib; };
     dns = import ./dashboards/dns.nix { inherit lib nodes; };
+    logs = import ./dashboards/logs.nix { inherit lib; };
   };
 in
 {
