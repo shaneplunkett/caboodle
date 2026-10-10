@@ -13,7 +13,11 @@ let
     dashboard
     ;
 
-  realClients = ''client!~"127.0.0.1|${nodes.monitoring.config.homelab.lanAddress}"'';
+  realClients = import ../../blocky/real-clients.nix { inherit nodes; };
+
+  topClients =
+    counter:
+    ''sort_desc(topk(10, sum by (client) (label_replace(increase(${counter}[$__range]), "client", "$1", "client", "([a-zA-Z][^.]*)\\..*"))))'';
 
   responses = selector: "blocky_client_response_total{${realClients}${selector}}";
   shareOf =
@@ -123,7 +127,7 @@ dashboard {
       ];
     })
     (topBars "Top clients" (at 16 6 8 9) (
-      query "{{client}}" "sort_desc(topk(10, sum by (client) (increase(blocky_query_total{${realClients}}[$__range]))))"
+      query "{{client}}" (topClients "blocky_query_total{${realClients}}")
     ))
 
     (row "Blocking" 15)
@@ -134,7 +138,7 @@ dashboard {
       expr = ''sort_desc(topk(10, sum by (domain) (count_over_time({unit="blocky.service"} |= "response_type=BLOCKED" | regexp "question_name=(?P<domain>\\S+?)\\.? " [$__range]))))'';
     })
     (topBars "Most blocked clients" (at 12 16 12 9) (
-      query "{{client}}" "sort_desc(topk(10, sum by (client) (increase(${responses '',response_type="BLOCKED"''}[$__range]))))"
+      query "{{client}}" (topClients (responses '',response_type="BLOCKED"''))
     ))
 
     (row "Servers" 25)

@@ -15,6 +15,7 @@
           "tcp-tls:1.1.1.1:853#cloudflare-dns.com"
         ];
       };
+      clientLookup.upstream = "127.0.0.1:5335";
       caching = {
         prefetching = true;
         minTime = "5m";

@@ -1,4 +1,9 @@
-_: {
+_:
+let
+  gateway = "192.168.1.1";
+  magicDns = "100.100.100.100";
+in
+{
   services = {
     unbound = {
       enable = true;
@@ -11,8 +16,19 @@ _: {
           msg-cache-size = "32m";
           rrset-cache-size = "64m";
           infra-keep-probing = true;
+          unblock-lan-zones = true;
+          insecure-lan-zones = true;
+          domain-insecure = "100.in-addr.arpa.";
         };
         forward-zone = [
+          {
+            name = "168.192.in-addr.arpa.";
+            forward-addr = gateway;
+          }
+          {
+            name = "100.in-addr.arpa.";
+            forward-addr = magicDns;
+          }
           {
             name = ".";
             forward-tls-upstream = true;
