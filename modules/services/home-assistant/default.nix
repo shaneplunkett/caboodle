@@ -25,7 +25,7 @@ in
   };
 
   virtualisation.oci-containers.containers.homeassistant = {
-    image = "ghcr.io/home-assistant/home-assistant:2026.10.0";
+    image = "ghcr.io/home-assistant/home-assistant:2026.10.1";
     volumes = [ "${dataDir}:/config" ];
     environment.TZ = "Australia/Melbourne";
     extraOptions = [
