@@ -32,6 +32,29 @@ one fires `ForgejoWorkflowFailing` in Discord, linked to the run, and the
 alert resolves when a later run passes. Pull requests don't count, nor do
 cancelled runs or repos with Actions switched off.
 
+## Configuration in Terraform
+
+`terraform/forge-config.tf` holds the forge settings that matter: who can
+write where, and repos that other repos depend on. Everything else, including
+most repos, stays in the UI. Forgejo has no settings file inside a repo, so a
+per-repo exception goes in Terraform next to the default it overrides.
+
+- **`bots`** is a team with `includes_all_repositories`, so it reaches repos
+  made later too. It gives `forge-bot` and `vex` Write on code, pull
+  requests, issues and Actions everywhere. Renovate runs as `forge-bot`, so it
+  opens an onboarding pull request on every new repo. Closing it without
+  merging tells Renovate to leave that repo alone.
+- **`workflows`** holds the workflows other repos call with
+  `uses: shane/workflows/.forgejo/workflows/<file>@<tag>`. Removing it from
+  Terraform archives it rather than deleting it.
+
+The provider is `svalabs/forgejo`, and it signs in with
+`terraform-forgejo-token`, a token from Shane's account (an org owner) with
+read and write on organization and repository and read on user. It's in
+Bitwarden as `homelab_forgejo_terraform_token` and in agenix for the builder.
+Terraform runs on the forge's own runner, so if the forge is down, fix it
+with colmena first.
+
 ## Getting back in
 
 `forgejo-admin` on the host runs `forgejo admin` as the service user, with

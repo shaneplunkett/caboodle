@@ -220,4 +220,8 @@ in
     shane
     builder
   ];
+  "terraform-forgejo-token.age".publicKeys = [
+    shane
+    builder
+  ];
 }

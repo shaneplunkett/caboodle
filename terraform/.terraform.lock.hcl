@@ -39,6 +39,8 @@ provider "registry.terraform.io/cloudflare/cloudflare" {
   version     = "5.27.0"
   constraints = "~> 5.27"
   hashes = [
+    "h1:9YNVP8ZdD+Pp5Lu+oJ7AmXMNZ5gnpYgwEpGmcfpwSiQ=",
+    "h1:V5YAQp7xBX1ExB7x8vQvDMV1M36EoCNXPN//yiWgO+o=",
     "h1:hBbz7uxd+0ZmaFyFm4wBEhe0WkZq4tNLt8wUriBysHU=",
     "zh:0af697c42fc9c5c7359e9209dd2502784789d07dd803ef8ed0e9e1dbc0aea0ff",
     "zh:234be996462aaa9556e024f8434c238cc70bd84960283a4a85d0e096efd9f8c7",
@@ -114,5 +116,29 @@ provider "registry.terraform.io/hetznercloud/hcloud" {
     "zh:c4c5dd5b4c212e9c22e159f003f92b806b47650ca0e6b4e6e279680c08eb535a",
     "zh:d6421b0e5b9fb042c0d8719efd2181296efb76f1bb8a3f50c33e9e8c36ac373d",
     "zh:f02b97d2b8698cd160b092b682a77bbe6a888fa2b5469a57659a095f1480a515",
+  ]
+}
+
+provider "registry.terraform.io/svalabs/forgejo" {
+  version     = "1.6.1"
+  constraints = "~> 1.6"
+  hashes = [
+    "h1:J8WgzLF4ApJFU8MZLFmQCN9MARh7XP2ff47kv+JKyl8=",
+    "h1:JJcYeycMl0ovAbGh+F/W1PFl0z3ugXxGs8v59D4Hmb8=",
+    "h1:TZtg/mmcu0+GOEdCgpc4arAK4gDt+xbFG4SOfRzfLl4=",
+    "zh:11de7da2bd019d5bdf9384a058dd959487cc30e820b0b43470fca69c5f31dbda",
+    "zh:145db282cf43e8a892bd1c493b2dce2724ec115ded111ee37367fd5cda232558",
+    "zh:2a9bec6b5780b5b583a0b921c189d5b89761d6bd86b8df2497437756c4c84903",
+    "zh:40232a0f09996233ff9493ff02e3eb6695cc1736dee3e56c8b0cc442595f3e9f",
+    "zh:4828ad91eaa975ee2467af867833bcd2beb09848738544212f0696fef5b5d505",
+    "zh:776d2bd117b1d3ba846047292e126d205919373864f7e4d86508dd645ad468da",
+    "zh:7d5a063e658c54cc09dea33a49fb8fe0cb2625ec5271d3749568ef68ac86dc41",
+    "zh:8475967d27641a8ff782e11f39f59bd692e0fe55f30062bb17d3ed5b1dfe2a2c",
+    "zh:890df766e9b839623b1f0437355032a3c006226a6c200cd911e15ee1a9014e9f",
+    "zh:ad84f53686dfdbb94f87dcad0b90d41078f389b3076932f6e3b7763a1c8baa22",
+    "zh:c9cfb2a7ecce6af93cb06b700b12702e72960d738d27904fec27865062d42f74",
+    "zh:c9d3a168b7ef00d0446d4da33eae2e91be73405c614268ee1fac2d9a69a1b8c3",
+    "zh:e8f91b552966dfb3f0894a7dc067671c6a89597e3f2c049749053ddd74d18572",
+    "zh:f75a4a9d96e9ecd5490d0a1ded4d9d8e82ba1492341d68c9bf5e1fe0971d82b0",
   ]
 }

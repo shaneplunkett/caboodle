@@ -27,3 +27,7 @@ provider "cloudflare" {
   api_token = var.cloudflare_api_token
 }
 
+provider "forgejo" {
+  host      = "https://git.shaneplunkett.com"
+  api_token = var.forgejo_api_token
+}
