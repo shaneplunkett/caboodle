@@ -90,7 +90,7 @@ dashboard {
         };
       };
       targets = [
-        (instantLogs ''sort_desc(sum by (host) (count_over_time({${selected}, level="error"} [$__range])))'' "{{host}}")
+        (instantLogs ''sort_desc(sum by (host) (count_over_time({${selected}, level=~"emerg|alert|crit|error"} [$__range])))'' "{{host}}")
       ];
     })
     (bars {

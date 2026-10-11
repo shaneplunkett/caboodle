@@ -36,6 +36,39 @@ loki.process "noise" {
 	forward_to = [loki.write.monitoring.receiver]
 
 	stage.match {
+		selector = "{unit=\"podman-homeassistant.service\"}"
+
+		stage.decolorize { }
+
+		stage.multiline {
+			firstline     = `^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d`
+			max_wait_time = "3s"
+			max_lines     = 1000
+		}
+
+		stage.regex {
+			expression = `^\S+ \S+ (?P<ha_level>DEBUG|INFO|WARNING|ERROR|CRITICAL) `
+		}
+
+		stage.template {
+			source   = "ha_level"
+			template = `{{ if eq .Value "CRITICAL" }}crit{{ else }}{{ ToLower .Value }}{{ end }}`
+		}
+
+		stage.labels {
+			values = {level = "ha_level"}
+		}
+
+		stage.match {
+			selector = `{unit="podman-homeassistant.service"} |~ "^\\S+ \\S+ \\+\\d{4} UTC m=\\+"`
+
+			stage.static_labels {
+				values = {level = "info"}
+			}
+		}
+	}
+
+	stage.match {
 		selector            = "{level=\"debug\"}"
 		action              = "drop"
 		drop_counter_reason = "debug"
