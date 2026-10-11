@@ -263,14 +263,13 @@ which is the source's default address. Music Assistant installs the newest
 PO token plugin when it starts, so the server tracks the newest release too,
 whatever version Music Assistant's docs name.
 
-`tools/music-assistant/youtube-cookie.py` copies the cookie across. Give it
-the browser profile signed in to YouTube Music, in yt-dlp's form, like
-`chrome:Profile`. When the source doesn't exist yet, it puts the cookie on
-the clipboard to paste into Music Assistant's add-source form. After that it
-updates the source in place, so it's the fix whenever the source starts
-failing with a 401 or "Unable to fetch PO Token".
+`tools/music-assistant/youtube-cookie.py` gets the cookie. It opens Chrome on
+a throwaway profile to sign in to YouTube Music, takes the cookie when the
+window closes, and deletes the profile. When the source doesn't exist yet, it
+puts the cookie on the clipboard to paste into Music Assistant's add-source
+form. After that it updates the source in place, so it's the fix whenever the
+source starts failing with a 401 or "Unable to fetch PO Token".
 
-- **Keep a browser profile just for this.** Google swaps the cookies in any
+- **The profile is thrown away on purpose.** Google swaps the cookies in any
   browser that keeps using YouTube, which kills the copy Music Assistant
-  holds. Sign in to YouTube Music once in a profile kept for this, close it,
-  and run the script against that profile.
+  holds. With the profile gone, nothing is left to swap them.
