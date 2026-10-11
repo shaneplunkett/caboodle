@@ -1,5 +1,5 @@
 loki.source.journal "journal" {
-	forward_to    = [loki.write.monitoring.receiver]
+	forward_to    = [loki.process.noise.receiver]
 	relabel_rules = loki.relabel.journal.rules
 	labels        = {host = sys.env("ALLOY_HOST")}
 }
@@ -29,6 +29,21 @@ loki.relabel "journal" {
 	rule {
 		source_labels = ["__journal_priority_keyword"]
 		target_label  = "level"
+	}
+}
+
+loki.process "noise" {
+	forward_to = [loki.write.monitoring.receiver]
+
+	stage.match {
+		selector            = "{level=\"debug\"}"
+		action              = "drop"
+		drop_counter_reason = "debug"
+	}
+
+	stage.drop {
+		expression          = "^Ignoring duplicate name '.+' in service file"
+		drop_counter_reason = "dbus_duplicate_name"
 	}
 }
 
