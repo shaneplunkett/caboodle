@@ -172,7 +172,6 @@
         builder = {
           imports = [ ./modules/hosts/builder.nix ];
           homelab.lanAddress = "192.168.1.224";
-          deployment.tags = [ ];
         };
       };
     };

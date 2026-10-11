@@ -43,11 +43,13 @@ touches dns2, the job checks that dns1 answers a home name and an outside
 name. If dns1 doesn't answer within a minute, the job fails and dns2 keeps
 its old config, so a bad DNS change only ever takes down one of them.
 
-The builder isn't in `deploy-on-merge`, so after merging a change to it, run
-`colmena apply --on builder` by hand. Wait until that merge's deploy and
-terraform runs have finished first. Switching the builder restarts the
-runner, which kills whatever job it's running, and that run fails with
-`RUN signal: terminated`.
+The builder deploys on merge like the other hosts, even though the deploy job
+runs on it. A switch that changes the runner reloads it instead of restarting
+it, and the reload only queues a restart. The restart is graceful: the runner
+stops taking jobs, waits up to an hour for the ones it's running, including
+the deploy itself, then comes back on the new config. A restart that cuts a
+job off shows as `RUN signal: terminated`, which means a job ran longer than
+the hour.
 
 ## Job temp files
 

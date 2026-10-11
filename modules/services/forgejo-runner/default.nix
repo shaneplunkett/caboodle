@@ -33,6 +33,7 @@ in
       runner = {
         capacity = 4;
         labels = [ "nix:host" ];
+        shutdown_timeout = "1h";
       };
       server.connections.forge = {
         url = nodes.forge.config.services.forgejo.settings.server.ROOT_URL;
@@ -60,7 +61,10 @@ in
 
   systemd.services.${unit} = {
     environment.TMPDIR = "/var/lib/forgejo-runner/builder/tmp";
+    reloadIfChanged = true;
     serviceConfig = {
+      ExecReload = "${config.systemd.package}/bin/systemctl --no-block restart ${unit}.service";
+      TimeoutStopSec = "65min";
       StateDirectory = lib.mkForce [
         "forgejo-runner/builder"
         "forgejo-runner/builder/tmp"

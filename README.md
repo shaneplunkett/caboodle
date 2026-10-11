@@ -104,9 +104,9 @@ resolves the whole domain to the ingress host.
 The forge is the source of truth, and GitHub is a push mirror of it. Every
 pull request builds every host on the builder, and every push to `main`
 deploys every host tagged `deploy-on-merge`, one deploy at a time, then
-dns2 once dns1 is answering. The
-builder isn't tagged, because switching it restarts the runner mid-deploy,
-so it's deployed by hand with `colmena apply --on builder`.
+dns2 once dns1 is answering. That includes the builder, whose runner restarts
+gracefully after the deploy rather than during it; see
+[builder.md](docs/pve/builder.md).
 
 Terraform works the same way: a pull request touching `terraform/` gets its
 plan posted as a comment, and merging applies it. See
