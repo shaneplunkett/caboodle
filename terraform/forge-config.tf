@@ -33,8 +33,10 @@ resource "forgejo_team_member" "bots" {
 }
 
 resource "forgejo_repository" "workflows" {
-  owner              = local.forge_org
-  name               = "workflows"
-  description        = "Forgejo Actions workflows the other repos call, pinned by tag."
-  archive_on_destroy = true
+  owner                             = local.forge_org
+  name                              = "workflows"
+  description                       = "Forgejo Actions workflows the other repos call, pinned by tag."
+  default_merge_style               = "rebase"
+  default_delete_branch_after_merge = true
+  archive_on_destroy                = true
 }
