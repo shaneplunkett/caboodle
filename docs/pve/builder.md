@@ -49,6 +49,16 @@ terraform runs have finished first. Switching the builder restarts the
 runner, which kills whatever job it's running, and that run fails with
 `RUN signal: terminated`.
 
+## Job temp files
+
+Jobs run on the builder itself, not in throwaway containers, so whatever a
+job leaves behind stays for the next one. The runner's private `/tmp` is a
+small tmpfs that only clears when the runner restarts, and a few test
+databases once used up all its inodes, failing every job. So `TMPDIR`
+points jobs at `/var/lib/forgejo-runner/builder/tmp` on disk, and
+systemd-tmpfiles deletes anything there older than a day. A workflow that
+writes to `/tmp` directly bypasses this, so use `mktemp` or `$TMPDIR`.
+
 ## Updates
 
 The update workflow runs weekly, or from the Actions tab with Run workflow.
