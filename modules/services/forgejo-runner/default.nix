@@ -55,16 +55,28 @@ in
     ];
   };
 
-  systemd.services.${unit}.serviceConfig.LoadCredential = [
-    "ssh-key:${config.age.secrets.builder-ssh-key.path}"
-    "forge-bot-token:${config.age.secrets.forge-bot-token.path}"
-    "terraform-cloud-token:${config.age.secrets.terraform-cloud-token.path}"
-    "terraform-pve-token:${config.age.secrets.terraform-pve-token.path}"
-    "terraform-hcloud-token:${config.age.secrets.terraform-hcloud-token.path}"
-    "terraform-cloudflare-token:${config.age.secrets.terraform-cloudflare-token.path}"
-    "terraform-access-emails:${config.age.secrets.terraform-access-emails.path}"
-    "terraform-forgejo-token:${config.age.secrets.terraform-forgejo-token.path}"
-  ];
+  systemd.tmpfiles.settings.forgejo-runner-tmp."/var/lib/private/forgejo-runner/builder/tmp".e.age =
+    "1d";
+
+  systemd.services.${unit} = {
+    environment.TMPDIR = "/var/lib/forgejo-runner/builder/tmp";
+    serviceConfig = {
+      StateDirectory = lib.mkForce [
+        "forgejo-runner/builder"
+        "forgejo-runner/builder/tmp"
+      ];
+      LoadCredential = [
+        "ssh-key:${config.age.secrets.builder-ssh-key.path}"
+        "forge-bot-token:${config.age.secrets.forge-bot-token.path}"
+        "terraform-cloud-token:${config.age.secrets.terraform-cloud-token.path}"
+        "terraform-pve-token:${config.age.secrets.terraform-pve-token.path}"
+        "terraform-hcloud-token:${config.age.secrets.terraform-hcloud-token.path}"
+        "terraform-cloudflare-token:${config.age.secrets.terraform-cloudflare-token.path}"
+        "terraform-access-emails:${config.age.secrets.terraform-access-emails.path}"
+        "terraform-forgejo-token:${config.age.secrets.terraform-forgejo-token.path}"
+      ];
+    };
+  };
 
   programs.ssh = {
     knownHosts = lib.mapAttrs (name: publicKey: {
