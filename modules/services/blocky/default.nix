@@ -1,4 +1,10 @@
-{ nodes, pkgs, ... }: {
+{
+  lib,
+  nodes,
+  pkgs,
+  ...
+}:
+{
   services.blocky = {
     enable = true;
     settings = {
@@ -15,7 +21,10 @@
           "tcp-tls:1.1.1.1:853#cloudflare-dns.com"
         ];
       };
-      clientLookup.upstream = "127.0.0.1:5335";
+      clientLookup = {
+        upstream = "127.0.0.1:5335";
+        clients = lib.mapAttrs (_: node: [ node.config.homelab.lanAddress ]) nodes;
+      };
       caching = {
         prefetching = true;
         minTime = "5m";
