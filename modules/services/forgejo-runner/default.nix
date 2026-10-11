@@ -65,6 +65,7 @@ in
     serviceConfig = {
       ExecReload = "+${config.systemd.package}/bin/systemctl --no-block restart ${unit}.service";
       TimeoutStopSec = "65min";
+      KillMode = "mixed";
       StateDirectory = lib.mkForce [
         "forgejo-runner/builder"
         "forgejo-runner/builder/tmp"

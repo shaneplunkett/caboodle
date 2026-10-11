@@ -47,7 +47,9 @@ The builder deploys on merge like the other hosts, even though the deploy job
 runs on it. A switch that changes the runner reloads it instead of restarting
 it, and the reload only queues a restart. The restart is graceful: the runner
 stops taking jobs, waits up to an hour for the ones it's running, including
-the deploy itself, then comes back on the new config. A restart that cuts a
+the deploy itself, then comes back on the new config. `KillMode=mixed` is what
+lets those jobs finish: systemd signals only the runner, and only kills its
+jobs once the runner has exited. A restart that cuts a
 job off shows as `RUN signal: terminated`, which means a job ran longer than
 the hour.
 
