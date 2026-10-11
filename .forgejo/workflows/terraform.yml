@@ -21,7 +21,7 @@ jobs:
       run:
         working-directory: terraform
     steps:
-      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.3.1
+      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.3.2
 
       - name: Plan, and apply on main
         env:

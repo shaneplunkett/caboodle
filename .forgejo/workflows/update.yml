@@ -9,4 +9,4 @@ concurrency:
 
 jobs:
   update:
-    uses: shane/workflows/.forgejo/workflows/flake-update.yml@v1.3.1
+    uses: shane/workflows/.forgejo/workflows/flake-update.yml@v1.3.2

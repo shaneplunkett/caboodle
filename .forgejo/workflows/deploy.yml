@@ -10,14 +10,14 @@ jobs:
   deploy:
     runs-on: nix
     steps:
-      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.3.1
+      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.3.2
       - run: colmena apply --on @deploy-on-merge
 
   deploy-dns2:
     needs: deploy
     runs-on: nix
     steps:
-      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.3.1
+      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.3.2
       - name: Wait for dns1 to answer
         run: |
           dns1=$(colmena eval -E '{ nodes, ... }: nodes.dns1.config.homelab.lanAddress' | jq -r .)
