@@ -20,6 +20,7 @@
       endpoint = "${nodes.forge.config.services.forgejo.settings.server.ROOT_URL}api/v1/";
       gitAuthor = "forge-bot <forge-bot@noreply.shaneplunkett.com>";
       autodiscover = true;
+      autodiscoverNamespaces = [ "shane" ];
     };
   };
 }

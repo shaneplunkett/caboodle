@@ -95,8 +95,12 @@ Terraform providers. Each update is its own pull request asking
 `renovate.json`, and its Nix manager is off, because the update workflow owns
 `flake.lock`.
 
-It finds repos by itself: any repo where `forge-bot` is a collaborator gets
-an onboarding pull request first, unless it already has a `renovate.json`.
+It finds repos by itself, by listing every repo in the `shane` org
+(`autodiscoverNamespaces`). Each one gets an onboarding pull request first,
+unless it already has a `renovate.json`, and closing that pull request
+without merging tells Renovate to leave the repo alone. Renovate's default
+search only returns repos the bot has access to and the public couldn't see
+anyway, so once the org went public it stopped finding the public ones.
 `renovate-github-token` is a read-only GitHub token, because GitHub refuses
 to list tags and releases without one. To run it now:
 
