@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(TZ=Australia/Melbourne date:*)",
+      "Bash(grep:*)"
+    ]
+  }
+}

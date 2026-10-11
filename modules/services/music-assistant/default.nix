@@ -22,7 +22,10 @@ in
       '';
     };
 
-    monitoring.units = [ "podman-music-assistant.service" ];
+    monitoring.units = [
+      "podman-music-assistant.service"
+      "podman-po-token.service"
+    ];
   };
 
   virtualisation.oci-containers.containers.music-assistant = {
@@ -32,7 +35,16 @@ in
     extraOptions = [ "--network=host" ];
   };
 
+  virtualisation.oci-containers.containers.po-token = {
+    image = "docker.io/brainicism/bgutil-ytdlp-pot-provider:2.0.2";
+    extraOptions = [
+      "--network=host"
+      "--init"
+    ];
+  };
+
   systemd.services.podman-music-assistant.environment.XDG_RUNTIME_DIR = "/run";
+  systemd.services.podman-po-token.environment.XDG_RUNTIME_DIR = "/run";
 
   systemd.tmpfiles.rules = [ "d ${dataDir} 0750 root root -" ];
 
