@@ -19,6 +19,11 @@ variable "cores" {
   default = 2
 }
 
+variable "cpu_units" {
+  type    = number
+  default = null
+}
+
 variable "memory" {
   type    = number
   default = 2048

@@ -29,7 +29,10 @@ in
   services.forgejo-runner.instances.builder = {
     enable = true;
     settings = {
-      runner.labels = [ "nix:host" ];
+      runner = {
+        capacity = 4;
+        labels = [ "nix:host" ];
+      };
       server.connections.forge = {
         url = nodes.forge.config.services.forgejo.settings.server.ROOT_URL;
         uuid = "30653033-3932-6431-3831-386539343732";

@@ -18,6 +18,7 @@ resource "proxmox_virtual_environment_container" "this" {
   cpu {
     architecture = "amd64"
     cores        = var.cores
+    units        = var.cpu_units
   }
 
   memory {

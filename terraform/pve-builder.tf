@@ -3,8 +3,9 @@ module "builder" {
   hostname  = "builder"
   node_name = local.pve.name
   ip        = "dhcp"
-  cores     = 8
-  memory    = 16384
+  cores     = 20
+  cpu_units = 10
+  memory    = 49152
   swap      = 2048
   disk_size = 250
 }

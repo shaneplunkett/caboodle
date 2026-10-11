@@ -13,6 +13,12 @@ The host has Nix, git, colmena, and node for JavaScript actions like
 `actions/checkout`. Anything else a job needs goes in `hostPackages`, or
 comes from `nix shell` inside the job. Old store paths are collected weekly.
 
+The runner takes several jobs at once, so a few pull requests can build while
+a deploy runs. They share one Nix store, and the Nix daemon makes sure two
+jobs never build the same path twice. The container gets most of PVE's cores
+but the lowest CPU weight on the node, so it has the whole CPU when the node
+is idle and gives way to every other container as soon as they need it.
+
 The builder also substitutes from the caches nix-config's machines trust.
 The runner isn't a trusted user, so a flake can't add caches for itself, and
 without them a desktop build compiles Hyprland and noctalia from source.
@@ -162,6 +168,11 @@ ssh root@builder ssh-keygen -y -f /run/agenix/builder-ssh-key
 
 ## Gotchas
 
+- **Changing a container's memory in Terraform reboots it.** The provider
+  restarts the container after a memory change, though Proxmox could apply
+  it live. For the builder that means rebooting in the middle of its own
+  apply. Resize it by hand first with `pct set <vmid> --memory <MiB>` on the
+  node, so the plan has no memory change left to apply.
 - **`rbw add` and `rbw edit` read from stdin** when it isn't a terminal, and
   only the first line becomes the password. A multi-line value like an SSH
   key can't live in Bitwarden that way, so `builder-ssh-key` exists only in
