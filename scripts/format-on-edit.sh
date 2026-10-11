@@ -1,5 +1,5 @@
 #!/bin/sh
-# PostToolUse hook for Claude Code and Codex: formats each .nix or .tf file
+# PostToolUse hook for Claude Code and Codex: formats each .nix, .tf or .py file
 # an agent just edited, then hands back any lint findings so they're fixed
 # in the same turn rather than at the Stop hook. Claude Code sends
 # tool_input.file_path; Codex sends the apply_patch text instead.
@@ -33,6 +33,10 @@ printf '%s' "$input" | jq -r '
       terraform fmt "$file" >/dev/null 2>&1
       out="$(tflint --chdir="$(dirname "$file")" --config "$tflint_config" \
         --filter="$(basename "$file")" -f compact 2>&1)"
+      ;;
+    *.py)
+      ruff format "$file" >/dev/null 2>&1
+      out="$(ruff check --fix --quiet --output-format concise "$file" 2>&1)"
       ;;
     *) continue ;;
   esac

@@ -92,6 +92,9 @@
               pkgs.deadnix
               pkgs.terraform
               pkgs.tflint
+              pkgs.python3
+              pkgs.ruff
+              pkgs.uv
               pkgs.pre-commit
             ];
           };

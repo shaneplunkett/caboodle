@@ -11,6 +11,9 @@ git ls-files --cached --others --exclude-standard -z '*.nix' | xargs -0 -r nixfm
 statix check .
 deadnix --fail .
 
+ruff format --check .
+ruff check .
+
 terraform fmt -check -recursive terraform
 if ! init="$(terraform -chdir=terraform init -backend=false -input=false -no-color 2>&1)"; then
   echo "$init"
@@ -20,8 +23,8 @@ terraform -chdir=terraform validate -no-color
 tflint --chdir=terraform --recursive --config "$PWD/terraform/.tflint.hcl" -f compact
 
 # A failing check gets fixed, not silenced. If a rule is wrong for the
-# case, change statix.toml or terraform/.tflint.hcl in the open.
-if git grep --untracked -n -E 'tflint-ignore|deadnix: *skip' -- '*.nix' '*.tf'; then
+# case, change statix.toml, ruff.toml or terraform/.tflint.hcl in the open.
+if git grep --untracked -n -E 'tflint-ignore|deadnix: *skip|noqa|type: *ignore' -- '*.nix' '*.tf' '*.py'; then
   echo "Suppression comments aren't allowed. Fix the finding, or change the rule's config."
   exit 1
 fi

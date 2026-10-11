@@ -13,18 +13,20 @@ into Music Assistant's add-source form. The cookie is never printed.
 """
 
 import json
-import os
 import subprocess
 import sys
 import tempfile
 import urllib.request
+from pathlib import Path
 
 from yt_dlp.cookies import extract_cookies_from_browser
 
 MUSIC_ASSISTANT = "http://192.168.1.117:8095"
 LOGIN_ENTRY = "music-assistant-admin"
 YOUTUBE_DOMAINS = {"youtube.com", "music.youtube.com"}
-SIGN_IN = "https://accounts.google.com/ServiceLogin?service=youtube&continue=https://music.youtube.com/"
+SIGN_IN = (
+    "https://accounts.google.com/ServiceLogin?service=youtube&continue=https://music.youtube.com/"
+)
 
 
 def youtube_cookie() -> str:
@@ -43,7 +45,7 @@ def youtube_cookie() -> str:
             stderr=subprocess.DEVNULL,
         )
         jar = extract_cookies_from_browser(
-            "chrome", os.path.join(profile, "Default"), keyring="BASICTEXT"
+            "chrome", str(Path(profile) / "Default"), keyring="BASICTEXT"
         )
     cookies = {c.name: c.value for c in jar if c.domain.lstrip(".") in YOUTUBE_DOMAINS}
     if "__Secure-3PAPISID" not in cookies:
@@ -52,7 +54,9 @@ def youtube_cookie() -> str:
 
 
 def rbw(*args: str) -> str:
-    return subprocess.run(["rbw", "get", *args], check=True, capture_output=True, text=True).stdout.strip()
+    return subprocess.run(
+        ["rbw", "get", *args], check=True, capture_output=True, text=True
+    ).stdout.strip()
 
 
 def post(path: str, body: dict, token: str | None = None):

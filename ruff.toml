@@ -1,0 +1,18 @@
+target-version = "py314"
+line-length = 100
+extend-exclude = [".agents"]
+
+[lint]
+select = [
+  "E",
+  "W",
+  "F",
+  "I",
+  "N",
+  "B",
+  "UP",
+  "SIM",
+  "C4",
+  "PTH",
+  "RUF",
+]
