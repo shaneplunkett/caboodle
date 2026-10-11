@@ -14,3 +14,27 @@ jobs:
         with:
           persist-credentials: false
       - run: colmena apply --on @deploy-on-merge
+
+  deploy-dns2:
+    needs: deploy
+    runs-on: nix
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Wait for dns1 to answer
+        run: |
+          dns1=$(colmena eval -E '{ nodes, ... }: nodes.dns1.config.homelab.lanAddress' | jq -r .)
+          for name in git.shaneplunkett.com data.forgejo.org; do
+            for attempt in $(seq 30); do
+              if nix shell --inputs-from . nixpkgs#dig --command \
+                dig +short +time=2 +tries=1 "@$dns1" "$name" A | grep -q '^[^;]'; then
+                echo "dns1 answers $name"
+                continue 2
+              fi
+              sleep 2
+            done
+            echo "dns1 isn't answering $name, so dns2 keeps its current config"
+            exit 1
+          done
+      - run: colmena apply --on @deploy-after-dns1

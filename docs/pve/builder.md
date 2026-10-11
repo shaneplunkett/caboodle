@@ -36,6 +36,13 @@ authorised root key on every host, and its SSH config maps each host's name
 to its LAN address from the hive, because the hosts don't use Tailscale's
 DNS. It trusts each host by the key in `modules/agenix/host-keys.nix`.
 
+dns2 is tagged `deploy-after-dns1` instead, and deploys in a second job once
+the first has finished. Deploying both together restarts Blocky on both at
+once, which left the network without DNS for about ten seconds. Before it
+touches dns2, the job checks that dns1 answers a home name and an outside
+name. If dns1 doesn't answer within a minute, the job fails and dns2 keeps
+its old config, so a bad DNS change only ever takes down one of them.
+
 The builder isn't in `deploy-on-merge`, so after merging a change to it, run
 `colmena apply --on builder` by hand. Wait until that merge's deploy and
 terraform runs have finished first. Switching the builder restarts the

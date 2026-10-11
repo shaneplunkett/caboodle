@@ -118,6 +118,7 @@
         dns2 = {
           imports = [ ./modules/hosts/dns.nix ];
           homelab.lanAddress = "192.168.1.236";
+          deployment.tags = [ "deploy-after-dns1" ];
         };
 
         plex = {
