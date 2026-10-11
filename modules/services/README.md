@@ -37,6 +37,20 @@ These are the whys the Nix can't say for itself.
   journal, so it silently ships nothing. `LD_LIBRARY_PATH` points it at the
   full libsystemd.
 - `config.alloy` has its own formatter: `alloy fmt` from the dev shell.
+- `alloy validate` passing doesn't mean Alloy will load the config. The LogQL
+  in a `stage.match` selector isn't parsed until Alloy starts, and one bad
+  selector stops the whole pipeline, so every host quietly ships nothing.
+  Before a pipeline change merges, actually run the changed `loki.process`
+  block: feed it real lines with `loki.source.file`, send the output to
+  `loki.echo`, and `alloy run` it locally.
+- Selectors only take double-quoted LogQL strings, not backticks. Write the
+  whole selector as an Alloy raw string so the quotes inside it don't need
+  escaping.
+- Debug lines are dropped before they reach Loki. Narrow that match if you
+  ever need one service's debug output.
+- Home Assistant writes every line to stderr, so journald marks them all
+  `err`. Its block reads the real level from HA's own text and folds each
+  traceback into the line that logged it.
 
 ## Gatus
 
