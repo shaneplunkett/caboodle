@@ -85,11 +85,18 @@ not from your account.
 
 ## Terraform
 
-The terraform workflow runs when a pull request or a push to `main` touches
-`terraform/`. On a pull request it plans and posts the plan as a comment,
-which is where to check it. On `main` it plans again and applies, with no
-further check, queued so two applies never overlap. Run workflow from the
-Actions tab only plans, which is a quick way to look for drift.
+The terraform workflow runs when a pull request touches `terraform/`, and
+posts the plan as a comment, which is where to check it. Run workflow from
+the Actions tab only plans, which is a quick way to look for drift.
+
+On `main`, the deploy workflow applies first, then deploys the hosts. A
+change to a container, like its memory, can restart it, and a restart in
+the middle of colmena's push drops the SSH connection and fails that host's
+deploy. So the apply finishes first, and skips itself when the push didn't
+touch `terraform/` or `proxmox/`. If the apply fails, no host deploys.
+`scripts/terraform-ci.sh` runs both the plan and the apply, and each waits up
+to ten minutes for the state lock, since a pull request's plan can overlap
+an apply.
 
 State stays in Terraform Cloud. The builder reaches it with
 `terraform-cloud-token`, a user API token in Bitwarden as `homelab_tfc_token`,

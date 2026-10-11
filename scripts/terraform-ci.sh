@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Terraform on the builder's runner, for the pull request plan and the
+# deploy's apply alike, so both see the same tokens and flags. Writes the
+# plan to terraform/plan.txt for the pull request comment.
+#
+#   scripts/terraform-ci.sh [plan|apply]   # default: plan
+#
+# A plan and an apply can overlap, since they run in different workflows,
+# so each waits for Terraform Cloud's state lock rather than failing on it.
+set -euo pipefail
+
+mode="${1:-plan}"
+creds=/run/credentials/forgejo-runner-builder.service
+
+TF_TOKEN_app_terraform_io="$(<"$creds/terraform-cloud-token")"
+TF_VAR_pve_api_token="$(<"$creds/terraform-pve-token")"
+TF_VAR_hcloud_token="$(<"$creds/terraform-hcloud-token")"
+TF_VAR_cloudflare_api_token="$(<"$creds/terraform-cloudflare-token")"
+TF_VAR_access_editor_emails="$(<"$creds/terraform-access-emails")"
+TF_VAR_forgejo_api_token="$(<"$creds/terraform-forgejo-token")"
+export TF_TOKEN_app_terraform_io TF_VAR_pve_api_token TF_VAR_hcloud_token TF_VAR_cloudflare_api_token TF_VAR_access_editor_emails TF_VAR_forgejo_api_token
+
+cd "$(git rev-parse --show-toplevel)/terraform"
+terraform init -input=false -no-color
+terraform plan -input=false -no-color -lock-timeout=10m -out=tfplan | tee plan.txt
+
+if [ "$mode" = apply ]; then
+  terraform apply -input=false -no-color -lock-timeout=10m tfplan
+fi

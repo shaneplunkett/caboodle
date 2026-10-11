@@ -3,11 +3,8 @@ on:
     paths:
       - "terraform/**"
       - "proxmox/**"
-  push:
-    branches: [main]
-    paths:
-      - "terraform/**"
-      - "proxmox/**"
+      - "scripts/terraform-ci.sh"
+      - ".forgejo/workflows/terraform.yml"
   workflow_dispatch:
 
 concurrency:
@@ -23,25 +20,8 @@ jobs:
     steps:
       - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.3.2
 
-      - name: Plan, and apply on main
-        env:
-          EVENT: ${{ github.event_name }}
-        run: |
-          creds=/run/credentials/forgejo-runner-builder.service
-          TF_TOKEN_app_terraform_io="$(< "$creds/terraform-cloud-token")"
-          TF_VAR_pve_api_token="$(< "$creds/terraform-pve-token")"
-          TF_VAR_hcloud_token="$(< "$creds/terraform-hcloud-token")"
-          TF_VAR_cloudflare_api_token="$(< "$creds/terraform-cloudflare-token")"
-          TF_VAR_access_editor_emails="$(< "$creds/terraform-access-emails")"
-          TF_VAR_forgejo_api_token="$(< "$creds/terraform-forgejo-token")"
-          export TF_TOKEN_app_terraform_io TF_VAR_pve_api_token TF_VAR_hcloud_token TF_VAR_cloudflare_api_token TF_VAR_access_editor_emails TF_VAR_forgejo_api_token
-
-          terraform init -input=false -no-color
-          terraform plan -input=false -no-color -out=tfplan | tee plan.txt
-
-          if [ "$EVENT" = push ]; then
-            terraform apply -input=false -no-color tfplan
-          fi
+      - name: Plan
+        run: ../scripts/terraform-ci.sh plan
 
       - name: Post the plan on the pull request
         if: github.event_name == 'pull_request'

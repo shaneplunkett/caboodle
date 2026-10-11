@@ -7,7 +7,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  terraform:
+    runs-on: nix
+    steps:
+      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.3.2
+        with:
+          fetch-depth: 0
+      - name: Apply, if this push changed terraform/ or proxmox/
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if git cat-file -e "$BEFORE^{commit}" 2> /dev/null \
+            && git diff --quiet "$BEFORE" HEAD -- terraform proxmox; then
+            echo "Nothing in terraform/ or proxmox/ changed, so there's nothing to apply."
+            exit 0
+          fi
+          scripts/terraform-ci.sh apply
+
   deploy:
+    needs: terraform
     runs-on: nix
     steps:
       - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.3.2

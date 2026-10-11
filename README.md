@@ -109,7 +109,7 @@ gracefully after the deploy rather than during it; see
 [builder.md](docs/pve/builder.md).
 
 Terraform works the same way: a pull request touching `terraform/` gets its
-plan posted as a comment, and merging applies it. See
+plan posted as a comment, and merging applies it, before any host deploys. See
 [docs/pve/builder.md](docs/pve/builder.md).
 
 Updates are a pull request like any other: `nix flake update`, push a
