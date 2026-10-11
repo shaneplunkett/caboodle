@@ -101,6 +101,12 @@ unless it already has a `renovate.json`, and closing that pull request
 without merging tells Renovate to leave the repo alone. Renovate's default
 search only returns repos the bot has access to and the public couldn't see
 anyway, so once the org went public it stopped finding the public ones.
+Renovate regenerates lock files with whatever is in `runtimePackages`:
+`nodejs` (npm), `pnpm`, `uv` and `go`. A repo whose package manager isn't
+there gets pull requests that change the manifest but not the lock file,
+with an "Artifact update problem" comment and an empty error, so add the
+tool to the list.
+
 `renovate-github-token` is a read-only GitHub token, because GitHub refuses
 to list tags and releases without one. To run it now:
 

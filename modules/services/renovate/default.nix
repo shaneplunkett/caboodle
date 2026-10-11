@@ -1,4 +1,9 @@
-{ config, nodes, ... }:
+{
+  config,
+  nodes,
+  pkgs,
+  ...
+}:
 {
   homelab = {
     secrets = [
@@ -11,6 +16,12 @@
   services.renovate = {
     enable = true;
     schedule = "Sun 06:30 Australia/Melbourne";
+    runtimePackages = [
+      pkgs.nodejs
+      pkgs.pnpm
+      pkgs.uv
+      pkgs.go
+    ];
     credentials = {
       RENOVATE_TOKEN = config.age.secrets.forge-bot-token.path;
       RENOVATE_GITHUB_COM_TOKEN = config.age.secrets.renovate-github-token.path;
