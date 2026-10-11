@@ -3,4 +3,6 @@ on:
 
 jobs:
   build:
-    uses: shane/workflows/.forgejo/workflows/build.yml@v1.3.2
+    uses: shane/workflows/.forgejo/workflows/build.yml@v1.4.0
+  check:
+    uses: shane/workflows/.forgejo/workflows/check.yml@v1.4.0
