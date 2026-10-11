@@ -79,7 +79,9 @@ let
     }
     // overrides.${name} or { };
 
-  proxied = lib.filterAttrs (_: vhost: vhost.locations."/".proxyPass or null != null) ingress.nginx.virtualHosts;
+  proxied = lib.filterAttrs (
+    _: vhost: vhost.locations."/".proxyPass or null != null
+  ) ingress.nginx.virtualHosts;
 
   hosts = lib.filter (host: groupOf (nameOf host) == group) (lib.attrNames proxied);
 in

@@ -93,7 +93,11 @@ in
             name = "pve";
             rules =
               byThreshold "disk" (
-                { value, percent, matcher }:
+                {
+                  value,
+                  percent,
+                  matcher,
+                }:
                 {
                   alert = "LxcDiskFilling";
                   expr = ''(pve_disk_usage_bytes / pve_disk_size_bytes) * on(id) group_left(name, node) pve_guest_info{type="lxc", ${matcher}} > ${toString value}'';
@@ -107,7 +111,11 @@ in
                 }
               )
               ++ byThreshold "cpu" (
-                { value, percent, matcher }:
+                {
+                  value,
+                  percent,
+                  matcher,
+                }:
                 {
                   alert = "GuestCpuHigh";
                   expr = "pve_cpu_usage_ratio * on(id) group_left(name, node) pve_guest_info{${matcher}} > ${toString value}";

@@ -1,7 +1,7 @@
 { config, ... }:
 let
   cfg = config.services.radarr;
-  dataDir = cfg.dataDir;
+  inherit (cfg) dataDir;
 in
 {
   homelab = {

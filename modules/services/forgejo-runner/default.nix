@@ -91,16 +91,17 @@ in
       ];
       inherit publicKey;
     }) (import ../../agenix/host-keys.nix);
-    extraConfig = lib.concatMapStrings (name: ''
-      Host ${name}
-        HostName ${lanAddress name}
-        IdentityFile /run/credentials/${unit}.service/ssh-key
-    '') (lib.attrNames nodes)
-    + ''
-      Host 192.168.1.169 192.168.1.238
-        User shane
-        IdentityFile /run/credentials/${unit}.service/ssh-key
-    '';
+    extraConfig =
+      lib.concatMapStrings (name: ''
+        Host ${name}
+          HostName ${lanAddress name}
+          IdentityFile /run/credentials/${unit}.service/ssh-key
+      '') (lib.attrNames nodes)
+      + ''
+        Host 192.168.1.169 192.168.1.238
+          User shane
+          IdentityFile /run/credentials/${unit}.service/ssh-key
+      '';
   };
 
   programs.nix-ld.enable = true;

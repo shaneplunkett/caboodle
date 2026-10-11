@@ -49,10 +49,11 @@ let
     ) node.config.homelab.routes
   ) nodes;
 
-  routeNames =
-    [ oauthName ]
-    ++ lib.attrNames externalRoutes
-    ++ lib.concatMap (node: lib.attrNames node.config.homelab.routes) (lib.attrValues nodes);
+  routeNames = [
+    oauthName
+  ]
+  ++ lib.attrNames externalRoutes
+  ++ lib.concatMap (node: lib.attrNames node.config.homelab.routes) (lib.attrValues nodes);
 
   routes = externalRoutes // hiveRoutes;
 in

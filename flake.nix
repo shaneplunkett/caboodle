@@ -32,9 +32,37 @@
         "x86_64-linux"
         "aarch64-darwin"
       ];
-      forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
+      forAllSystems =
+        f:
+        nixpkgs.lib.genAttrs systems (
+          system:
+          f (
+            import nixpkgs {
+              inherit system;
+              config.allowUnfreePredicate = pkg: nixpkgs.lib.getName pkg == "terraform";
+            }
+          )
+        );
     in
     {
+      formatter = forAllSystems (
+        pkgs:
+        pkgs.writeShellApplication {
+          name = "format";
+          runtimeInputs = [
+            pkgs.nixfmt
+            pkgs.terraform
+            pkgs.git
+          ];
+          text = ''
+            cd "$(git rev-parse --show-toplevel)"
+            git ls-files --cached --others --exclude-standard -z '*.nix' \
+              | xargs -0 -r nixfmt
+            terraform fmt -recursive terraform
+          '';
+        }
+      );
+
       devShells = forAllSystems (
         pkgs:
         let
@@ -59,6 +87,12 @@
               pkgs.grafana-alloy
               pkgs.restic
               pkgs.rclone
+              pkgs.nixfmt
+              pkgs.statix
+              pkgs.deadnix
+              pkgs.terraform
+              pkgs.tflint
+              pkgs.pre-commit
             ];
           };
         }

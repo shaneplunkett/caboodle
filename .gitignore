@@ -3,9 +3,14 @@
 .env.*
 *.env
 .envrc
-.claude
 secrets/
 *.secret
+
+# Harness-local state. The checked-in hook configs are the exceptions.
+.claude/*
+!.claude/settings.json
+.codex/*
+!.codex/hooks.json
 
 # Data volumes
 data/

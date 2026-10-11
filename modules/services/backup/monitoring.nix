@@ -17,7 +17,9 @@ let
     check = 9 * 86400;
   };
 
-  humanize = seconds: if seconds >= 2 * 86400 then "${toString (seconds / 86400)}d" else "${toString (seconds / 3600)}h";
+  humanize =
+    seconds:
+    if seconds >= 2 * 86400 then "${toString (seconds / 86400)}d" else "${toString (seconds / 3600)}h";
 
   freshness = lib.concatLists (
     lib.mapAttrsToList (task: seconds: [

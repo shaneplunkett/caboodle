@@ -32,7 +32,11 @@ in
                 }
               ]
               ++ byThreshold "memoryAvailable" (
-                { value, percent, matcher }:
+                {
+                  value,
+                  percent,
+                  matcher,
+                }:
                 {
                   alert = "HostMemoryLow";
                   expr = "node_memory_MemAvailable_bytes{${matcher}} / node_memory_MemTotal_bytes < ${toString value}";
