@@ -26,6 +26,7 @@ let
     deluge = [ ];
     rss = [ "/api/" ];
     zigbee = [ ];
+    music = [ ];
   };
 
   externalRoutes = {

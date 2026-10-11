@@ -47,6 +47,10 @@ let
       title = "Zigbee2MQTT";
       icon = "di:zigbee2mqtt";
     };
+    music = {
+      title = "Music Assistant";
+      icon = "di:music-assistant";
+    };
     rss = {
       title = "FreshRSS";
       icon = "di:freshrss";

@@ -220,3 +220,36 @@ directly.
   the buttons run in `single` mode and end with a short delay, so they act
   once.
 - Buttons that still drive their relay report presses too.
+
+## Music Assistant
+
+Music Assistant runs next to Home Assistant on this host, from its official
+image under podman with host networking, for the same reasons as Home
+Assistant. It's `modules/services/music-assistant`, at
+`https://music.shaneplunkett.com`. It pulls music from the streaming
+services and plays it on the speakers, and Home Assistant drives it through
+the Music Assistant integration.
+
+It has no OIDC login, so it sits behind the oauth2-proxy gate. Its own login
+has been mandatory since 2.7 and can't be turned off, so it asks for its
+admin password after the passkey. That account is in Bitwarden as
+`music-assistant-admin`.
+
+### First setup
+
+1. Open `https://music.shaneplunkett.com` and create the admin account.
+2. In its settings, set the stream server's published IP to the host's
+   `eth1` address on the IoT VLAN. See below for why.
+3. In Home Assistant, add the Music Assistant integration with
+   `http://localhost:8095`, then press its Authenticate button and sign in
+   as the admin.
+
+### Gotchas
+
+- **Speakers pull the audio from Music Assistant,** on the stream port. The
+  speakers are on the IoT VLAN, which can't open connections to the main LAN,
+  so the stream server has to publish its `eth1` address. Left on the
+  default, a speaker starts playing and stays silent.
+- **The Bose soundbar plays over Google Cast,** which is off until it's
+  turned on in the Bose app. It needs nothing from Google beyond accepting
+  their terms there.
