@@ -52,22 +52,22 @@ runner, which kills whatever job it's running, and that run fails with
 ## Updates
 
 The update workflow runs weekly, or from the Actions tab with Run workflow.
-It runs `nix flake update`, builds every host, pushes the result to
-`update/flake-lock` as `forge-bot`, and opens a pull request that says
-whether the build passed. It also builds every host from `main` first, so the
-pull request can list each host's package changes from
-`nix store diff-closures`, leaving out changes that are only in size. That
-list can't show a source-only input like `vex-brain`, which has no version,
-so the pull request also lists each moved input: a compare link for GitHub
-inputs, and the new commits for inputs on the forge. Only then does it ask `metrokitten` to review,
-which pings Discord, so the ping always comes with the build's result. If
-last week's pull request is still open, it updates that one instead. Merging
-it deploys like any other change.
+It calls `flake-update.yml` in `shane/workflows`, shared with nix-config, and
+the README there covers what it does and its inputs. In short, it pushes the
+`nix flake update` to `update/flake-lock` as `forge-bot` and opens a pull
+request straight away, so `build.yml` checks the real head while the update
+builds every host in `hydraJobs` before and after. Then it fills the
+description in with each host's package changes and each moved input, and
+asks `metrokitten` to review, which pings Discord. A pending `flake-update`
+check on the pull request means it's still going. If last week's pull
+request is still open, it updates that one instead. Merging it deploys like
+any other change.
 
-`forge-bot` is a plain forge account with Write access to the repo. Its token
-is `forge-bot-token`, in Bitwarden and agenix, and the runner loads it as a
-credential. A pull request can't ask its own author for a review, which is why
-the updates come from a bot and not from your account.
+`hydraJobs` is the hive's `toplevel`, every host's system. `forge-bot` gets
+Write through the `bots` team. Its token is `forge-bot-token`, in Bitwarden
+and agenix, and the runner loads it as a credential. A pull request can't ask
+its own author for a review, which is why the updates come from a bot and
+not from your account.
 
 ## Terraform
 

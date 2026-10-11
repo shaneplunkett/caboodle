@@ -46,7 +46,11 @@ per-repo exception goes in Terraform next to the default it overrides.
   merging tells Renovate to leave that repo alone.
 - **`workflows`** holds the workflows other repos call with
   `uses: shane/workflows/.forgejo/workflows/<file>@<tag>`. Removing it from
-  Terraform archives it rather than deleting it.
+  Terraform archives it rather than deleting it. Forgejo only expands a
+  workflow from another repo when its owner is public, so the `shane` org is
+  public. That's set by hand, because the provider can't import an org and
+  the API can't set an org public. The sign-in requirement still hides
+  everything from anyone not signed in.
 
 The provider is `svalabs/forgejo`, and it signs in with
 `terraform-forgejo-token`, a token from Shane's account (an org owner) with

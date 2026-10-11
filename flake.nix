@@ -20,6 +20,7 @@
   };
   outputs =
     {
+      self,
       nixpkgs,
       colmena,
       agenix,
@@ -69,6 +70,8 @@
         };
 
       };
+
+      hydraJobs = self.colmenaHive.toplevel;
 
       colmenaHive = colmena.lib.makeHive {
         meta.nixpkgs = import nixpkgs { system = "x86_64-linux"; };
