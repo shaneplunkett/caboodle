@@ -28,7 +28,10 @@ in
     image = "ghcr.io/home-assistant/home-assistant:2026.10.0";
     volumes = [ "${dataDir}:/config" ];
     environment.TZ = "Australia/Melbourne";
-    extraOptions = [ "--network=host" ];
+    extraOptions = [
+      "--network=host"
+      "--cap-add=NET_RAW"
+    ];
   };
 
   systemd.services.podman-homeassistant.environment.XDG_RUNTIME_DIR = "/run";
