@@ -15,6 +15,10 @@ Read `README.md` for how the repo fits together.
   a green build check, plus a Terraform plan comment showing what you expect
   when `terraform/` changed. Shane merges: merging deploys every host and
   applies Terraform.
+- **CI:** the files in `.forgejo/workflows/` are callers of `shane/workflows`
+  (build check, flake update, checkout), pinned to a tag. Change CI behaviour
+  there, following its `AGENTS.md`, and Renovate moves the pins here. Steps
+  check out with `https://git.shaneplunkett.com/shane/workflows/checkout@<tag>`.
 - **Sign-in:** every web app a change adds signs in through Pocket ID,
   with its own OIDC login or, if it has none, behind the oauth2-proxy gate.
   `docs/pve/auth.md` covers both. The client and its secret are made in
