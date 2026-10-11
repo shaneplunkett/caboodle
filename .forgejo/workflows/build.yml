@@ -3,9 +3,4 @@ on:
 
 jobs:
   build:
-    runs-on: nix
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - run: colmena build
+    uses: shane/workflows/.forgejo/workflows/build.yml@build
