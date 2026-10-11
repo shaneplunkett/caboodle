@@ -21,7 +21,7 @@ variable "cores" {
 
 variable "cpu_units" {
   type    = number
-  default = null
+  default = 100
 }
 
 variable "memory" {
