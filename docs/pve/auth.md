@@ -24,9 +24,9 @@ callback URL and scopes each one wants.
      needing a random UUID. If it's left blank, Pocket ID generates a UUID
      and the ID can't be changed afterwards. That's what happened to
      oauth2-proxy's client, and it's fine to use the UUID instead.
-   - Once it's created, turn on PKCE if the app supports it, and Skip
-     Consent Screen, since these are all our own apps. Leave
-     Re-Authentication and Pushed Authorization Requests off.
+   - Turn PKCE on if the app supports it.
+   - Turn Skip Consent Screen on. These are all our own apps.
+   - Leave Re-Authentication and Pushed Authorization Requests off.
 2. Saving doesn't show a secret. Open the client again, add one under Client
    secrets, and save it in Bitwarden as `<app>-oidc-client-secret`. Pocket ID
    only shows it once.
