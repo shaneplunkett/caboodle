@@ -14,6 +14,7 @@ in
     environmentFile = secrets.discord-webhook.path;
     checkConfig = false;
     configuration = {
+      templates = [ ./view.tmpl ];
       route = {
         receiver = "discord";
         group_by = [
