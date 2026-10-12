@@ -27,7 +27,7 @@ resource "proxmox_virtual_environment_container" "this" {
   }
 
   disk {
-    datastore_id = "local-lvm"
+    datastore_id = var.datastore
     size         = var.disk_size
   }
 

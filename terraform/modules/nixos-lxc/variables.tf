@@ -39,6 +39,12 @@ variable "disk_size" {
   default = 8
 }
 
+variable "datastore" {
+  type        = string
+  default     = "local-lvm"
+  description = "Proxmox storage for the root disk"
+}
+
 variable "ip" {
   type        = string
   description = "IP address in CIDR notation (e.g. 192.168.1.50/24) or 'dhcp'"
