@@ -1,5 +1,6 @@
 { pkgs, ... }:
 let
+  links = import ../grafana/links.nix;
   unitDown = alert: unit: what: {
     inherit alert;
     expr = ''node_systemd_unit_state{name="${unit}", state="active"} == 0'';
@@ -9,6 +10,7 @@ let
       summary = "${what} isn't running on {{ $labels.host }}";
       condition = "${unit} inactive for 5m";
       check = "ssh root@{{ $labels.host }} journalctl -u ${unit} -n 50";
+      dashboard = links.logs "{{ $labels.host }}" [ unit ];
     };
   };
 in
@@ -31,6 +33,7 @@ in
                   summary = "FreshRSS has stopped fetching feeds on {{ $labels.host }}";
                   condition = "freshrss-updater.service failed for 30m";
                   check = "ssh root@{{ $labels.host }} journalctl -u freshrss-updater -n 50";
+                  dashboard = links.logs "{{ $labels.host }}" [ "freshrss-updater.service" ];
                 };
               }
             ];

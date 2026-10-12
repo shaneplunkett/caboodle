@@ -1,5 +1,6 @@
 { pkgs, nodes, ... }:
 let
+  links = import ../grafana/links.nix;
   forge = nodes.forge.config.services.forgejo.settings.server.ROOT_URL;
   run = ''{{ $value | printf "%.0f" }}'';
 
@@ -12,6 +13,7 @@ let
       summary = "${what} isn't running on {{ $labels.host }}";
       condition = "${unit} inactive for 5m";
       check = "ssh root@{{ $labels.host }} journalctl -u ${unit} -n 50";
+      dashboard = links.logs "{{ $labels.host }}" [ unit ];
     };
   };
 in

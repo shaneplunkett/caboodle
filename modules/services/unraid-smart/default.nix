@@ -4,6 +4,7 @@
   ...
 }:
 let
+  links = import ../grafana/links.nix;
   unraid = config.homelab.devices.unraid.ip;
   file = "${config.homelab.metricsDir}/unraid-smart.prom";
   device = "{{ $labels.device }} ({{ $labels.model }} {{ $labels.serial }})";
@@ -126,6 +127,7 @@ in
                   summary = "Unraid's disk health readings are {{ $value | humanizeDuration }} old";
                   condition = "No SMART readings from Unraid for over 1h";
                   check = "ssh root@{{ $labels.host }} journalctl -u unraid-smart -n 50";
+                  dashboard = links.logs "{{ $labels.host }}" [ "unraid-smart.service" ];
                 };
               }
             ];
