@@ -23,6 +23,8 @@ let
   cpuUsed =
     selector: window:
     ''100 * (1 - avg by (host) (rate(node_cpu_seconds_total{${selector},mode="idle"}[${window}])))'';
+  guestCpuUsed =
+    selector: "100 * pve_cpu_usage_ratio * on (id) group_left (name) pve_guest_info{${selector}}";
   memoryUsed =
     selector:
     "100 * (1 - node_memory_MemAvailable_bytes{${selector}} / node_memory_MemTotal_bytes{${selector}})";
@@ -54,6 +56,8 @@ let
     };
 
   host = ''host="$host"'';
+  lxc = ''type="lxc"'';
+  guest = ''name="$host"'';
 in
 dashboard {
   uid = "hosts";
@@ -82,13 +86,13 @@ dashboard {
   ++ lib.imap0 (i: proxmoxCard (i * 12)) proxmox
   ++ [
     (row "Containers" 6)
-    (usageNow "CPU now" (at 0 7 8 11) "{{host}}" (cpuUsed containers "5m"))
+    (usageNow "CPU now" (at 0 7 8 11) "{{name}}" (guestCpuUsed lxc))
     (usageNow "Memory now" (at 8 7 8 11) "{{host}}" (memoryUsed containers))
     (usageNow "Root disk now" (at 16 7 8 11) "{{host}}" (rootUsed containers))
     (overTime {
       title = "CPU";
       gridPos = at 0 18 12 9;
-      targets = [ (query "{{host}}" (cpuUsed containers "$__rate_interval")) ];
+      targets = [ (query "{{name}}" (guestCpuUsed lxc)) ];
     })
     (overTime {
       title = "Memory";
@@ -111,12 +115,13 @@ dashboard {
 
     (row "$host" 36)
     (overTime {
-      title = "CPU by mode";
+      title = "CPU";
       gridPos = at 0 37 12 9;
       stacked = true;
       defaults = removeAttrs percent [ "max" ];
       targets = [
-        (query "{{mode}}" ''100 * avg by (mode) (rate(node_cpu_seconds_total{${host},mode!="idle"}[$__rate_interval]))'')
+        (query "used" (guestCpuUsed guest))
+        (query "{{mode}}" ''100 * avg by (mode) (rate(node_cpu_seconds_total{${host},mode!="idle"}[$__rate_interval])) unless on () pve_guest_info{${guest}}'')
       ];
     })
     (overTime {
