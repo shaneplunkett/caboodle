@@ -246,4 +246,44 @@ in
     shane
     builder
   ];
+  "backup-r2-dashboard.age".publicKeys = [
+    shane
+    dashboard
+  ];
+  "backup-r2-plex.age".publicKeys = [
+    shane
+    plex
+  ];
+  "backup-r2-arr.age".publicKeys = [
+    shane
+    arr
+  ];
+  "backup-r2-brain.age".publicKeys = [
+    shane
+    brain
+  ];
+  "backup-r2-auth.age".publicKeys = [
+    shane
+    auth
+  ];
+  "backup-r2-forge.age".publicKeys = [
+    shane
+    forge
+  ];
+  "backup-r2-gym.age".publicKeys = [
+    shane
+    gym
+  ];
+  "backup-r2-rss.age".publicKeys = [
+    shane
+    rss
+  ];
+  "backup-r2-home.age".publicKeys = [
+    shane
+    home
+  ];
+  "backup-r2-photos.age".publicKeys = [
+    shane
+    photos
+  ];
 }

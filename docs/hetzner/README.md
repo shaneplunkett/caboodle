@@ -19,9 +19,17 @@ the box through rclone's SFTP backend, because subaccounts only take
 passwords. The host's agenix secret `backup-<host>` holds its restic password
 and subaccount login.
 
+Each host also backs up to its own Cloudflare R2 bucket, `restic-<host>`, as
+the third copy (`terraform/cloudflare-r2.tf`). Its token can only reach that
+bucket. The R2 jobs (`restic-backups-r2*`) run an hour after the Storage Box
+ones and use the same lock and the same restic password, kept with the token
+in `backup-r2-<host>`. R2 doesn't charge for egress, so restoring from it is
+free.
+
 ### Adding a host
 
-1. Add it to `local.backup_hosts` in `terraform/hetzner.tf` and apply.
+1. Add it to `local.backup_hosts` in `terraform/locals.tf` and apply. That
+   makes its subaccount and its R2 bucket.
 2. Make it a restic password: `rbw generate --no-symbols 48 restic-<host> > /dev/null`.
 3. Add `backup-<host>.age` to `modules/agenix/agenix-rules.nix` with
    the host as a recipient, then from `modules/agenix`:
@@ -37,7 +45,20 @@ and subaccount login.
    unset login
    ```
 
-4. Give a service on the host some `homelab.backup.paths` and deploy.
+4. Add `backup-r2-<host>.age` the same way, from the bucket token Terraform
+   made for the host:
+
+   ```sh
+   creds=$(terraform -chdir=../../terraform output -json r2_backup_credentials)
+   {
+     printf 'RESTIC_PASSWORD=%s\n' "$(rbw get "restic-$host")"
+     printf 'AWS_ACCESS_KEY_ID=%s\n' "$(jq -r --arg h "$host" '.[$h].access_key_id' <<<"$creds")"
+     printf 'AWS_SECRET_ACCESS_KEY=%s\n' "$(jq -r --arg h "$host" '.[$h].secret_access_key' <<<"$creds")"
+   } | agenix -e "backup-r2-$host.age"
+   unset creds
+   ```
+
+5. Give a service on the host some `homelab.backup.paths` and deploy.
 
 ### Restoring a host's data
 
@@ -50,6 +71,9 @@ systemctl stop <service>
 restic-homelab restore latest --target / --include <path>
 systemctl start <service>
 ```
+
+`restic-r2` is the same for the host's R2 bucket, if the Storage Box is the
+thing that's gone.
 
 If the host is gone, rebuild it first (the README's "Adding a host"), and its
 secret will decrypt once its new key is a recipient and the secrets are
