@@ -238,26 +238,28 @@ admin password after the passkey. That account is in Bitwarden as
 ### First setup
 
 1. Open `https://music.shaneplunkett.com` and create the admin account.
-2. In its settings, set the stream server's published IP to the host's
-   `eth1` address on the IoT VLAN. See below for why.
-3. In Home Assistant, add the Music Assistant integration with
+2. In Home Assistant, add the Music Assistant integration with
    `http://localhost:8095`, then press its Authenticate button and sign in
    as the admin.
 
 ### Gotchas
 
-- **Speakers pull the audio from Music Assistant,** on the stream port. The
-  speakers are on the IoT VLAN, which can't open connections to the main LAN,
-  so the stream server has to publish its `eth1` address. Left on the
-  default, a speaker starts playing and stays silent.
-- **AirPlay 2 keeps time over PTP,** on UDP 319 and 320, and the speakers
-  have to reach Music Assistant on both. With them closed, the HomePod looks
-  like it's playing and stays silent, and the log says it never answered the
-  PTP clock.
+- **Leave the stream server's published IP on auto.** Music Assistant hands
+  it to AirPlay speakers as its clock's address, and a speaker ignores clock
+  packets from any other address. This host is on two networks, so pinning
+  the address to one of them silences every AirPlay speaker on the other.
+  That's how the bathroom HomePod went quiet. On auto, Music Assistant uses
+  whichever address faces each speaker.
+- **The Bose plays over AirPlay 2, and needs to stay that way.** AirPlay
+  pushes audio to the speaker. Google Cast has the speaker pull it from the
+  published address instead, and on auto that's the main LAN, which the IoT
+  VLAN can't reach. If the Bose ever shows as playing over Cast and stays
+  silent, that's why.
+- **AirPlay 2 keeps time over PTP,** on UDP 319 and 320, so both are open on
+  the home host.
 - **The Bose soundbar's Google Cast is off** until it's turned on in the
   Bose app, and Home Assistant's Cast integration needs it. It needs nothing
-  from Google beyond accepting their terms there. Music Assistant plays to
-  the Bose over AirPlay 2 by its own choice.
+  from Google beyond accepting their terms there.
 
 ### YouTube Music
 
