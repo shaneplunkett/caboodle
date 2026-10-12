@@ -27,6 +27,12 @@ provider "cloudflare" {
   api_token = var.cloudflare_api_token
 }
 
+provider "unifi" {
+  api_url        = "https://192.168.1.1"
+  api_key        = var.unifi_api_key
+  allow_insecure = true
+}
+
 provider "forgejo" {
   host      = "https://git.shaneplunkett.com"
   api_token = var.forgejo_api_token

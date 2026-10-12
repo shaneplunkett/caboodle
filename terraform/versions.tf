@@ -29,6 +29,10 @@ terraform {
       source  = "svalabs/forgejo"
       version = "~> 1.6"
     }
+    unifi = {
+      source  = "ubiquiti-community/unifi"
+      version = "0.59.0"
+    }
 
   }
 }

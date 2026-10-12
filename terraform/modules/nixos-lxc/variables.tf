@@ -92,6 +92,12 @@ variable "mac_address" {
   description = "MAC address for the network interface (preserves DHCP reservations)"
 }
 
+variable "reserved_ip" {
+  type        = string
+  default     = null
+  description = "Fixed IP for mac_address on the LAN, reserved in UniFi's DHCP"
+}
+
 variable "extra_networks" {
   type = list(object({
     vlan_id     = number

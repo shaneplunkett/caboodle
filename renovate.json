@@ -56,6 +56,13 @@
       "groupName": "Terraform providers"
     },
     {
+      "description": "UniFi's provider on its own, since a bump can change the live network",
+      "matchPackageNames": [
+        "ubiquiti-community/unifi"
+      ],
+      "groupName": "UniFi provider"
+    },
+    {
       "description": "One PR for the arr stack's container images",
       "matchFileNames": [
         "modules/arr/**"

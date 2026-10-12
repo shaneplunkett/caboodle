@@ -18,7 +18,8 @@ TF_VAR_hcloud_token="$(<"$creds/terraform-hcloud-token")"
 TF_VAR_cloudflare_api_token="$(<"$creds/terraform-cloudflare-token")"
 TF_VAR_access_editor_emails="$(<"$creds/terraform-access-emails")"
 TF_VAR_forgejo_api_token="$(<"$creds/terraform-forgejo-token")"
-export TF_TOKEN_app_terraform_io TF_VAR_pve_api_token TF_VAR_hcloud_token TF_VAR_cloudflare_api_token TF_VAR_access_editor_emails TF_VAR_forgejo_api_token
+TF_VAR_unifi_api_key="$(<"$creds/terraform-unifi-token")"
+export TF_TOKEN_app_terraform_io TF_VAR_pve_api_token TF_VAR_hcloud_token TF_VAR_cloudflare_api_token TF_VAR_access_editor_emails TF_VAR_forgejo_api_token TF_VAR_unifi_api_key
 
 cd "$(git rev-parse --show-toplevel)/terraform"
 terraform init -input=false -no-color
