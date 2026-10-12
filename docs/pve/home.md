@@ -277,6 +277,20 @@ admin password after the passkey. That account is in Bitwarden as
   Bose app, and Home Assistant's Cast integration needs it. It needs nothing
   from Google beyond accepting their terms there.
 
+### The Music dashboard
+
+The Music dashboard is one Mediocre multi media player card, from HACS
+(`antontanderup/mediocre-hass-media-player-cards`, added as a custom
+repository because it isn't in HACS's default list). Its search and library
+go through Music Assistant. Its queue tab needs `droans/mass_queue` from
+HACS too, which signs in to Music Assistant the same way the integration
+does. The card follows the Home Assistant theme unless `use_art_colors` is
+on, so it's left off.
+
+The Home page can't hold custom cards, because Home Assistant builds it
+itself from favourites and shortcuts. It gets a Music shortcut to the
+dashboard instead.
+
 ### YouTube Music
 
 YouTube has no API for this, so the source logs in with a browser cookie and
@@ -296,3 +310,34 @@ source starts failing with a 401 or "Unable to fetch PO Token".
 - **The profile is thrown away on purpose.** Google swaps the cookies in any
   browser that keeps using YouTube, which kills the copy Music Assistant
   holds. With the profile gone, nothing is left to swap them.
+
+## The living room
+
+The Apple TV and the Bose soundbar share the TV, so the Apple TV is a
+remote and a "what's playing" in Home Assistant, not a speaker. Its
+Music Assistant player is disabled. The Bose has three entities: Music
+Assistant's player for music, the Cast one (hidden), and the Bose
+integration's `media_player.bose_control` for power and inputs. The Bose
+integration is `cavefire/Bose-Homeassistant` from HACS.
+
+The YouTube script on the Home page is the way to put the telly on: it
+stops any music on the Bose, switches the Bose to TV, wakes the Apple TV
+and opens YouTube.
+
+- **Pairing the Apple TV asks for three codes,** for AirPlay, Companion and
+  RAOP, each shown on the TV. Someone has to be in front of it.
+- **The Apple TV won't list its apps.** Newer tvOS refuses the request
+  pyatv makes for the list, so its source list stays empty. Launch apps by
+  bundle ID instead, with `media_player.play_media`, `media_content_type:
+  app`. YouTube is `com.google.ios.youtube`.
+- **tvOS drops an app launch sent while it's still waking.** Wait until the
+  Apple TV reports it's awake, then send the launch twice a few seconds
+  apart. A second launch of an open app does nothing.
+- **The Bose has to be on its TV input before the TV wakes.** If it's still
+  playing over AirPlay, eARC doesn't come up, the TV falls back to its own
+  speakers and doesn't retry, and the Apple TV gets confused. Waking the
+  Apple TV doesn't switch the Bose by itself, so the script switches it first.
+- **The Bose integration wants a Bose account email and password,** used
+  once to fetch a key, then it controls the bar locally. An account made with
+  Sign in with Apple has no password until one's set through Bose's forgot
+  password page.
