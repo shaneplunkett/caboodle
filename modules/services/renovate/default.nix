@@ -32,6 +32,7 @@
       gitAuthor = "forge-bot <forge-bot@noreply.shaneplunkett.com>";
       autodiscover = true;
       autodiscoverNamespaces = [ "shane" ];
+      minimumReleaseAge = "1 day";
     };
   };
 }
