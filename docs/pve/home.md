@@ -250,9 +250,14 @@ admin password after the passkey. That account is in Bitwarden as
   speakers are on the IoT VLAN, which can't open connections to the main LAN,
   so the stream server has to publish its `eth1` address. Left on the
   default, a speaker starts playing and stays silent.
-- **The Bose soundbar plays over Google Cast,** which is off until it's
-  turned on in the Bose app. It needs nothing from Google beyond accepting
-  their terms there.
+- **AirPlay 2 keeps time over PTP,** on UDP 319 and 320, and the speakers
+  have to reach Music Assistant on both. With them closed, the HomePod looks
+  like it's playing and stays silent, and the log says it never answered the
+  PTP clock.
+- **The Bose soundbar's Google Cast is off** until it's turned on in the
+  Bose app, and Home Assistant's Cast integration needs it. It needs nothing
+  from Google beyond accepting their terms there. Music Assistant plays to
+  the Bose over AirPlay 2 by its own choice.
 
 ### YouTube Music
 
