@@ -1,8 +1,8 @@
 #!/bin/sh
-# PostToolUse hook for Claude Code and Codex: formats each .nix, .tf or .py file
-# an agent just edited, then hands back any lint findings so they're fixed
-# in the same turn rather than at the Stop hook. Claude Code sends
-# tool_input.file_path; Codex sends the apply_patch text instead.
+# PostToolUse hook for Claude Code and Codex: formats each .nix, .tf, .py, .js
+# or .ts file an agent just edited, then hands back any lint findings so
+# they're fixed in the same turn rather than at the Stop hook. Claude Code
+# sends tool_input.file_path; Codex sends the apply_patch text instead.
 set -u
 export NO_COLOR=1 # plain text for the agent, not terminal colours
 
@@ -37,6 +37,10 @@ printf '%s' "$input" | jq -r '
     *.py)
       ruff format "$file" >/dev/null 2>&1
       out="$(ruff check --fix --quiet --output-format concise "$file" 2>&1)"
+      ;;
+    *.js | *.ts)
+      out=""
+      biome check --write "$file" >/dev/null 2>&1 || out="$(biome check --colors=off "$file" 2>&1)"
       ;;
     *) continue ;;
   esac

@@ -9,7 +9,7 @@ set -eu
 # step with the flake's packages.
 current_shell_has_tools() {
   [ -n "${IN_NIX_SHELL:-}" ] || return 1
-  for tool in nixfmt statix deadnix terraform tflint ruff jq; do
+  for tool in nixfmt statix deadnix terraform tflint ruff biome jq; do
     command -v "$tool" >/dev/null 2>&1 || return 1
   done
 }
