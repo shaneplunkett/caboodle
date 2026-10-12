@@ -366,7 +366,8 @@ Shane makes it in the UI, following `docs/pve/auth.md`:
 
 ## If family joins
 
-- Make them in Pocket ID, then turn on `autoRegister`, or add them by hand.
+- Make them in Pocket ID and allow them on the client's Access tab, then
+  turn on `autoRegister`, or add them by hand.
 - Decide on storage quotas then, since the library lives on cube's NVMe.
 - Share links for people off the tailnet are under "Later".
 

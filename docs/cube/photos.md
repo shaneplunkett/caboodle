@@ -30,8 +30,10 @@ only existing Immich accounts get in. The password login stays as a
 break-glass at `https://photos.shaneplunkett.com/auth/login?autoLaunch=0`,
 with the password in Bitwarden.
 
-To give someone else access, make their account in Immich's admin pages with
-the same email as their Pocket ID account.
+Immich matches a Pocket ID sign-in to an account by email, so the two have
+to agree. To give someone else access, make their account in Immich's admin
+pages with their Pocket ID email, and let them in on the Immich client's
+Access tab in Pocket ID.
 
 ## iPhone app
 
