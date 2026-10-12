@@ -108,12 +108,6 @@ in
 
   programs.nix-ld.enable = true;
 
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 14d";
-  };
-
   nix.settings = {
     min-free = 20 * 1024 * 1024 * 1024;
     max-free = 40 * 1024 * 1024 * 1024;
