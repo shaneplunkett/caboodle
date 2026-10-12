@@ -28,6 +28,9 @@ callback URL and scopes each one wants.
    - Turn PKCE on if the app supports it.
    - Turn Skip Consent Screen on. These are all our own apps.
    - Leave Re-Authentication and Pushed Authorization Requests off.
+   - On the client's Access tab, pick the groups allowed in, or All Users.
+     A new client lets nobody in until this is set, and sign-in fails with
+     "You are not allowed to access this service".
 2. Saving doesn't show a secret. Open the client again, add one under Client
    secrets, and save it in Bitwarden as `<app>-oidc-client-secret`. Pocket ID
    only shows it once.
