@@ -23,6 +23,7 @@ in
       "terraform-cloudflare-token"
       "terraform-access-emails"
       "terraform-forgejo-token"
+      "terraform-unifi-token"
     ];
     monitoring.units = [ "${unit}.service" ];
   };
@@ -79,6 +80,7 @@ in
         "terraform-cloudflare-token:${config.age.secrets.terraform-cloudflare-token.path}"
         "terraform-access-emails:${config.age.secrets.terraform-access-emails.path}"
         "terraform-forgejo-token:${config.age.secrets.terraform-forgejo-token.path}"
+        "terraform-unifi-token:${config.age.secrets.terraform-unifi-token.path}"
       ];
     };
   };

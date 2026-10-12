@@ -224,4 +224,8 @@ in
     shane
     builder
   ];
+  "terraform-unifi-token.age".publicKeys = [
+    shane
+    builder
+  ];
 }
