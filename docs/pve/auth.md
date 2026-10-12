@@ -19,11 +19,12 @@ callback URL and scopes each one wants.
    - Pick Confidential Client. Public Client is for apps with no backend to
      keep a secret, which none of ours are.
    - The callback URL comes from the app's docs or the client example.
-   - Click Set custom client ID, at the bottom of the form, and use the
-     app's name, like `grafana`, so the Nix config can name it instead of
-     needing a random UUID. If it's left blank, Pocket ID generates a UUID
-     and the ID can't be changed afterwards. That's what happened to
-     oauth2-proxy's client, and it's fine to use the UUID instead.
+   - Click Set custom client ID, next to Create at the bottom of the form,
+     and use the app's name, like `grafana`, so the Nix config can name it
+     instead of a random UUID. It's a link that opens the field, so it's
+     easy to skip, and the ID can't be changed afterwards. That's what
+     happened to oauth2-proxy's and Immich's clients, and it's fine to use
+     the UUID instead.
    - Turn PKCE on if the app supports it.
    - Turn Skip Consent Screen on. These are all our own apps.
    - Leave Re-Authentication and Pushed Authorization Requests off.
