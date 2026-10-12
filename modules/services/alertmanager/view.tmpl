@@ -1,0 +1,13 @@
+{{/* Prometheus links to its rule as a table at this moment, empty once resolved, so graph the hour before it fired until 15m after it ended */}}
+{{ define "view" -}}
+{{ $from := .StartsAt.Add -3600000000000 -}}
+{{ $graph := reReplaceAll "g0.tab=table" "g0.tab=graph" .GeneratorURL -}}
+{{ if eq .Status "resolved" -}}
+{{ $to := .EndsAt.Add 900000000000 -}}
+{{ $window := printf "g0.range_input=%s&g0.end_input=%s" (($to.Sub $from).Round 60000000000) ($to | tz "UTC" | date "2006-01-02T15:04:05Z") -}}
+{{ reReplaceAll "g0.range_input=[^&]*" $window $graph }}
+{{- else -}}
+{{ $window := printf "g0.range_input=%s" ((since $from).Round 60000000000) -}}
+{{ reReplaceAll "g0.range_input=[^&]*" $window $graph }}
+{{- end }}
+{{- end }}
