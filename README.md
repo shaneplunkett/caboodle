@@ -46,21 +46,21 @@ Flakes only see tracked files, so `git add` new files before building.
    `nix build .#nixosConfigurations.base.config.system.build.tarball`, and
    upload it to each node's `local:vztmpl` under the name
    `terraform/modules/nixos-lxc` expects.
-2. Add a `terraform/<node>-<host>.tf` using `modules/nixos-lxc` and apply it.
-3. Give it a fixed DHCP reservation in UniFi. The `Unifi API Key` in rbw
-   can do this over the gateway's API (`X-API-KEY` header): find the
-   client by MAC in `/proxy/network/api/s/default/rest/user` for its `_id`
-   and in `stat/sta` for its `network_id`, then `PUT rest/user/<_id>` with
-   `use_fixedip: true`, `fixed_ip` and `network_id`.
-4. Add `modules/hosts/<host>.nix` and a node in the hive pointing at it.
-5. Add the host's key to `modules/agenix/host-keys.nix`
+2. Add `modules/hosts/<host>.nix` and a node in the hive pointing at it,
+   with the host's `homelab.lanAddress`.
+3. Add a `terraform/<node>-<host>.tf` using `modules/nixos-lxc` and apply it.
+   Terraform reads every LAN address from the hive (`nix eval
+   .#lanAddresses`) and reserves the host's in UniFi before the container
+   first boots, so it comes up on that address. Leave `mac_address` out and
+   Terraform makes one. A host that isn't in the hive fails the plan.
+4. Add the host's key to `modules/agenix/host-keys.nix`
    (`ssh-keyscan -t ed25519 <ip>`), name it in `agenix-rules.nix`, add it to
    the secrets it needs, and `agenix -r` to rekey. The builder trusts hosts
    from the same file, so this is also what lets it deploy there.
-6. `colmena apply --on <host>`. Colmena reaches hosts by their tailnet
+5. `colmena apply --on <host>`. Colmena reaches hosts by their tailnet
    name, which doesn't exist until this first deploy joins it, so for this
    one deploy temporarily set `deployment.targetHost` to the LAN address.
-7. `colmena apply --on builder`, so its SSH config and known hosts include
+6. `colmena apply --on builder`, so its SSH config and known hosts include
    the new host. Until then, every merge deploy fails to reach it.
 
 ## Secrets

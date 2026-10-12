@@ -5,6 +5,10 @@ terraform {
       source  = "bpg/proxmox"
       version = ">= 0.69.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
     unifi = {
       source  = "ubiquiti-community/unifi"
       version = ">= 0.59.0"
