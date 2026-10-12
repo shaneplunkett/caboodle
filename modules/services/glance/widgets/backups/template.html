@@ -2,7 +2,7 @@
 {{ $full := (.Subrequest "full").JSON.Float "data.result.0.value.1" }}
 {{ $sftp := eq ((.Subrequest "sftp").JSON.String "data.result.0.value.1") "1" }}
 {{ $backups := (.Subrequest "backups").JSON.Array "data.result" }}
-{{ $checks := (.Subrequest "checks").JSON.Array "data.result" }}
+{{ $r2s := (.Subrequest "r2").JSON.Array "data.result" }}
 {{ $failing := (.Subrequest "failing").JSON.Array "data.result" }}
 <div class="flex flex-column gap-15">
   <div class="flex justify-between text-center">
@@ -23,20 +23,20 @@
     {{ range sortByString "metric.host" "asc" (.JSON.Array "data.result") }}
     {{ $host := .String "metric.host" }}
     {{ $backup := "" }}{{ range $backups }}{{ if eq (.String "metric.host") $host }}{{ $backup = .String "value.1" }}{{ end }}{{ end }}
-    {{ $check := "" }}{{ range $checks }}{{ if eq (.String "metric.host") $host }}{{ $check = .String "value.1" }}{{ end }}{{ end }}
+    {{ $r2 := "" }}{{ range $r2s }}{{ if eq (.String "metric.host") $host }}{{ $r2 = .String "value.1" }}{{ end }}{{ end }}
     {{ $failed := false }}{{ range $failing }}{{ if eq (.String "metric.host") $host }}{{ $failed = true }}{{ end }}{{ end }}
     <li class="flex items-center gap-10">
       {{ if $failed }}
       <span class="color-negative" title="a backup alert is firing">●</span>
-      {{ else if eq $backup "" }}
-      <span style="color: #fab387" title="no backup yet">●</span>
+      {{ else if or (eq $backup "") (eq $r2 "") }}
+      <span style="color: #fab387" title="not in both places yet">●</span>
       {{ else }}
       <span class="color-positive" title="backups are current">●</span>
       {{ end }}
       <span class="color-highlight">{{ $host }}</span>
       <ul class="list-horizontal-text margin-left-auto">
-        {{ if eq $backup "" }}<li>no backup yet</li>{{ else }}<li>backed up <span {{ parseRelativeTime "unix" $backup }}></span> ago</li>{{ end }}
-        {{ if ne $check "" }}<li>checked <span {{ parseRelativeTime "unix" $check }}></span> ago</li>{{ end }}
+        {{ if eq $backup "" }}<li>Hetzner never</li>{{ else }}<li>Hetzner <span {{ parseRelativeTime "unix" $backup }}></span> ago</li>{{ end }}
+        {{ if eq $r2 "" }}<li>R2 never</li>{{ else }}<li>R2 <span {{ parseRelativeTime "unix" $r2 }}></span> ago</li>{{ end }}
       </ul>
     </li>
     {{ end }}
