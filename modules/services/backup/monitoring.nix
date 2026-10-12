@@ -15,6 +15,9 @@ let
     backup = 36 * 3600;
     prune = 9 * 86400;
     check = 9 * 86400;
+    r2-backup = 36 * 3600;
+    r2-prune = 9 * 86400;
+    r2-check = 9 * 86400;
   };
 
   humanize =

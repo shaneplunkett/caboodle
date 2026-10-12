@@ -20,7 +20,7 @@ let
     ]
   );
 
-  repository = {
+  storageBox = {
     repository = "rclone::sftp:restic";
     environmentFile = config.age.secrets."backup-${name}".path;
     package = restic;
@@ -33,10 +33,57 @@ let
     };
   };
 
+  r2 = {
+    repository = "s3:https://${cfg.r2Account}.r2.cloudflarestorage.com/restic-${name}";
+    environmentFile = config.age.secrets."backup-r2-${name}".path;
+    package = restic;
+    extraOptions = [ "s3.region=auto" ];
+  };
+
+  jobs = job: repository: schedule: {
+    ${job} = repository // {
+      inherit (cfg) paths exclude;
+      backupPrepareCommand = lib.mkIf (cfg.prepare != "") cfg.prepare;
+      initialize = true;
+      extraBackupArgs = [ "--one-file-system" ];
+      timerConfig = {
+        OnCalendar = schedule.backup;
+        RandomizedDelaySec = "1h";
+        Persistent = true;
+      };
+    };
+
+    "${job}-prune" = repository // {
+      pruneOpts = [
+        "--keep-daily 7"
+        "--keep-weekly 4"
+        "--keep-monthly 6"
+      ];
+      runCheck = false;
+      createWrapper = false;
+      timerConfig = {
+        OnCalendar = schedule.prune;
+        Persistent = true;
+      };
+    };
+
+    "${job}-check" = repository // {
+      checkOpts = [ "--read-data-subset=1/10" ];
+      createWrapper = false;
+      timerConfig = {
+        OnCalendar = schedule.check;
+        Persistent = true;
+      };
+    };
+  };
+
   tasks = {
     homelab = "backup";
     homelab-prune = "prune";
     homelab-check = "check";
+    r2 = "r2-backup";
+    r2-prune = "r2-prune";
+    r2-check = "r2-check";
   };
 
   stamp =
@@ -73,6 +120,13 @@ in
       readOnly = true;
       description = "The Storage Box every host backs up to.";
     };
+
+    r2Account = lib.mkOption {
+      type = lib.types.str;
+      default = "7d4e6e95bf7ff3d09d92e7903193826b";
+      readOnly = true;
+      description = "The Cloudflare account whose R2 holds each host's restic-<host> bucket.";
+    };
   };
 
   config = lib.mkIf (cfg.paths != [ ]) {
@@ -81,44 +135,22 @@ in
       message = "homelab.backup.paths: ${path} is under /mnt, where Proxmox mounts the Unraid shares.";
     }) cfg.paths;
 
-    homelab.secrets = [ "backup-${name}" ];
+    homelab.secrets = [
+      "backup-${name}"
+      "backup-r2-${name}"
+    ];
 
-    services.restic.backups = {
-      homelab = repository // {
-        inherit (cfg) paths exclude;
-        backupPrepareCommand = lib.mkIf (cfg.prepare != "") cfg.prepare;
-        initialize = true;
-        extraBackupArgs = [ "--one-file-system" ];
-        timerConfig = {
-          OnCalendar = "03:00";
-          RandomizedDelaySec = "1h";
-          Persistent = true;
-        };
+    services.restic.backups =
+      jobs "homelab" storageBox {
+        backup = "03:00";
+        prune = "Sun 05:00";
+        check = "Wed 05:00";
+      }
+      // jobs "r2" r2 {
+        backup = "04:00";
+        prune = "Sun 06:00";
+        check = "Thu 05:00";
       };
-
-      homelab-prune = repository // {
-        pruneOpts = [
-          "--keep-daily 7"
-          "--keep-weekly 4"
-          "--keep-monthly 6"
-        ];
-        runCheck = false;
-        createWrapper = false;
-        timerConfig = {
-          OnCalendar = "Sun 05:00";
-          Persistent = true;
-        };
-      };
-
-      homelab-check = repository // {
-        checkOpts = [ "--read-data-subset=1/10" ];
-        createWrapper = false;
-        timerConfig = {
-          OnCalendar = "Wed 05:00";
-          Persistent = true;
-        };
-      };
-    };
 
     systemd.services = lib.mapAttrs' (
       job: task: lib.nameValuePair "restic-backups-${job}" { serviceConfig.ExecStartPost = stamp task; }
