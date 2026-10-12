@@ -80,7 +80,7 @@ in
       Type = "oneshot";
       RemainAfterExit = true;
       DynamicUser = true;
-      ExecStart = "${lib.getExe reconcile} report ${clientsFile}";
+      ExecStart = "${lib.getExe reconcile} apply ${clientsFile}";
       LoadCredential = [
         "api-key:${secrets.pocket-id-api-key.path}"
       ]

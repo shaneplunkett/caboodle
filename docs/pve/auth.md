@@ -15,36 +15,51 @@ Check Pocket ID's [client examples](https://pocket-id.org/docs/client-examples)
 first. They cover a lot of apps, including Proxmox and Unraid, and list the
 callback URL and scopes each one wants.
 
-1. In Pocket ID, open OIDC Clients and add one:
-   - Pick Confidential Client. Public Client is for apps with no backend to
-     keep a secret, which none of ours are.
-   - The callback URL comes from the app's docs or the client example.
-   - Click Set custom client ID, next to Create at the bottom of the form,
-     and use the app's name, like `grafana`, so the Nix config can name it
-     instead of a random UUID. It's a link that opens the field, so it's
-     easy to skip, and the ID can't be changed afterwards. That's what
-     happened to oauth2-proxy's and Immich's clients, and it's fine to use
-     the UUID instead.
-   - Turn PKCE on if the app supports it.
-   - Turn Skip Consent Screen on. These are all our own apps.
-   - Leave Re-Authentication and Pushed Authorization Requests off.
-   - On the client's Access tab, pick the groups allowed in, or All Users.
-     A new client lets nobody in until this is set, and sign-in fails with
-     "You are not allowed to access this service".
-2. Saving doesn't show a secret. Open the client again, add one under Client
-   secrets, and save it in Bitwarden as `<app>-oidc-client-secret`. Pocket ID
-   only shows it once.
-3. Add `<app>-oidc-client-secret.age` to `modules/agenix/agenix-rules.nix`
-   with the app's host as a recipient, then from `modules/agenix`:
+1. Make the client secret, which saves it in Bitwarden:
+
+   ```sh
+   rbw generate --no-symbols 48 <app>-oidc-client-secret
+   ```
+
+2. Add `<app>-oidc-client-secret.age` to `modules/agenix/agenix-rules.nix`
+   with the app's host **and `auth`** as recipients, then from
+   `modules/agenix`:
 
    ```sh
    printf '%s' "$(rbw get <app>-oidc-client-secret)" | agenix -e <app>-oidc-client-secret.age
    ```
 
+3. Declare the client in the app's module, keyed by its client ID. Use the
+   app's name, so the Nix config can name it.
+
+   ```nix
+   homelab.oidcClients.<app> = {
+     name = "<App>";
+     callbackURLs = [ "<from the app's docs or the client example>" ];
+     groups = [ "<app>_admins" ];
+     secret = "<app>-oidc-client-secret";
+   };
+   ```
+
+   Add `pkce = false;` if the app doesn't support PKCE. An app that isn't a
+   host in the hive, like Proxmox or Unraid, is declared in
+   `modules/services/pocket-id`. Every client is confidential, skips the
+   consent screen, and only lets its groups in.
 4. Point the app at Pocket ID in its module, reading the secret from
    `config.age.secrets.<app>-oidc-client-secret.path`.
    `modules/services/grafana` is the worked example.
-5. `colmena apply --on <host>`, then sign in from the app's login page.
+5. Merge. The auth host creates the group and the client with that secret.
+   A new group is empty, so add yourself to it in Pocket ID under User Groups,
+   then sign in from the app's login page.
+
+The `pocket-id-clients` job on auth does the creating, through Pocket ID's
+API with the `pocket-id-api-key` secret, an API key made in Pocket ID's UI.
+It runs when the declared clients change, and updates the declared fields
+and groups of clients that already exist. It only sets a secret when it
+creates a client, and it never deletes one, so a client removed from Nix
+stays in Pocket ID until it's deleted there. Its report is in
+`journalctl -u pocket-id-clients` on auth. If the key stops working, the unit
+fails and alerts.
 
 ### Roles
 
@@ -53,8 +68,9 @@ Map roles from group names rather than emails. Grafana makes members of
 `grafana_admins` an Admin and everyone else a Viewer. Use the same
 `<app>_admins` pattern for the next app.
 
-Groups live in Pocket ID under User Groups. The group's name is what goes in
-the claim, not its display name.
+The job creates a client's groups if they're missing, but who's in them is
+managed in Pocket ID under User Groups. The group's name is what goes in the
+claim, not its display name.
 
 ### Proxmox
 
