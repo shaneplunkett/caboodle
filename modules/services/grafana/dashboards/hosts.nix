@@ -1,4 +1,4 @@
-{ lib }:
+{ lib, proxmox }:
 let
   inherit (import ./panels.nix { inherit lib; })
     prometheus
@@ -14,7 +14,6 @@ let
     dashboard
     ;
 
-  proxmox = lib.attrNames (import ../../proxmox-hosts/addresses.nix);
   containers = ''job="node",host!~"${lib.concatStringsSep "|" proxmox}"'';
   guestStorage = "local-lvm";
 

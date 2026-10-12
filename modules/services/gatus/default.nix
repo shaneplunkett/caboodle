@@ -2,10 +2,12 @@
   config,
   lib,
   pkgs,
+  nodes,
   ...
 }:
 let
   secrets = config.age.secrets;
+  monitoring = nodes.monitoring.config.homelab.lanAddress;
   state = "/var/lib/private/gatus";
 in
 {
@@ -48,7 +50,7 @@ in
         {
           name = "Prometheus";
           group = "Infrastructure";
-          url = "http://192.168.1.78:9090/-/healthy";
+          url = "http://${monitoring}:9090/-/healthy";
           interval = "1m";
           conditions = [
             "[STATUS] == 200"
@@ -63,7 +65,7 @@ in
         {
           name = "Alertmanager";
           group = "Infrastructure";
-          url = "http://192.168.1.78:9093/-/healthy";
+          url = "http://${monitoring}:9093/-/healthy";
           interval = "1m";
           conditions = [
             "[STATUS] == 200"

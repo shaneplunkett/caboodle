@@ -5,6 +5,6 @@ resource "proxmox_virtual_environment_dns" "node" {
   servers = [
     local.lan_addresses.dns1,
     local.lan_addresses.dns2,
-    "192.168.1.1",
+    local.network.gateway,
   ]
 }

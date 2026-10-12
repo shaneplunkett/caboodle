@@ -9,7 +9,7 @@ in
   services.homepage-dashboard = {
     enable = true;
     openFirewall = true;
-    allowedHosts = "dashboard.shaneplunkett.com,192.168.1.152:8082";
+    allowedHosts = "dashboard.shaneplunkett.com,${config.homelab.lanAddress}:8082";
     environmentFiles = [ secrets.proxmox-token.path ];
     services = [
       {

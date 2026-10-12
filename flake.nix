@@ -111,7 +111,17 @@
 
       hydraJobs = self.colmenaHive.toplevel;
 
-      lanAddresses = builtins.mapAttrs (_: node: node.config.homelab.lanAddress) self.colmenaHive.nodes;
+      network =
+        let
+          inherit ((nixpkgs.lib.evalModules { modules = [ ./modules/devices.nix ]; }).config.homelab)
+            gateway
+            devices
+            ;
+        in
+        {
+          inherit gateway devices;
+          hosts = builtins.mapAttrs (_: node: node.config.homelab.lanAddress) self.colmenaHive.nodes;
+        };
 
       colmenaHive = colmena.lib.makeHive {
         meta.nixpkgs = import nixpkgs { system = "x86_64-linux"; };
@@ -130,6 +140,7 @@
             deployment.tags = lib.mkDefault [ "deploy-on-merge" ];
             imports = [
               ./modules/base.nix
+              ./modules/devices.nix
               agenix.nixosModules.default
               ./modules/agenix
               ./modules/services/backup

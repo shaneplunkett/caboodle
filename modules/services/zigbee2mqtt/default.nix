@@ -20,7 +20,7 @@ in
       homeassistant.enabled = true;
       mqtt.server = "mqtt://127.0.0.1:1883";
       serial = {
-        port = "tcp://192.168.20.192:6638";
+        port = "tcp://${config.homelab.devices.slzb.ip}:6638";
         adapter = "zstack";
       };
       advanced = {

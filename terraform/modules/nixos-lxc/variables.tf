@@ -51,8 +51,9 @@ variable "ip" {
 }
 
 variable "gateway" {
-  type    = string
-  default = "192.168.1.1"
+  type        = string
+  default     = null
+  description = "Default gateway for a static ip; DHCP hands it out otherwise"
 }
 
 
