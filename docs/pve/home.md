@@ -42,6 +42,22 @@ Then add the HACS integration in the UI, which links it to GitHub with a
 device code. Anything installed through HACS lives in `custom_components`,
 so the backup covers it.
 
+## Custom cards
+
+Dashboard cards written here live next to the module, and each is mounted
+read-only into the config volume's `www` folder, which Home Assistant serves
+at `/local/`. A card only shows up once it's registered as a resource:
+Settings, Dashboards, the menu, Resources, then add `/local/<file>.js` as a
+JavaScript module. That menu only appears with Advanced mode on in your
+profile.
+
+- **Browsers cache `/local/` hard.** After a card changes, add or bump a
+  `?v=` on its resource URL, or the old card keeps loading.
+- **The Dyson card** needs `ha-dyson` from HACS. If its dial turns the
+  opposite way to the Dyson app, set `reverse: true` on the card. It only
+  shows sleep timers it started itself, because `ha-dyson` doesn't report the
+  fan's timer.
+
 ## Signing in
 
 Home Assistant has no OIDC login of its own, so hass-oidc-auth (`auth_oidc`,
