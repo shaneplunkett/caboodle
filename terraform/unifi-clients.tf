@@ -5,6 +5,7 @@ locals {
     "Bambu X1C"                = { mac = "50:41:1c:89:2f:40", ip = "192.168.1.106" }
     "Raspberry Pi 4"           = { mac = "e4:5f:01:95:0d:b9", ip = "192.168.1.162" }
     "JetKVM"                   = { mac = "30:52:53:07:0d:1c", ip = "192.168.1.168" }
+    "Raspberry Pi 2"           = { mac = "b8:27:eb:b1:b8:7e", ip = "192.168.1.194" }
     "Mini"                     = { mac = "bc:74:ea:e8:00:97", ip = "192.168.1.252" }
     "Meross Plug 524f"         = { mac = "48:e1:e9:af:52:4f", ip = "192.168.20.15" }
     "Sensibo"                  = { mac = "94:b5:55:ae:d5:e8", ip = "192.168.20.22" }
