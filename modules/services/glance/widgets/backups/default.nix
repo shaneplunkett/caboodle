@@ -18,7 +18,7 @@ query ''up{job="node", host=~"${lib.concatStringsSep "|" backedUp}"}''
     full = query "homelab_storagebox_used_bytes / homelab_storagebox_size_bytes * 100";
     sftp = query ''probe_success{job="storagebox"}'';
     backups = query ''homelab_backup_last_success_timestamp_seconds{task="backup"}'';
-    checks = query ''homelab_backup_last_success_timestamp_seconds{task="check"}'';
+    r2 = query ''homelab_backup_last_success_timestamp_seconds{task="r2-backup"}'';
     failing = query ''ALERTS{alertname=~"Backup.*", alertstate="firing"}'';
   };
   template = builtins.readFile ./template.html;
