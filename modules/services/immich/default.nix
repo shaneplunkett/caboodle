@@ -36,7 +36,7 @@ in
       oauth = {
         enabled = true;
         issuerUrl = "https://auth.shaneplunkett.com/.well-known/openid-configuration";
-        clientId = "immich";
+        clientId = "45e64f25-acc2-4be7-a9dd-e6c7fa6ea313";
         clientSecret._secret = secrets.immich-oidc-client-secret.path;
         scope = "openid email profile";
         buttonText = "Sign in with Pocket ID";

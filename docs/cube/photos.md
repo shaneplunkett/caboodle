@@ -23,11 +23,12 @@ settings pages are read-only. Change them in the module and land a PR.
 
 ## Sign-in
 
-Immich's own OAuth with Pocket ID, client ID `immich`. The login page goes
-straight to Pocket ID, and sign-ups are off, so only existing Immich accounts
-get in. The password login stays as a break-glass at
-`https://photos.shaneplunkett.com/auth/login?autoLaunch=0`, with the password
-in Bitwarden.
+Immich's own OAuth with Pocket ID. The client's ID is a generated UUID,
+because the custom ID didn't stick when it was made, so the module names
+that. The login page goes straight to Pocket ID, and sign-ups are off, so
+only existing Immich accounts get in. The password login stays as a
+break-glass at `https://photos.shaneplunkett.com/auth/login?autoLaunch=0`,
+with the password in Bitwarden.
 
 To give someone else access, make their account in Immich's admin pages with
 the same email as their Pocket ID account.
