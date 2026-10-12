@@ -26,7 +26,10 @@ in
 
   virtualisation.oci-containers.containers.homeassistant = {
     image = "ghcr.io/home-assistant/home-assistant:2026.10.1";
-    volumes = [ "${dataDir}:/config" ];
+    volumes = [
+      "${dataDir}:/config"
+      "${./dyson-fan-card.js}:/config/www/dyson-fan-card.js:ro"
+    ];
     environment.TZ = "Australia/Melbourne";
     extraOptions = [
       "--network=host"
