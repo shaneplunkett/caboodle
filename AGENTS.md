@@ -7,12 +7,13 @@ Read `README.md` for how the repo fits together.
   it should read for itself.
 - **Checks:** `scripts/check.sh` is the one gate: nixfmt, statix and deadnix
   for Nix; `terraform fmt`, `validate` and tflint for Terraform; ruff's
-  formatter and linter for Python. Hooks run it for you in Claude Code and
-  Codex. Each edit is formatted and linted straight after, the Stop hook runs
-  the whole check before you finish, and pre-commit runs it on every commit
-  (`pre-commit install` once per clone). Fix what it reports, without
-  suppression comments. If a rule is wrong for the case, say so and propose a
-  change to `statix.toml`, `ruff.toml` or `terraform/.tflint.hcl`.
+  formatter and linter for Python; Biome for JavaScript and TypeScript. Hooks
+  run it for you in Claude Code and Codex. Each edit is formatted and linted
+  straight after, the Stop hook runs the whole check before you finish, and
+  pre-commit runs it on every commit (`pre-commit install` once per clone).
+  Fix what it reports, without suppression comments. If a rule is wrong for
+  the case, say so and propose a change to `statix.toml`, `ruff.toml`,
+  `biome.json` or `terraform/.tflint.hcl`.
 - **Secrets:** pipe values from rbw straight into `agenix -e`, and never print
   a secret or token. Only show names, lengths or recipient counts.
 - **Monitoring:** the Grafana MCP is read-only. Use it to investigate

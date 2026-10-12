@@ -92,6 +92,7 @@
               pkgs.deadnix
               pkgs.terraform
               pkgs.tflint
+              pkgs.biome
               pkgs.python3
               pkgs.ruff
               pkgs.uv

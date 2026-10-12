@@ -19,7 +19,7 @@
           {
             "type": "command",
             "command": "sh \"$(git rev-parse --show-toplevel)/scripts/format-on-edit.sh\"",
-            "statusMessage": "Formatting and linting edited .nix and .tf files",
+            "statusMessage": "Formatting and linting edited files",
             "timeout": 60
           }
         ]
