@@ -15,7 +15,7 @@ let
     "Unraid"
   ];
 
-  hostHealth = "https://grafana.shaneplunkett.com/d/hosts/host-health?var-host={{ $labels.name }}";
+  links = import ../grafana/links.nix;
 
   percent = value: "${toString (builtins.floor (value * 100 + 0.5))}%";
 
@@ -109,7 +109,7 @@ in
                     summary = "{{ $labels.name }} on {{ $labels.node }} is {{ $value | humanizePercentage }} full";
                     condition = "Root disk over ${percent} for 10m";
                     check = ''ssh {{ $labels.node }} sudo pct exec {{ reReplaceAll "^lxc/" "" $labels.id }} -- du -xh -d2 / | sort -h | tail'';
-                    dashboard = hostHealth;
+                    dashboard = links.hostHealth "{{ $labels.name }}";
                   };
                 }
               )
@@ -128,7 +128,7 @@ in
                     summary = "{{ $labels.name }} on {{ $labels.node }} is at {{ $value | humanizePercentage }} CPU";
                     condition = "CPU over ${percent} for 15m";
                     check = "ssh {{ $labels.node }} top -bn1 -c | head -20";
-                    dashboard = hostHealth;
+                    dashboard = links.hostHealth "{{ $labels.name }}";
                   };
                 }
               )
@@ -143,7 +143,7 @@ in
                     summary = "{{ $labels.name }} on {{ $labels.node }} isn't running";
                     condition = "Guest stopped for 5m";
                     check = "ssh {{ $labels.node }} sudo pvesh get /nodes/{{ $labels.node }}/{{ $labels.id }}/status/current";
-                    dashboard = hostHealth;
+                    dashboard = links.hostHealth "{{ $labels.name }}";
                   };
                 }
                 {
@@ -155,6 +155,7 @@ in
                     summary = "The Proxmox exporter isn't answering, so guest and storage alerts are blind";
                     condition = "PVE exporter scrape failing for 5m";
                     check = "ssh root@monitoring journalctl -u prometheus-pve-exporter -n 50";
+                    dashboard = links.logs "monitoring" [ "prometheus-pve-exporter.service" ];
                   };
                 }
               ];

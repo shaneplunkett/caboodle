@@ -1,5 +1,6 @@
 { pkgs, ... }:
 let
+  links = import ../grafana/links.nix;
   unitDown = alert: unit: what: {
     inherit alert;
     expr = ''node_systemd_unit_state{name="${unit}", state="active"} == 0'';
@@ -9,6 +10,7 @@ let
       summary = "${what} isn't running on {{ $labels.host }}";
       condition = "${unit} inactive for 5m";
       check = "ssh root@{{ $labels.host }} journalctl -u ${unit} -n 50";
+      dashboard = links.logs "{{ $labels.host }}" [ unit ];
     };
   };
 in
@@ -31,6 +33,7 @@ in
                   summary = "{{ $labels.host }}'s last successful brain restore drill was {{ $value | humanizeDuration }} ago";
                   condition = "No successful restore drill in 9d";
                   check = "ssh root@{{ $labels.host }} journalctl -u vex-brain-restore-drill -n 50";
+                  dashboard = links.logs "{{ $labels.host }}" [ "vex-brain-restore-drill.service" ];
                 };
               }
             ];
