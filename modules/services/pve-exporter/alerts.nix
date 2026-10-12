@@ -15,6 +15,8 @@ let
     "Unraid"
   ];
 
+  hostHealth = "https://grafana.shaneplunkett.com/d/hosts/host-health?var-host={{ $labels.name }}";
+
   percent = value: "${toString (builtins.floor (value * 100 + 0.5))}%";
 
   storages = [
@@ -107,6 +109,7 @@ in
                     summary = "{{ $labels.name }} on {{ $labels.node }} is {{ $value | humanizePercentage }} full";
                     condition = "Root disk over ${percent} for 10m";
                     check = ''ssh {{ $labels.node }} sudo pct exec {{ reReplaceAll "^lxc/" "" $labels.id }} -- du -xh -d2 / | sort -h | tail'';
+                    dashboard = hostHealth;
                   };
                 }
               )
@@ -125,6 +128,7 @@ in
                     summary = "{{ $labels.name }} on {{ $labels.node }} is at {{ $value | humanizePercentage }} CPU";
                     condition = "CPU over ${percent} for 15m";
                     check = "ssh {{ $labels.node }} top -bn1 -c | head -20";
+                    dashboard = hostHealth;
                   };
                 }
               )
@@ -139,6 +143,7 @@ in
                     summary = "{{ $labels.name }} on {{ $labels.node }} isn't running";
                     condition = "Guest stopped for 5m";
                     check = "ssh {{ $labels.node }} sudo pvesh get /nodes/{{ $labels.node }}/{{ $labels.id }}/status/current";
+                    dashboard = hostHealth;
                   };
                 }
                 {
