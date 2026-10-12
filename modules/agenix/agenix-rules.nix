@@ -185,6 +185,10 @@ in
     shane
     forge
   ];
+  "immich-glance-api-key.age".publicKeys = [
+    shane
+    dashboard
+  ];
   "unraid-api-key.age".publicKeys = [
     shane
     dashboard

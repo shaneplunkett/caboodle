@@ -13,6 +13,7 @@ in
     "proxmox-token"
     "linear-api-key"
     "unraid-api-key"
+    "immich-glance-api-key"
   ];
 
   homelab.routes.dashboard = config.services.glance.settings.server.port;

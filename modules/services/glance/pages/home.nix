@@ -39,6 +39,7 @@
       widgets = [
         (import ../widgets/alerts { inherit nodes; })
         (import ../widgets/linear { inherit secrets; })
+        (import ../widgets/immich { inherit secrets; })
       ];
     }
     {
