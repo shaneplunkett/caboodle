@@ -203,7 +203,7 @@ Shane has an old Google Photos Takeout that overlaps with iCloud.
 - **Immich's duplicates utility catches near-duplicates** with ML. It
   preselects the bigger file with more EXIF to keep, then moves albums,
   favourites and tags onto it [43]. The iPhone originals are bigger, so they
-  win, which is why the iCloud import goes first.
+  win whichever import runs first.
 
 Run it from a laptop or the photos host, with an API key made in Immich.
 The zips can sit on Unraid until it's done.
