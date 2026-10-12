@@ -148,24 +148,3 @@ resource "unifi_firewall_policy" "slzb" {
     port               = "80"
   }
 }
-
-import {
-  to = unifi_port_forward.plex
-  id = "6831343db19a8b4bb609f41b"
-}
-
-resource "unifi_port_forward" "plex" {
-  name     = "Plex"
-  protocol = "tcp_udp"
-
-  wan = {
-    interface  = "wan"
-    ip_address = "any"
-    port       = "32400"
-  }
-
-  forward = {
-    ip   = local.lan_addresses.plex
-    port = "32400"
-  }
-}

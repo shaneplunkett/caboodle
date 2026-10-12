@@ -64,6 +64,12 @@ in
       default = { };
       description = "Subdomains the ingress host proxies to this host, mapped to the local port.";
     };
+
+    portForwards = lib.mkOption {
+      type = lib.types.attrsOf lib.types.port;
+      default = { };
+      description = "Ports the gateway forwards from the internet to this host, by rule name. The WAN and local port match.";
+    };
   };
 
   config = {

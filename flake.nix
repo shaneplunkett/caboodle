@@ -117,9 +117,25 @@
             gateway
             devices
             ;
+          inherit (nixpkgs) lib;
+          forwardList = lib.concatLists (
+            lib.mapAttrsToList (
+              _: node:
+              lib.mapAttrsToList (name: port: {
+                inherit name port;
+                ip = node.config.homelab.lanAddress;
+              }) node.config.homelab.portForwards
+            ) self.colmenaHive.nodes
+          );
+          forwards =
+            assert lib.assertMsg (
+              lib.allUnique (map (forward: forward.name) forwardList)
+              && lib.allUnique (map (forward: forward.port) forwardList)
+            ) "Two hosts' homelab.portForwards share a name or a port.";
+            forwardList;
         in
         {
-          inherit gateway devices;
+          inherit gateway devices forwards;
           hosts = builtins.mapAttrs (_: node: node.config.homelab.lanAddress) self.colmenaHive.nodes;
         };
 

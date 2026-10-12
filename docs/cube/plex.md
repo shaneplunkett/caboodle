@@ -18,15 +18,16 @@ path the arr LXC uses, so library paths match.
 
 ## Remote access
 
-The router's WAN port forward for 32400 is the only thing in the homelab
-exposed directly to the internet, and it points at Plex's fixed DHCP address.
+The gateway's WAN port forward for 32400 is the only thing in the homelab
+exposed directly to the internet. The Plex module declares it with
+`homelab.portForwards`, and Terraform points it at Plex's `lanAddress`.
 Shared users (family) reach the server through plex.tv, which knows it by the
 machine identifier in `Preferences.xml`.
 
 So anything that rebuilds or moves Plex has to keep both:
 
 - **The MAC address.** `mac_address` in the Terraform keeps the UniFi
-  reservation, so the IP and the port forward don't change.
+  reservation pointing at the same container.
 - **`Preferences.xml`.** Without it Plex starts as a new, unclaimed server and
   every share has to be redone.
 

@@ -107,6 +107,10 @@ service. A service in the hive declares its own route with
 `modules/services/nginx-ingress`. Unknown names get a 404. On the LAN, Blocky
 resolves the whole domain to the ingress host.
 
+A host asks the gateway for a WAN port forward the same way:
+`homelab.portForwards.<name> = <port>;` forwards that port to the same port on
+the host's `lanAddress`, and Terraform makes the UniFi rule.
+
 ## Changes and deploys
 
 The forge is the source of truth, and GitHub is a push mirror of it. Every

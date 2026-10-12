@@ -13,6 +13,7 @@ in
 {
   homelab = {
     routes.plex = 32400;
+    portForwards.plex = 32400;
 
     backup = {
       paths = [ cfg.dataDir ];
