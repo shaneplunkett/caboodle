@@ -5,6 +5,7 @@
   ...
 }:
 let
+  links = import ../grafana/links.nix;
   photos = lib.filterAttrs (_: node: node.config.services.immich.enable or false) nodes;
 
   unitDown = alert: unit: what: {
@@ -16,6 +17,7 @@ let
       summary = "${what} isn't running on {{ $labels.host }}";
       condition = "${unit} inactive for 5m";
       check = "ssh root@{{ $labels.host }} journalctl -u ${unit} -n 50";
+      dashboard = links.logs "{{ $labels.host }}" [ unit ];
     };
   };
 in

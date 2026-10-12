@@ -6,6 +6,7 @@
   ...
 }:
 let
+  links = import ../grafana/links.nix;
   box = config.homelab.backup.storageBox;
   usageFile = "${config.homelab.metricsDir}/storagebox.prom";
 
@@ -18,6 +19,15 @@ let
     r2-backup = 36 * 3600;
     r2-prune = 9 * 86400;
     r2-check = 9 * 86400;
+  };
+
+  jobs = {
+    backup = "homelab";
+    prune = "homelab-prune";
+    check = "homelab-check";
+    r2-backup = "r2";
+    r2-prune = "r2-prune";
+    r2-check = "r2-check";
   };
 
   humanize =
@@ -36,7 +46,8 @@ let
         annotations = {
           summary = "{{ $labels.host }}'s last successful restic ${task} was {{ $value | humanizeDuration }} ago";
           condition = "No successful ${task} in ${humanize seconds}";
-          check = "ssh root@{{ $labels.host }} journalctl -u 'restic-backups-homelab*' -n 50";
+          check = "ssh root@{{ $labels.host }} journalctl -u restic-backups-${jobs.${task}} -n 50";
+          dashboard = links.logs "{{ $labels.host }}" [ "restic-backups-${jobs.${task}}.service" ];
         };
       }
       {
@@ -50,7 +61,8 @@ let
         annotations = {
           summary = "{{ $labels.host }} has no successful restic ${task} on record";
           condition = "No ${task} on record for ${humanize seconds}";
-          check = "ssh root@{{ $labels.host }} journalctl -u 'restic-backups-homelab*' -n 50";
+          check = "ssh root@{{ $labels.host }} journalctl -u restic-backups-${jobs.${task}} -n 50";
+          dashboard = links.logs "{{ $labels.host }}" [ "restic-backups-${jobs.${task}}.service" ];
         };
       }
     ]) maxAge

@@ -5,6 +5,7 @@
   ...
 }:
 let
+  links = import ../grafana/links.nix;
   dnsHosts = lib.filterAttrs (_: node: node.config.services.blocky.enable) nodes;
 in
 {
@@ -59,6 +60,7 @@ in
                   summary = "{{ $labels.host }} isn't answering DNS";
                   condition = "DNS probe failing for 3m";
                   check = "dig @{{ $labels.instance }} example.com";
+                  dashboard = links.dns;
                 };
               }
               {
@@ -77,6 +79,7 @@ in
                   summary = "{{ $labels.host }} is failing {{ $value | humanizePercentage }} of DNS lookups";
                   condition = "Over 2% of lookups, and at least 10, failing for 5m";
                   check = "ssh root@{{ $labels.host }} \"journalctl -u blocky --since -15m | grep -c 'no resolver returned'\", then docs/internet-down.md";
+                  dashboard = links.dns;
                 };
               }
             ];

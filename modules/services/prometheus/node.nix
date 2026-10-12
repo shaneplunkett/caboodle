@@ -10,7 +10,7 @@ let
   byThreshold = import ./thresholds.nix { inherit lib nodes options; } "host";
   monitored = lib.filterAttrs (_: node: node.config.homelab.monitoring.enable) nodes;
   proxmox = config.homelab.proxmoxNodes;
-  hostHealth = "https://grafana.shaneplunkett.com/d/hosts/host-health?var-host={{ $labels.host }}";
+  links = import ../grafana/links.nix;
 in
 {
   services.prometheus = {
@@ -30,7 +30,7 @@ in
                     summary = "{{ $labels.host }} isn't answering";
                     condition = "Node exporter unreachable for 5m";
                     check = "ssh root@{{ $labels.host }} systemctl status prometheus-node-exporter";
-                    dashboard = hostHealth;
+                    dashboard = links.hostHealth "{{ $labels.host }}";
                   };
                 }
               ]
@@ -49,7 +49,7 @@ in
                     summary = "{{ $labels.host }} has only {{ $value | humanizePercentage }} memory free";
                     condition = "Free memory under ${percent} for 10m";
                     check = "ssh root@{{ $labels.host }} ps aux --sort=-rss | head";
-                    dashboard = hostHealth;
+                    dashboard = links.hostHealth "{{ $labels.host }}";
                   };
                 }
               );

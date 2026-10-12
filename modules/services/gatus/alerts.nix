@@ -1,4 +1,8 @@
-{ pkgs, nodes, ... }: {
+{ pkgs, nodes, ... }:
+let
+  links = import ../grafana/links.nix;
+in
+{
   services.prometheus = {
     scrapeConfigs = [
       {
@@ -34,6 +38,7 @@
                     summary = "Gatus on the dashboard host isn't answering, so PVE or the dashboard box may be down";
                     condition = "Gatus metrics unreachable for 5m";
                     check = "ssh root@dashboard systemctl status gatus";
+                    dashboard = links.logs "dashboard" [ "gatus.service" ];
                   };
                 }
               ];
