@@ -22,6 +22,13 @@ resource "unifi_client" "this" {
   }
 }
 
+resource "unifi_client" "extra" {
+  for_each = { for network in var.extra_networks : network.mac_address => network }
+  mac      = lower(each.key)
+  name     = "${var.hostname} (VLAN ${each.value.vlan_id})"
+  fixed_ip = split("/", each.value.ip)[0]
+}
+
 moved {
   from = unifi_client.this[0]
   to   = unifi_client.this
