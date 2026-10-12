@@ -15,4 +15,6 @@ locals {
     ip   = local.network.devices.cube.ip
     name = "cube"
   }
+
+  backup_hosts = toset(["dashboard", "plex", "arr", "brain", "auth", "forge", "gym", "rss", "home", "photos"])
 }

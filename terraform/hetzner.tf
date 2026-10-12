@@ -38,10 +38,6 @@ resource "random_password" "storage_box" {
   special = true
 }
 
-locals {
-  backup_hosts = toset(["dashboard", "plex", "arr", "brain", "auth", "forge", "gym", "rss", "home", "photos"])
-}
-
 resource "random_password" "storage_box_host" {
   for_each         = local.backup_hosts
   length           = 32
