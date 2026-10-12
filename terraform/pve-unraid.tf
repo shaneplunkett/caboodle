@@ -34,7 +34,7 @@ resource "proxmox_virtual_environment_vm" "unraid" {
   network_device {
     bridge      = "vmbr0"
     firewall    = true
-    mac_address = "BC:24:11:D7:EF:B5"
+    mac_address = upper(local.network.devices.unraid.mac)
     model       = "e1000"
   }
 

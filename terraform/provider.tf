@@ -28,7 +28,7 @@ provider "cloudflare" {
 }
 
 provider "unifi" {
-  api_url        = "https://192.168.1.1"
+  api_url        = "https://${local.network.gateway}"
   api_key        = var.unifi_api_key
   allow_insecure = true
 }

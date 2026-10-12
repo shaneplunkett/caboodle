@@ -1,6 +1,11 @@
-{ lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
-  hosts = ''host=~"${lib.concatStringsSep "|" (lib.attrNames (import ./addresses.nix))}"'';
+  hosts = ''host=~"${lib.concatStringsSep "|" (lib.attrNames config.homelab.proxmoxNodes)}"'';
   smartLog = "ssh {{ $labels.host }} sudo nvme smart-log /dev/{{ $labels.device }}";
 in
 {

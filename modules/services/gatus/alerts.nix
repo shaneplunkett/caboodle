@@ -1,9 +1,9 @@
-{ pkgs, ... }: {
+{ pkgs, nodes, ... }: {
   services.prometheus = {
     scrapeConfigs = [
       {
         job_name = "gatus";
-        static_configs = [ { targets = [ "192.168.1.152:8082" ]; } ];
+        static_configs = [ { targets = [ "${nodes.dashboard.config.homelab.lanAddress}:8082" ]; } ];
       }
     ];
 

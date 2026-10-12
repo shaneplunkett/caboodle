@@ -4,7 +4,7 @@
   ...
 }:
 let
-  unraid = "192.168.1.132";
+  unraid = config.homelab.devices.unraid.ip;
   file = "${config.homelab.metricsDir}/unraid-smart.prom";
   device = "{{ $labels.device }} ({{ $labels.model }} {{ $labels.serial }})";
   withInfo = expr: "(${expr}) * on(device) group_left(model, serial) unraid_disk_info";

@@ -1,18 +1,18 @@
-data "external" "lan_addresses" {
-  program     = ["nix", "eval", "--json", "..#lanAddresses"]
+data "external" "network" {
+  program     = ["nix", "eval", "--json", "..#network", "--apply", "network: { json = builtins.toJSON network; }"]
   working_dir = path.root
 }
 
 locals {
-  lan_addresses = data.external.lan_addresses.result
+  network       = jsondecode(data.external.network.result.json)
+  lan_addresses = local.network.hosts
   pve = {
-    ip      = var.pve_ip
+    ip      = local.network.devices.pve.ip
     name    = "pve"
-    api_url = "https://${var.pve_ip}:8006"
+    api_url = "https://${local.network.devices.pve.ip}:8006"
   }
   cube = {
-    ip   = var.cube_ip
+    ip   = local.network.devices.cube.ip
     name = "cube"
-
   }
 }

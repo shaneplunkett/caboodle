@@ -8,7 +8,10 @@
 let
   secrets = config.age.secrets;
   dashboards = {
-    hosts = import ./dashboards/hosts.nix { inherit lib; };
+    hosts = import ./dashboards/hosts.nix {
+      inherit lib;
+      proxmox = lib.attrNames config.homelab.proxmoxNodes;
+    };
     dns = import ./dashboards/dns.nix { inherit lib nodes; };
     logs = import ./dashboards/logs.nix { inherit lib; };
   };

@@ -6,6 +6,7 @@
 }:
 let
   secrets = config.age.secrets;
+  inherit (config.homelab) devices;
   domain = "shaneplunkett.com";
   oauthName = "oauth";
   oauthHost = "${oauthName}.${domain}";
@@ -30,10 +31,10 @@ let
   };
 
   externalRoutes = {
-    unraid = "http://192.168.1.132:80";
-    proxmox = "https://192.168.1.169:8006";
-    unifi = "https://192.168.1.1:443";
-    coffee = "http://192.168.20.29:80";
+    unraid = "http://${devices.unraid.ip}:80";
+    proxmox = "https://${devices.pve.ip}:8006";
+    unifi = "https://${config.homelab.gateway}:443";
+    coffee = "http://${devices.gaggiuino.ip}:80";
   };
 
   serverConfig = {

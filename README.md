@@ -30,6 +30,14 @@ Modules can read the whole hive through colmena's `nodes` and `name`
 arguments, so things like scrape targets, log shipping and dashboard tiles are
 generated from the hive instead of kept as hand-written lists.
 
+Every address on the LAN is written once. A host's is its
+`homelab.lanAddress` in the hive. Everything else, from the gateway and the
+Proxmox nodes to the IoT devices, is in `modules/devices.nix`, and modules
+read it as `config.homelab.devices.<name>.ip`. Terraform reads both through
+`nix eval .#network` and reserves each address in UniFi, so adding a device is
+one entry there. Keep secrets out of it: whatever Terraform reads this way
+lands in its state and in the plan comments.
+
 A service backs up its data by listing it in `homelab.backup.paths`. See
 [docs/hetzner](docs/hetzner/README.md) for how that works and how to restore.
 
@@ -50,7 +58,7 @@ Flakes only see tracked files, so `git add` new files before building.
    with the host's `homelab.lanAddress`.
 3. Add a `terraform/<node>-<host>.tf` using `modules/nixos-lxc` and apply it.
    Terraform reads every LAN address from the hive (`nix eval
-   .#lanAddresses`) and reserves the host's in UniFi before the container
+   .#network`) and reserves the host's in UniFi before the container
    first boots, so it comes up on that address. Leave `mac_address` out and
    Terraform makes one. A host that isn't in the hive fails the plan.
 4. Add the host's key to `modules/agenix/host-keys.nix`

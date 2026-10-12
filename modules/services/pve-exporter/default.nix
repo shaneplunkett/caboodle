@@ -1,7 +1,6 @@
 { config, ... }:
 let
   secrets = config.age.secrets;
-  proxmox = import ../proxmox-hosts/addresses.nix;
 in
 {
   imports = [
@@ -23,7 +22,7 @@ in
         cluster = [ "1" ];
         node = [ "1" ];
       };
-      static_configs = [ { targets = [ proxmox.pve ]; } ];
+      static_configs = [ { targets = [ config.homelab.devices.pve.ip ]; } ];
       relabel_configs = [
         {
           source_labels = [ "__address__" ];

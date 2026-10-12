@@ -100,7 +100,7 @@ in
           IdentityFile /run/credentials/${unit}.service/ssh-key
       '') (lib.attrNames nodes)
       + ''
-        Host 192.168.1.169 192.168.1.238
+        Host ${lib.concatStringsSep " " (lib.attrValues config.homelab.proxmoxNodes)}
           User shane
           IdentityFile /run/credentials/${unit}.service/ssh-key
       '';

@@ -1,7 +1,7 @@
 { config, ... }:
 let
   host = "mini-server";
-  address = "192.168.1.252";
+  address = config.homelab.devices.mini.ip;
 in
 {
   nix = {

@@ -1,6 +1,6 @@
-_:
+{ config, ... }:
 let
-  gateway = "192.168.1.1";
+  inherit (config.homelab) gateway;
   magicDns = "100.100.100.100";
 in
 {

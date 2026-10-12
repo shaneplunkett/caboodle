@@ -1,4 +1,5 @@
 {
+  config,
   nodes,
   lib,
   options,
@@ -8,7 +9,7 @@
 let
   byThreshold = import ./thresholds.nix { inherit lib nodes options; } "host";
   monitored = lib.filterAttrs (_: node: node.config.homelab.monitoring.enable) nodes;
-  proxmox = import ../proxmox-hosts/addresses.nix;
+  proxmox = config.homelab.proxmoxNodes;
 in
 {
   services.prometheus = {
