@@ -5,7 +5,7 @@ let
 
   unitDown = alert: unit: what: {
     inherit alert;
-    expr = ''node_systemd_unit_state{name="${unit}", state="active"} == 0'';
+    expr = ''node_systemd_unit_state{name="${unit}", state="active", host="forge"} == 0'';
     for = "5m";
     labels.severity = "critical";
     annotations = {

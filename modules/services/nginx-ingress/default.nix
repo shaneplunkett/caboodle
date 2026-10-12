@@ -40,6 +40,13 @@ let
     coffee = ''
       add_header Content-Security-Policy "upgrade-insecure-requests" always;
     '';
+    photos = ''
+      proxy_request_buffering off;
+      client_body_buffer_size 1024k;
+      proxy_read_timeout 600s;
+      proxy_send_timeout 600s;
+      send_timeout 600s;
+    '';
   };
 
   hiveRoutes = lib.concatMapAttrs (

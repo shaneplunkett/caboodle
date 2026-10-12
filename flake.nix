@@ -186,6 +186,11 @@
           homelab.lanAddress = "192.168.1.153";
         };
 
+        photos = {
+          imports = [ ./modules/hosts/photos.nix ];
+          homelab.lanAddress = "192.168.1.154";
+        };
+
         home = {
           imports = [ ./modules/hosts/home.nix ];
           homelab.lanAddress = "192.168.1.117";

@@ -16,6 +16,7 @@ let
     gym
     rss
     home
+    photos
     ;
 in
 {
@@ -118,6 +119,7 @@ in
     gym
     rss
     home
+    photos
   ];
   "backup-brain.age".publicKeys = [
     shane
@@ -166,6 +168,14 @@ in
   "backup-home.age".publicKeys = [
     shane
     home
+  ];
+  "backup-photos.age".publicKeys = [
+    shane
+    photos
+  ];
+  "immich-oidc-client-secret.age".publicKeys = [
+    shane
+    photos
   ];
   "zigbee2mqtt-secret.age".publicKeys = [
     shane
