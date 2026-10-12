@@ -168,9 +168,9 @@ now:
   iPhone albums in Immich [19].
 - Do the first run at home on Wi-Fi, plugged in, with the app open. iOS
   won't give a background task long enough for the whole library [20].
-- **Edits:** 3.3 stacks an edit made outside Immich on top of its original
-  [4]. UNCONFIRMED whether the app uploads Apple Photos' unedited original as
-  well. Check with one edited photo before the full run.
+- **Edits:** the app uploads an Apple Photos edit as it looks, not the
+  original underneath. Tested with one edited photo: it arrived as a single
+  asset showing the edit, with no stack. The originals stay in iCloud.
 
 The other routes, and why not:
 
