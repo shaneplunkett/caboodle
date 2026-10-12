@@ -64,7 +64,7 @@ in
     environment.TMPDIR = "/var/lib/forgejo-runner/builder/tmp";
     reloadIfChanged = true;
     serviceConfig = {
-      ExecReload = "+${config.systemd.package}/bin/systemctl --no-block restart ${unit}.service";
+      ExecReload = "+${config.systemd.package}/bin/systemd-run --on-active=5s ${config.systemd.package}/bin/systemctl --no-block restart ${unit}.service";
       TimeoutStopSec = "65min";
       KillMode = "mixed";
       StateDirectory = lib.mkForce [

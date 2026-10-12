@@ -45,7 +45,10 @@ its old config, so a bad DNS change only ever takes down one of them.
 
 The builder deploys on merge like the other hosts, even though the deploy job
 runs on it. A switch that changes the runner reloads it instead of restarting
-it, and the reload only queues a restart. The restart is graceful: the runner
+it, and the reload only schedules a restart for a few seconds later. It can't
+queue the restart straight away: systemd would fold the restart into the
+reload's job, the switch would wait on the restart, and the restart would wait
+on the deploy that's running the switch. The restart is graceful: the runner
 stops taking jobs, waits up to an hour for the ones it's running, including
 the deploy itself, then comes back on the new config. `KillMode=mixed` is what
 lets those jobs finish: systemd signals only the runner, and only kills its
