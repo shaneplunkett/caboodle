@@ -47,7 +47,7 @@ let
       initialize = true;
       extraBackupArgs = [ "--one-file-system" ];
       timerConfig = {
-        OnCalendar = schedule.backup;
+        OnCalendar = "${schedule.backup} Australia/Melbourne";
         RandomizedDelaySec = "1h";
         Persistent = true;
       };
@@ -62,7 +62,7 @@ let
       runCheck = false;
       createWrapper = false;
       timerConfig = {
-        OnCalendar = schedule.prune;
+        OnCalendar = "${schedule.prune} Australia/Melbourne";
         Persistent = true;
       };
     };
@@ -71,7 +71,7 @@ let
       checkOpts = [ "--read-data-subset=1/10" ];
       createWrapper = false;
       timerConfig = {
-        OnCalendar = schedule.check;
+        OnCalendar = "${schedule.check} Australia/Melbourne";
         Persistent = true;
       };
     };

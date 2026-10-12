@@ -37,3 +37,29 @@ output "r2_backup_credentials" {
   }
   sensitive = true
 }
+
+data "cloudflare_account_api_token_permission_groups_list" "analytics_read" {
+  account_id = var.cloudflare_account_id
+  name       = "Account Analytics Read"
+  scope      = "com.cloudflare.api.account"
+}
+
+resource "cloudflare_account_token" "r2_usage" {
+  account_id = var.cloudflare_account_id
+  name       = "homelab r2 usage"
+
+  policies = [{
+    effect = "allow"
+    permission_groups = [{
+      id = data.cloudflare_account_api_token_permission_groups_list.analytics_read.result[0].id
+    }]
+    resources = jsonencode({
+      "com.cloudflare.api.account.${var.cloudflare_account_id}" = "*"
+    })
+  }]
+}
+
+output "r2_usage_token" {
+  value     = cloudflare_account_token.r2_usage.value
+  sensitive = true
+}
