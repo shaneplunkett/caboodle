@@ -27,6 +27,13 @@ in
   age.secrets.grafana-secret-key.owner = "grafana";
   age.secrets.grafana-oidc-client-secret.owner = "grafana";
 
+  homelab.oidcClients.grafana = {
+    name = "Grafana";
+    callbackURLs = [ "https://grafana.shaneplunkett.com/login/generic_oauth" ];
+    launchURL = "https://grafana.shaneplunkett.com/";
+    groups = [ "grafana_admins" ];
+  };
+
   homelab.routes.grafana = config.services.grafana.settings.server.http_port;
 
   services.grafana = {

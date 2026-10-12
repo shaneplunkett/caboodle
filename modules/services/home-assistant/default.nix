@@ -8,6 +8,12 @@ in
   homelab = {
     routes.home = port;
 
+    oidcClients.home = {
+      name = "Home Assistant";
+      callbackURLs = [ "https://home.shaneplunkett.com/auth/oidc/callback" ];
+      groups = [ "home_admins" ];
+    };
+
     backup = {
       paths = [ dataDir ];
       exclude = [

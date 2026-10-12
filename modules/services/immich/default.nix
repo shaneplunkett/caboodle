@@ -2,12 +2,23 @@
 let
   cfg = config.services.immich;
   secrets = config.age.secrets;
+  clientId = "45e64f25-acc2-4be7-a9dd-e6c7fa6ea313";
 in
 {
   homelab = {
     secrets = [ "immich-oidc-client-secret" ];
 
     routes.photos = cfg.port;
+
+    oidcClients.${clientId} = {
+      name = "Immich";
+      callbackURLs = [
+        "https://photos.shaneplunkett.com/auth/login"
+        "https://photos.shaneplunkett.com/user-settings"
+        "app.immich:///oauth-callback"
+      ];
+      groups = [ "immich_users" ];
+    };
 
     backup.paths = [ cfg.mediaLocation ];
 
@@ -36,7 +47,7 @@ in
       oauth = {
         enabled = true;
         issuerUrl = "https://auth.shaneplunkett.com/.well-known/openid-configuration";
-        clientId = "45e64f25-acc2-4be7-a9dd-e6c7fa6ea313";
+        inherit clientId;
         clientSecret._secret = secrets.immich-oidc-client-secret.path;
         scope = "openid email profile";
         buttonText = "Sign in with Pocket ID";

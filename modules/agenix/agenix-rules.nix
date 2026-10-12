@@ -141,6 +141,10 @@ in
     shane
     auth
   ];
+  "pocket-id-api-key.age".publicKeys = [
+    shane
+    auth
+  ];
   "grafana-oidc-client-secret.age".publicKeys = [
     shane
     monitoring

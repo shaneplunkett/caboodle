@@ -1,12 +1,21 @@
 { config, ... }:
 let
   secrets = config.age.secrets;
+  cfg = config.services.oauth2-proxy;
 in
 {
-  homelab.secrets = [
-    "oauth2-proxy-client-secret"
-    "oauth2-proxy-cookie-secret"
-  ];
+  homelab = {
+    secrets = [
+      "oauth2-proxy-client-secret"
+      "oauth2-proxy-cookie-secret"
+    ];
+
+    oidcClients.${cfg.clientID} = {
+      name = "Media";
+      callbackURLs = [ cfg.redirectURL ];
+      groups = [ "media_admins" ];
+    };
+  };
 
   services.oauth2-proxy = {
     enable = true;
@@ -15,7 +24,7 @@ in
     clientID = "bcea19ae-7c50-4190-86a9-0f6d20afefd6";
     clientSecretFile = secrets.oauth2-proxy-client-secret.path;
     scope = "openid email profile groups";
-    redirectURL = "https://${config.services.oauth2-proxy.nginx.domain}/oauth2/callback";
+    redirectURL = "https://${cfg.nginx.domain}/oauth2/callback";
     email.domains = [ "*" ];
     upstream = "static://202";
     reverseProxy = true;

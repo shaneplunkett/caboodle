@@ -71,6 +71,13 @@ in
 
     routes.git = cfg.settings.server.HTTP_PORT;
 
+    oidcClients.forgejo = {
+      name = "Forgejo";
+      callbackURLs = [ "https://git.shaneplunkett.com/user/oauth2/pocket-id/callback" ];
+      pkce = false;
+      groups = [ "forgejo_admins" ];
+    };
+
     monitoring.units = [
       "forgejo.service"
       "postgresql.service"
