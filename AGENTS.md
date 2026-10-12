@@ -30,9 +30,10 @@ Read `README.md` for how the repo fits together.
   check out with `https://git.shaneplunkett.com/shane/workflows/checkout@<tag>`.
 - **Sign-in:** every web app a change adds signs in through Pocket ID,
   with its own OIDC login or, if it has none, behind the oauth2-proxy gate.
-  `docs/pve/auth.md` covers both. The client and its secret are made in
-  Pocket ID's UI, so walk Shane through that part. The app is done when her
-  passkey gets her in.
+  `docs/pve/auth.md` covers both. An OIDC client is declared with
+  `homelab.oidcClients` in the app's module, and merging creates it in
+  Pocket ID. Adding Shane to the app's group is the one step left in Pocket
+  ID's UI. The app is done when her passkey gets her in.
 - **Docs:** keep state out of them (IPs, versions, sizes, what's deployed
   where). If the code explains it, it doesn't need a doc. Docs hold the how,
   the why, and the gotchas.
