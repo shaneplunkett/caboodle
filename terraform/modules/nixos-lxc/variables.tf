@@ -95,13 +95,7 @@ variable "bind_mounts" {
 variable "mac_address" {
   type        = string
   default     = null
-  description = "MAC address for the network interface (preserves DHCP reservations)"
-}
-
-variable "reserved_ip" {
-  type        = string
-  default     = null
-  description = "Fixed IP for mac_address on the LAN, reserved in UniFi's DHCP"
+  description = "MAC address for eth0, generated if unset. UniFi reserves the host's LAN address for it."
 }
 
 variable "extra_networks" {
@@ -112,4 +106,9 @@ variable "extra_networks" {
   }))
   default     = []
   description = "Extra interfaces on tagged VLANs, as eth1 onwards. Static IPs with no gateway, so eth0 keeps the default route."
+}
+
+variable "lan_addresses" {
+  type        = map(string)
+  description = "Every hive host's LAN address from flake.nix, to reserve this host's in UniFi"
 }

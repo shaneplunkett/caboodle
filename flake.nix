@@ -110,6 +110,8 @@
 
       hydraJobs = self.colmenaHive.toplevel;
 
+      lanAddresses = builtins.mapAttrs (_: node: node.config.homelab.lanAddress) self.colmenaHive.nodes;
+
       colmenaHive = colmena.lib.makeHive {
         meta.nixpkgs = import nixpkgs { system = "x86_64-linux"; };
         meta.specialArgs = { inherit vex-brain; };

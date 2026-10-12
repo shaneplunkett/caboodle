@@ -3,8 +3,8 @@ resource "proxmox_virtual_environment_dns" "node" {
   node_name = each.key
   domain    = "shaneplunkett.com"
   servers = [
-    "192.168.1.91",
-    "192.168.1.236",
+    local.lan_addresses.dns1,
+    local.lan_addresses.dns2,
     "192.168.1.1",
   ]
 }

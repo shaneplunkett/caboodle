@@ -13,13 +13,13 @@ jobs:
       - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.3.2
         with:
           fetch-depth: 0
-      - name: Apply, if this push changed terraform/ or proxmox/
+      - name: Apply, if this push changed terraform/, proxmox/ or flake.nix
         env:
           BEFORE: ${{ github.event.before }}
         run: |
           if git cat-file -e "$BEFORE^{commit}" 2> /dev/null \
-            && git diff --quiet "$BEFORE" HEAD -- terraform proxmox; then
-            echo "Nothing in terraform/ or proxmox/ changed, so there's nothing to apply."
+            && git diff --quiet "$BEFORE" HEAD -- terraform proxmox flake.nix; then
+            echo "Nothing in terraform/, proxmox/ or flake.nix changed, so there's nothing to apply."
             exit 0
           fi
           scripts/terraform-ci.sh apply

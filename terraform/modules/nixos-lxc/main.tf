@@ -35,7 +35,7 @@ resource "proxmox_virtual_environment_container" "this" {
     name        = "eth0"
     bridge      = "vmbr0"
     firewall    = true
-    mac_address = var.mac_address
+    mac_address = local.mac_address
   }
 
   dynamic "network_interface" {
@@ -76,6 +76,8 @@ resource "proxmox_virtual_environment_container" "this" {
   lifecycle {
     ignore_changes = [device_passthrough, mount_point]
   }
+
+  depends_on = [unifi_client.this]
 }
 
 # Proxmox only lets root@pam set devices and bind mounts, and the API token
