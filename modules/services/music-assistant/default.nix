@@ -48,8 +48,14 @@ in
 
   systemd.tmpfiles.rules = [ "d ${dataDir} 0750 root root -" ];
 
-  networking.firewall.allowedTCPPorts = [
-    port
-    streamPort
-  ];
+  networking.firewall = {
+    allowedTCPPorts = [
+      port
+      streamPort
+    ];
+    allowedUDPPorts = [
+      319
+      320
+    ];
+  };
 }
