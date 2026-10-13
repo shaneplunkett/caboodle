@@ -1,5 +1,6 @@
 {{ $used := (.Subrequest "used").JSON.Float "data.result.0.value.1" }}
 {{ $full := (.Subrequest "full").JSON.Float "data.result.0.value.1" }}
+{{ $r2used := (.Subrequest "r2used").JSON.Float "data.result.0.value.1" }}
 {{ $sftp := eq ((.Subrequest "sftp").JSON.String "data.result.0.value.1") "1" }}
 {{ $backups := (.Subrequest "backups").JSON.Array "data.result" }}
 {{ $r2s := (.Subrequest "r2").JSON.Array "data.result" }}
@@ -8,11 +9,15 @@
   <div class="flex justify-between text-center">
     <div>
       <div class="color-highlight size-h3">{{ printf "%.0f" $used }} GiB</div>
-      <div class="size-h5 uppercase">Used</div>
+      <div class="size-h5 uppercase">Hetzner</div>
     </div>
     <div>
       <div class="color-highlight size-h3">{{ printf "%.0f" $full }}%</div>
       <div class="size-h5 uppercase">Full</div>
+    </div>
+    <div>
+      <div class="color-highlight size-h3">{{ printf "%.0f" $r2used }} GiB</div>
+      <div class="size-h5 uppercase">R2</div>
     </div>
     <div>
       <div class="{{ if $sftp }}color-positive{{ else }}color-negative{{ end }} size-h3">{{ if $sftp }}Up{{ else }}Down{{ end }}</div>

@@ -16,6 +16,7 @@ query ''up{job="node", host=~"${lib.concatStringsSep "|" backedUp}"}''
   subrequests = {
     used = query "homelab_storagebox_used_bytes / 2^30";
     full = query "homelab_storagebox_used_bytes / homelab_storagebox_size_bytes * 100";
+    r2used = query "sum(homelab_r2_used_bytes) / 2^30";
     sftp = query ''probe_success{job="storagebox"}'';
     backups = query ''homelab_backup_last_success_timestamp_seconds{task="backup"}'';
     r2 = query ''homelab_backup_last_success_timestamp_seconds{task="r2-backup"}'';
