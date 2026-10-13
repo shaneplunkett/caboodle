@@ -63,6 +63,6 @@ in
 
   systemd.tmpfiles.rules = [
     "d ${dumps} 0750 ${cfg.user} ${cfg.group} -"
-    "C+ ${data}/Scripts/${postprocess.name} - - - - ${lib.getExe postprocess}"
+    "C+ \"${data}/Scripts/${postprocess.name}\" - - - - ${lib.getExe postprocess}"
   ];
 }
