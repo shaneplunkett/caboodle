@@ -4,7 +4,8 @@ trap 'rm -f "$encoded"' EXIT
 unset LD_LIBRARY_PATH
 
 probe() {
-  ffprobe -v error -select_streams v:0 -show_entries "$1" -of csv=p=0 "$2"
+  ffprobe -v error -analyzeduration 60M -probesize 200M -select_streams v:0 -show_entries "$1" -of csv=p=0 "$2" |
+    awk 'NF && !seen++'
 }
 
 keep() {
@@ -14,11 +15,16 @@ keep() {
 
 [ "$(probe stream=codec_name "$recording")" = hevc ] && keep "already HEVC"
 
+filters=()
+case "$(probe stream=field_order "$recording")" in
+  tt | bb | tb | bt) filters=(-vf deinterlace_vaapi=rate=field) ;;
+esac
+
 ffmpeg -hide_banner -nostdin -loglevel error -y \
   -analyzeduration 60M -probesize 200M \
   -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi \
   -i "$recording" \
-  -map 0:v:0 -map 0:a \
+  -map 0:v:0 -map 0:a "${filters[@]}" \
   -c:v hevc_vaapi -profile:v main -rc_mode CQP -qp 25 \
   -c:a copy \
   -f matroska "$encoded" || keep "ffmpeg failed"
