@@ -28,6 +28,7 @@ in
   homelab = {
     routes.plex = 32400;
     portForwards.plex = 32400;
+    monitoring.units = [ "plex-dvr-hevc-install.service" ];
 
     backup = {
       paths = [ cfg.dataDir ];
@@ -63,8 +64,14 @@ in
   users.groups.render.gid = config.ids.gids.render;
   users.users.${cfg.user}.extraGroups = [ "render" ];
 
-  systemd.tmpfiles.rules = [
-    "d ${dumps} 0750 ${cfg.user} ${cfg.group} -"
-    "C+ \"${data}/Scripts/${postprocess.name}\" - - - - ${lib.getExe postprocess}"
-  ];
+  systemd.tmpfiles.rules = [ "d ${dumps} 0750 ${cfg.user} ${cfg.group} -" ];
+
+  systemd.services.plex-dvr-hevc-install = {
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${lib.getExe' pkgs.coreutils "install"} -Dm555 ${lib.getExe postprocess} \"${data}/Scripts/${postprocess.name}\"";
+    };
+  };
 }
