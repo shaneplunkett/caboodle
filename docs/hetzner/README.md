@@ -21,9 +21,11 @@ and subaccount login.
 
 Each host also backs up to its own Cloudflare R2 bucket, `restic-<host>`, as
 the third copy (`terraform/cloudflare-r2.tf`). Its token can only reach that
-bucket. The R2 jobs (`restic-backups-r2*`) run an hour after the Storage Box
-ones and use the same lock and the same restic password, kept with the token
-in `backup-r2-<host>`. R2 doesn't charge for egress, so restoring from it is
+bucket. The Storage Box backup's timer starts the R2 backup
+(`restic-backups-r2`) too, ordered after it, so R2 runs once the Storage Box
+one finishes, even if it failed, and their `prepare` dumps never overlap. The
+R2 jobs use the same lock and the same restic password, kept with the token in
+`backup-r2-<host>`. R2 doesn't charge for egress, so restoring from it is
 free.
 
 ### Adding a host

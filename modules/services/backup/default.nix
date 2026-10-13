@@ -46,11 +46,11 @@ let
       backupPrepareCommand = lib.mkIf (cfg.prepare != "") cfg.prepare;
       initialize = true;
       extraBackupArgs = [ "--one-file-system" ];
-      timerConfig = {
-        OnCalendar = "${schedule.backup} Australia/Melbourne";
+      timerConfig = lib.mapNullable (time: {
+        OnCalendar = "${time} Australia/Melbourne";
         RandomizedDelaySec = "1h";
         Persistent = true;
-      };
+      }) schedule.backup;
     };
 
     "${job}-prune" = repository // {
@@ -147,13 +147,19 @@ in
         check = "Wed 05:00";
       }
       // jobs "r2" r2 {
-        backup = "04:00";
+        backup = null;
         prune = "Sun 06:00";
         check = "Thu 05:00";
       };
 
-    systemd.services = lib.mapAttrs' (
-      job: task: lib.nameValuePair "restic-backups-${job}" { serviceConfig.ExecStartPost = stamp task; }
-    ) tasks;
+    systemd.services = lib.mkMerge [
+      (lib.mapAttrs' (
+        job: task: lib.nameValuePair "restic-backups-${job}" { serviceConfig.ExecStartPost = stamp task; }
+      ) tasks)
+      {
+        restic-backups-homelab.wants = [ "restic-backups-r2.service" ];
+        restic-backups-r2.after = [ "restic-backups-homelab.service" ];
+      }
+    ];
   };
 }
