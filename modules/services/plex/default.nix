@@ -9,6 +9,18 @@ let
   data = "${cfg.dataDir}/Plex Media Server";
   databases = "${data}/Plug-in Support/Databases";
   dumps = "${cfg.dataDir}/backup";
+  postprocess = pkgs.writeShellApplication {
+    name = "plex-dvr-hevc";
+    runtimeInputs = [
+      pkgs.ffmpeg-headless
+      pkgs.util-linux
+    ];
+    runtimeEnv = {
+      LIBVA_DRIVER_NAME = "iHD";
+      LIBVA_DRIVERS_PATH = "${pkgs.intel-media-driver}/lib/dri";
+    };
+    text = builtins.readFile ./postprocess.sh;
+  };
 in
 {
   homelab = {
@@ -49,5 +61,8 @@ in
   users.groups.render.gid = config.ids.gids.render;
   users.users.${cfg.user}.extraGroups = [ "render" ];
 
-  systemd.tmpfiles.rules = [ "d ${dumps} 0750 ${cfg.user} ${cfg.group} -" ];
+  systemd.tmpfiles.rules = [
+    "d ${dumps} 0750 ${cfg.user} ${cfg.group} -"
+    "C+ ${data}/Scripts/${postprocess.name} - - - - ${lib.getExe postprocess}"
+  ];
 }
