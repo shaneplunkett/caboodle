@@ -12,7 +12,9 @@ let
   postprocess = pkgs.writeShellApplication {
     name = "plex-dvr-hevc";
     runtimeInputs = [
+      pkgs.coreutils
       pkgs.ffmpeg-headless
+      pkgs.gawk
       pkgs.util-linux
     ];
     runtimeEnv = {
