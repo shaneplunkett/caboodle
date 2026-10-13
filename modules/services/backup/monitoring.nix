@@ -9,6 +9,20 @@ let
   links = import ../grafana/links.nix;
   box = config.homelab.backup.storageBox;
   usageFile = "${config.homelab.metricsDir}/storagebox.prom";
+  r2UsageFile = "${config.homelab.metricsDir}/r2.prom";
+
+  r2Query = pkgs.writeText "r2-usage.graphql" ''
+    query ($account: String!, $since: Time!) {
+      viewer {
+        accounts(filter: { accountTag: $account }) {
+          r2StorageAdaptiveGroups(limit: 100, filter: { datetime_geq: $since }) {
+            max { payloadSize metadataSize }
+            dimensions { bucketName }
+          }
+        }
+      }
+    }
+  '';
 
   backedUp = lib.attrNames (lib.filterAttrs (_: node: node.config.homelab.backup.paths != [ ]) nodes);
 
@@ -69,7 +83,10 @@ let
   );
 in
 {
-  homelab.secrets = [ "hetzner-api-token" ];
+  homelab.secrets = [
+    "hetzner-api-token"
+    "cloudflare-r2-usage"
+  ];
 
   systemd.services.storagebox-usage = {
     path = [
@@ -88,6 +105,35 @@ in
   };
 
   systemd.timers.storagebox-usage = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "hourly";
+      Persistent = true;
+    };
+  };
+
+  systemd.services.r2-usage = {
+    path = [
+      pkgs.curl
+      pkgs.jq
+    ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      set -o pipefail
+      jq -n --rawfile query ${r2Query} \
+        --arg account ${config.homelab.backup.r2Account} \
+        --arg since "$(date -u -d '-3 hours' +%Y-%m-%dT%H:%M:%SZ)" \
+        '{ query: $query, variables: { account: $account, since: $since } }' \
+        | curl -sSf -H "Authorization: Bearer $(< ${config.age.secrets.cloudflare-r2-usage.path})" \
+          -H "Content-Type: application/json" -d @- https://api.cloudflare.com/client/v4/graphql \
+        | jq -r '.data.viewer.accounts[0].r2StorageAdaptiveGroups[]
+          | "homelab_r2_used_bytes{bucket=\"\(.dimensions.bucketName)\"} \(.max.payloadSize + .max.metadataSize)"' \
+        > ${r2UsageFile}.tmp
+      mv ${r2UsageFile}.tmp ${r2UsageFile}
+    '';
+  };
+
+  systemd.timers.r2-usage = {
     wantedBy = [ "timers.target" ];
     timerConfig = {
       OnCalendar = "hourly";
@@ -145,6 +191,16 @@ in
                   summary = "The Storage Box is {{ $value | humanizePercentage }} full";
                   condition = "Over 80% used for 1h";
                   check = "ssh root@monitoring journalctl -u restic-backups-homelab-prune -n 50";
+                };
+              }
+              {
+                alert = "R2UsageStale";
+                expr = ''time() - node_textfile_mtime_seconds{file=~".*r2.prom"} > 3 * 3600'';
+                labels.severity = "warning";
+                annotations = {
+                  summary = "R2 usage hasn't updated from Cloudflare's analytics API in over 3 hours";
+                  condition = "Usage file older than 3h";
+                  check = "ssh root@monitoring journalctl -u r2-usage -n 20";
                 };
               }
               {

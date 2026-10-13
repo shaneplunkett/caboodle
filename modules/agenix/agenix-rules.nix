@@ -286,4 +286,8 @@ in
     shane
     photos
   ];
+  "cloudflare-r2-usage.age".publicKeys = [
+    shane
+    monitoring
+  ];
 }
