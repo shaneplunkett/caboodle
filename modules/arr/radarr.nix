@@ -26,5 +26,6 @@ in
     enable = true;
     openFirewall = true;
     environmentFiles = [ config.age.secrets.radarr.path ];
+    settings.server.allowedHosts = "radarr.shaneplunkett.com,${config.homelab.lanAddress}";
   };
 }

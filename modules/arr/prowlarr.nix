@@ -26,6 +26,9 @@ in
     enable = true;
     openFirewall = true;
     environmentFiles = [ config.age.secrets.prowlarr.path ];
-    settings.auth.required = "DisabledForLocalAddresses";
+    settings = {
+      auth.required = "DisabledForLocalAddresses";
+      server.allowedHosts = "prowlarr.shaneplunkett.com,${config.homelab.lanAddress}";
+    };
   };
 }
