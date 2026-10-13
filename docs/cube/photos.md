@@ -54,10 +54,13 @@ backups run, so opening the app is what reliably kicks one off.
 
 ## Backups
 
-The backup module sends all of `/var/lib/immich` to the Storage Box. Immich
-dumps its database into `/var/lib/immich/backups` at 2am, before restic
-runs, so the dump is the database backup and Postgres's live files are left
-out.
+The backup module sends all of `/var/lib/immich` to the Storage Box and R2.
+Immich dumps its database into `/var/lib/immich/backups` before restic runs,
+so the dump is the database backup and Postgres's live files are left out.
+
+The host runs on UTC and Immich's cron follows the host clock, so the
+dump is set to 15:00 UTC. That's 2am in Melbourne in summer and 1am in
+winter, ahead of the 3am backup either way.
 
 To restore, rebuild the host, `restic-homelab restore` `/var/lib/immich` with
 Immich stopped, start it on the empty database, and pick Restore from backup

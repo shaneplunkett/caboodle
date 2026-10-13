@@ -59,7 +59,7 @@ in
 
       backup.database = {
         enabled = true;
-        cronExpression = "0 02 * * *";
+        cronExpression = "0 15 * * *";
         keepLastAmount = 14;
       };
     };
