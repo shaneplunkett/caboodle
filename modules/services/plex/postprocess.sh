@@ -15,6 +15,7 @@ keep() {
 [ "$(probe stream=codec_name "$recording")" = hevc ] && keep "already HEVC"
 
 ffmpeg -hide_banner -nostdin -loglevel error -y \
+  -analyzeduration 60M -probesize 200M \
   -hwaccel vaapi -hwaccel_device /dev/dri/renderD128 -hwaccel_output_format vaapi \
   -i "$recording" \
   -map 0:v:0 -map 0:a \
