@@ -1,4 +1,3 @@
-# From glanceapp/community-widgets: widgets/proxmox-ve-stats
 {
   type = "custom-api";
   title = "Proxmox";

@@ -1,4 +1,3 @@
-# From glanceapp/community-widgets: widgets/unraid-widget
 { secrets }:
 {
   type = "custom-api";

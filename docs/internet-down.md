@@ -85,5 +85,4 @@ Check how old the checkout is before trusting what it says:
   restarts whatever differs, so land the fix as a PR before anything else
   merges.
 - `unbound-control forward_add` and other runtime changes vanish on the
-  next restart, and every deploy that touches Unbound restarts it on both
-  hosts at once.
+  next restart, and every deploy that touches Unbound restarts it.
