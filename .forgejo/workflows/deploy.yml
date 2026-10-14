@@ -52,3 +52,26 @@ jobs:
             exit 1
           done
       - run: colmena apply --on @deploy-after-dns1
+
+  terraform-secrets:
+    needs: deploy
+    runs-on: nix
+    steps:
+      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.3.2
+        with:
+          fetch-depth: 0
+      - name: Apply again, if this push changed a Terraform secret
+        env:
+          BEFORE: ${{ github.event.before }}
+          CREDS: /run/credentials/forgejo-runner-builder.service
+        run: |
+          if ! git cat-file -e "$BEFORE^{commit}" 2> /dev/null \
+            || git diff --quiet "$BEFORE" HEAD -- 'modules/agenix/terraform-*.age'; then
+            echo "This push didn't change a Terraform secret, so the first apply had them all."
+            exit 0
+          fi
+          if [ ! "$CREDS" -nt /run/agenix ]; then
+            echo "This job ran on the runner from before the deploy, which still has the old secrets. Re-run it once the runner has restarted."
+            exit 1
+          fi
+          scripts/terraform-ci.sh apply

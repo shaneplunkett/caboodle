@@ -112,6 +112,20 @@ credentials. The step that sets a container's devices and bind mounts runs
 `pct` over SSH as `shane`, so the builder's key is in `shane`'s authorized
 keys on both nodes.
 
+The runner reads its secrets when it starts, so a changed one only takes
+effect once it restarts. Its unit lists a hash of every secret's `.age`
+file as a restart trigger, so a deploy that changes one restarts the runner
+the same graceful way a config change does. It hashes the contents because
+the file's path sits inside the flake's source, whose store path changes
+with every commit, so a path would restart the runner on every deploy. That restart happens during the deploy,
+after the first apply has already run with the old secrets. So when a push
+changes a `modules/agenix/terraform-*.age` file, the `terraform-secrets` job
+applies again after the deploy, on the restarted runner. If it lands on the
+old runner instead, which can happen when the deploy ends within the
+restart's few seconds of delay, it fails rather than apply with the old
+secrets. Re-running it then works. It tells the two apart by whether the
+runner's credentials are newer than the last agenix decryption.
+
 ## Renovate
 
 Renovate runs on the builder every morning at 06:30 Melbourne time, as

@@ -9,23 +9,26 @@ let
   unit = "forgejo-runner-builder";
   lanAddress = name: nodes.${name}.config.homelab.lanAddress;
   onLan = lib.attrNames (lib.filterAttrs (_: node: node.config.homelab.lanAddress != null) nodes);
+  credentials = {
+    ssh-key = "builder-ssh-key";
+  }
+  // lib.genAttrs [
+    "forge-bot-token"
+    "terraform-cloud-token"
+    "terraform-pve-token"
+    "terraform-hcloud-token"
+    "terraform-cloudflare-token"
+    "terraform-access-emails"
+    "terraform-forgejo-token"
+    "terraform-unifi-token"
+  ] lib.id;
+  secrets = [ "forgejo-runner-secret" ] ++ lib.attrValues credentials;
 in
 {
   imports = [ ./darwin-builder.nix ];
 
   homelab = {
-    secrets = [
-      "forgejo-runner-secret"
-      "builder-ssh-key"
-      "forge-bot-token"
-      "terraform-cloud-token"
-      "terraform-pve-token"
-      "terraform-hcloud-token"
-      "terraform-cloudflare-token"
-      "terraform-access-emails"
-      "terraform-forgejo-token"
-      "terraform-unifi-token"
-    ];
+    inherit secrets;
     monitoring.units = [ "${unit}.service" ];
   };
 
@@ -64,6 +67,7 @@ in
   systemd.services.${unit} = {
     environment.TMPDIR = "/var/lib/forgejo-runner/builder/tmp";
     reloadIfChanged = true;
+    restartTriggers = map (name: builtins.hashFile "sha256" config.age.secrets.${name}.file) secrets;
     serviceConfig = {
       ExecReload = "+${config.systemd.package}/bin/systemd-run --on-active=5s ${config.systemd.package}/bin/systemctl --no-block restart ${unit}.service";
       TimeoutStopSec = "65min";
@@ -72,17 +76,9 @@ in
         "forgejo-runner/builder"
         "forgejo-runner/builder/tmp"
       ];
-      LoadCredential = [
-        "ssh-key:${config.age.secrets.builder-ssh-key.path}"
-        "forge-bot-token:${config.age.secrets.forge-bot-token.path}"
-        "terraform-cloud-token:${config.age.secrets.terraform-cloud-token.path}"
-        "terraform-pve-token:${config.age.secrets.terraform-pve-token.path}"
-        "terraform-hcloud-token:${config.age.secrets.terraform-hcloud-token.path}"
-        "terraform-cloudflare-token:${config.age.secrets.terraform-cloudflare-token.path}"
-        "terraform-access-emails:${config.age.secrets.terraform-access-emails.path}"
-        "terraform-forgejo-token:${config.age.secrets.terraform-forgejo-token.path}"
-        "terraform-unifi-token:${config.age.secrets.terraform-unifi-token.path}"
-      ];
+      LoadCredential = lib.mapAttrsToList (
+        credential: secret: "${credential}:${config.age.secrets.${secret}.path}"
+      ) credentials;
     };
   };
 
