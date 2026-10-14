@@ -19,9 +19,10 @@ jobs never build the same path twice. The container gets most of PVE's cores
 but the lowest CPU weight on the node, so it has the whole CPU when the node
 is idle and gives way to every other container as soon as they need it.
 
-The builder also substitutes from the caches nix-config's machines trust.
+The builder also substitutes from the caches the workstations trust.
 The runner isn't a trusted user, so a flake can't add caches for itself, and
-without them a desktop build compiles Hyprland and noctalia from source.
+without them a desktop build compiles noctalia and the llm-agents tools from
+source.
 
 The host runs nix-ld, so binaries a job downloads for a generic Linux, like
 the `ruff` that `uv sync` installs, run without patching. Without it they fail
@@ -69,8 +70,7 @@ writes to `/tmp` directly bypasses this, so use `mktemp` or `$TMPDIR`.
 ## Updates
 
 The update workflow runs weekly, or from the Actions tab with Run workflow.
-It calls `flake-update.yml` in `shane/workflows`, shared with nix-config, and
-the README there covers what it does and its inputs. Inputs pinned to a
+It calls `flake-update.yml` in `shane/workflows`, and the README there covers what it does and its inputs. Inputs pinned to a
 commit in `flake.nix` don't move with `nix flake update`, so it only moves
 the unpinned ones, and Renovate moves the rest (see
 [Flake inputs](#flake-inputs)). In short, it pushes the
@@ -257,10 +257,10 @@ and the tailnet and nowhere else.
 
 The builder can't build for macOS, so it hands `aarch64-darwin` builds to
 mini-server over SSH, and the results come back into its store and the
-cache. That's how nix-config's Macs get built here. The Nix daemon makes the
-connection as root with `builder-ssh-key`, logging in as `shane`. On
-mini-server, nix-config pins that key to `nix-daemon --stdio`, so it can
-build but can't open a shell.
+cache. That's how the mini and the MacBook get built here. The Nix daemon
+makes the connection as root with `builder-ssh-key`, logging in as `shane`.
+The key is unrestricted on the mini, since colmena deploys with it too, and
+`docs/mini/README.md` covers why.
 
 mini-server's address is fixed in `darwin-builder.nix`, so it needs a DHCP
 reservation like the LXCs. If darwin builds start failing to connect, check

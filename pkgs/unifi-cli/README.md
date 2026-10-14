@@ -28,13 +28,15 @@ indentation. Errors to stderr.
 
 ## Build
 
-Iteration is just `go build` — the nix wrapper points at the binary in
-this directory, so rebuilding doesn't require `nixos-rebuild`.
+`default.nix` packages it, and the workstations get it through the overlay in
+`pkgs/overlays.nix`, so a change reaches the wrapper on the next switch. For
+a quicker loop, build it here and run it with the env vars below:
 
 ```bash
-cd ~/Projects/personal/unifi-cli
 go build -o unifi .
 ```
+
+A change to `go.mod` or `go.sum` needs a new `vendorHash` in `default.nix`.
 
 ## Env vars
 
