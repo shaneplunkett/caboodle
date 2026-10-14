@@ -1,0 +1,21 @@
+{
+  imports = [
+    ../modules/services/prometheus
+    ../modules/services/pve-exporter
+    ../modules/services/proxmox-hosts
+    ../modules/services/unraid-smart
+    ../modules/services/alertmanager
+    ../modules/services/gatus/alerts.nix
+    ../modules/services/grafana
+    ../modules/services/loki
+    ../modules/services/blocky/monitoring.nix
+    ../modules/services/unbound/monitoring.nix
+    ../modules/services/blackbox
+    ../modules/services/tailscale/alerts.nix
+    ../modules/services/backup/monitoring.nix
+    ../modules/services/vex-brain/alerts.nix
+    ../modules/services/forgejo/alerts.nix
+    ../modules/services/freshrss/alerts.nix
+    ../modules/services/immich/alerts.nix
+  ];
+}

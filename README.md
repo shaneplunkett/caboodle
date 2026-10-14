@@ -9,10 +9,10 @@ README only covers how the pieces fit together.
 
 ```
 flake.nix          colmena hive, dev shell, and the base LXC template
-modules/
+hosts/<host>.nix   which services a host runs
+modules/           anything more than one host can import
   base.nix         every NixOS LXC: Proxmox LXC support, SSH, node exporter
   agenix/          secrets, their recipients, and the homelab.secrets option
-  hosts/<host>.nix which services a host runs
   services/<name>/ one folder per service
 terraform/         Proxmox LXCs/VMs, Hetzner, Cloudflare
 proxmox/           config installed on the Proxmox nodes themselves
@@ -23,8 +23,8 @@ tools/             small helpers (minirack planner, Cloudflare MCP headers)
 ## Nix hosts
 
 Each NixOS LXC is a node in the colmena hive in `flake.nix`. Defaults every
-node gets live in `colmenaHive.defaults`; a host's own file under
-`modules/hosts/` just imports the services it runs.
+node gets live in `colmenaHive.defaults`; a host's own file under `hosts/`
+just imports the services it runs.
 
 Modules can read the whole hive through colmena's `nodes` and `name`
 arguments, so things like scrape targets, log shipping and dashboard tiles are
@@ -54,7 +54,7 @@ Flakes only see tracked files, so `git add` new files before building.
    `nix build .#nixosConfigurations.base.config.system.build.tarball`, and
    upload it to each node's `local:vztmpl` under the name
    `terraform/modules/nixos-lxc` expects.
-2. Add `modules/hosts/<host>.nix` and a node in the hive pointing at it,
+2. Add `hosts/<host>.nix` and a node in the hive pointing at it,
    with the host's `homelab.lanAddress`.
 3. Add a `terraform/<node>-<host>.tf` using `modules/nixos-lxc` and apply it.
    Terraform reads every LAN address from the hive (`nix eval

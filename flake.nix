@@ -172,83 +172,83 @@
           };
 
         dashboard = {
-          imports = [ ./modules/hosts/dashboard.nix ];
+          imports = [ ./hosts/dashboard.nix ];
           homelab.lanAddress = "192.168.1.152";
         };
 
         monitoring = {
-          imports = [ ./modules/hosts/monitoring.nix ];
+          imports = [ ./hosts/monitoring.nix ];
           homelab.lanAddress = "192.168.1.78";
         };
 
         ingress = {
-          imports = [ ./modules/hosts/ingress.nix ];
+          imports = [ ./hosts/ingress.nix ];
           homelab.lanAddress = "192.168.1.149";
         };
 
         dns1 = {
-          imports = [ ./modules/hosts/dns.nix ];
+          imports = [ ./hosts/dns.nix ];
           homelab.lanAddress = "192.168.1.91";
         };
 
         dns2 = {
-          imports = [ ./modules/hosts/dns.nix ];
+          imports = [ ./hosts/dns.nix ];
           homelab.lanAddress = "192.168.1.236";
           deployment.tags = [ "deploy-after-dns1" ];
         };
 
         plex = {
-          imports = [ ./modules/hosts/plex.nix ];
+          imports = [ ./hosts/plex.nix ];
           homelab.lanAddress = "192.168.1.237";
         };
 
         arr = {
-          imports = [ ./modules/hosts/arr.nix ];
+          imports = [ ./hosts/arr.nix ];
           homelab.lanAddress = "192.168.1.90";
         };
 
         dlna = {
-          imports = [ ./modules/hosts/dlna.nix ];
+          imports = [ ./hosts/dlna.nix ];
           homelab.lanAddress = "192.168.1.66";
         };
 
         gym = {
-          imports = [ ./modules/hosts/gym.nix ];
+          imports = [ ./hosts/gym.nix ];
           homelab.lanAddress = "192.168.1.209";
         };
 
         rss = {
-          imports = [ ./modules/hosts/rss.nix ];
+          imports = [ ./hosts/rss.nix ];
           homelab.lanAddress = "192.168.1.153";
         };
 
         photos = {
-          imports = [ ./modules/hosts/photos.nix ];
+          imports = [ ./hosts/photos.nix ];
           homelab.lanAddress = "192.168.1.154";
         };
 
         home = {
-          imports = [ ./modules/hosts/home.nix ];
+          imports = [ ./hosts/home.nix ];
           homelab.lanAddress = "192.168.1.117";
         };
 
         brain = {
-          imports = [ ./modules/hosts/brain.nix ];
+          imports = [ ./hosts/brain.nix ];
           homelab.lanAddress = "192.168.1.243";
         };
 
         auth = {
-          imports = [ ./modules/hosts/auth.nix ];
+          imports = [ ./hosts/auth.nix ];
           homelab.lanAddress = "192.168.1.31";
         };
 
         forge = {
-          imports = [ ./modules/hosts/forge.nix ];
+          imports = [ ./hosts/forge.nix ];
           homelab.lanAddress = "192.168.1.115";
         };
 
         builder = {
-          imports = [ ./modules/hosts/builder.nix ];
+          imports = [ ./hosts/builder.nix ];
           homelab.lanAddress = "192.168.1.224";
         };
       };

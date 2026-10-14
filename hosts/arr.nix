@@ -1,5 +1,5 @@
 {
   imports = [
-    ../services/plex
+    ../modules/arr
   ];
 }
