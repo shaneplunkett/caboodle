@@ -95,7 +95,7 @@ in
     }) (import ../../agenix/host-keys.nix);
     extraConfig =
       lib.concatMapStrings (name: ''
-        Host ${name}
+        Host ${name} ${lanAddress name}
           HostName ${lanAddress name}
           IdentityFile /run/credentials/${unit}.service/ssh-key
       '') (lib.attrNames nodes)

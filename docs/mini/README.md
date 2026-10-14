@@ -9,18 +9,27 @@ itself, since it's also the builder's darwin remote builder.
 
 `darwinDefaults` in `flake.nix` is the Mac counterpart of `nixosDefaults`:
 Nix settings and the homelab cache, weekly GC, fish, Shane as the primary
-user with the builder's key, and the macOS application firewall as it was
-under nix-config. The host file adds the deploy settings, auto-login, and
-staying awake.
+user with the builder's key, and node exporter when `homelab.monitoring` is
+on. The host file adds the deploy settings, auto-login, and staying awake.
+
+## The firewall
+
+The macOS application firewall lets signed apps accept connections and
+silently drops the rest, and anything Nix builds is only ad-hoc signed. So
+the host file turns it off, which makes the mini a LAN server like the
+LXCs, whose firewalls open each service's port to the whole LAN anyway.
+That's what lets Prometheus scrape it and, later, ingress route to it.
+`docs/research/mini-server.md` has the alternatives that were considered.
+
+Prometheus's memory alert reads `node_memory_MemAvailable_bytes`, which
+macOS's node exporter doesn't publish, so it never fires for the mini. The
+disk, CPU and HostDown alerts work as on the LXCs.
 
 ## What it doesn't get yet
 
-Nothing that reaches it over the network, because the application firewall
-drops incoming connections to anything Nix built. Until that's decided
-(`docs/research/mini-server.md` has the options), the mini has
-`homelab.monitoring.enable = false`, no routes, no backup paths, and runs
-Tailscale as the Homebrew app rather than the declared daemon, which is why
-`homelab.tailscale.enable` is off and colmena reaches it by LAN address.
+No routes, no backup paths, and Tailscale is still the Homebrew app rather
+than the declared daemon, which is why `homelab.tailscale.enable` is off and
+colmena reaches it by LAN address.
 
 The vex-sync daemons and the vex-code agent are still nix-config's. A switch
 from the hive removes the vex-sync daemons, since the previous system
@@ -38,12 +47,12 @@ under `~/Library` and survive either.
 
 ## Deploying
 
-The mini isn't tagged `deploy-on-merge`, so merging builds it and nothing
-more. The first switch has to happen on the mini, because colmena deploys
-as `shane` and runs `sudo` without a password, and the sudo rule allowing
-that is part of the system being switched to. Build as `shane`, since root
-has no key for the forge and `sudo darwin-rebuild switch` would stall on a
-password for `forgejo@forge`:
+Merging deploys the mini like any other host: the builder reaches it by
+LAN address as `shane` and runs `sudo` without a password. The first switch
+had to happen on the mini, because that sudo rule is part of the system
+being switched to. It goes the same way for any Mac that joins later. Build
+as `shane`, since root has no key for the forge and `sudo darwin-rebuild
+switch` would stall on a password for `forgejo@forge`:
 
 ```sh
 nix build --out-link /tmp/mini git+ssh://forgejo@forge/shane/homelab#darwinConfigurations.mini.system
@@ -56,7 +65,7 @@ same where nh is installed. `-H mini` names the config, since the hostname
 is `mini-server`.
 
 After that, `colmena apply --on mini` works from anywhere with the builder's
-key, and the tag can go back on. `apply-local` would also do, but it matches
+key. `apply-local` would also do, but it matches
 the node name against the hostname, and the node is `mini` while the
 hostname stays `mini-server` so the tailnet name, and Tailscale Serve for
 vex-code, don't change.

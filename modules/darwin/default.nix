@@ -1,3 +1,4 @@
+{ config, ... }:
 {
   nixpkgs.config.allowUnfree = true;
 
@@ -47,12 +48,8 @@
     shane ALL=(root) NOPASSWD: ALL
   '';
 
-  networking.applicationFirewall = {
-    enable = true;
-    blockAllIncoming = false;
-    allowSigned = true;
-    allowSignedApp = true;
-    enableStealthMode = true;
+  services.prometheus.exporters.node = {
+    inherit (config.homelab.monitoring) enable;
   };
 
   system.defaults.SoftwareUpdate.AutomaticallyInstallMacOSUpdates = false;

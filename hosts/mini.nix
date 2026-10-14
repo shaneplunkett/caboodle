@@ -3,16 +3,17 @@
   deployment = {
     systemType = "darwin";
     targetUser = "shane";
-    tags = [ ];
   };
 
   homelab = {
     lanAddress = config.homelab.devices.mini.ip;
-    monitoring.enable = false;
     tailscale.enable = false;
   };
 
-  networking.hostName = "mini-server";
+  networking = {
+    hostName = "mini-server";
+    applicationFirewall.enable = false;
+  };
 
   power = {
     sleep.computer = "never";
