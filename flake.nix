@@ -183,6 +183,7 @@
               ./modules/homelab.nix
               ./modules/nixos.nix
               ./modules/lxc.nix
+              { homelab.monitoring.enable = false; }
             ];
           };
         };
