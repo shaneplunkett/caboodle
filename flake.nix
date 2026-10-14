@@ -80,6 +80,15 @@
           config.allowUnfree = true;
           overlays = [ colmena.overlays.default ] ++ import ./pkgs/overlays.nix { inherit inputs; };
         };
+      lxc =
+        host: settings:
+        {
+          imports = [
+            ./modules/lxc.nix
+            ./hosts/${host}.nix
+          ];
+        }
+        // settings;
       systems = [
         "x86_64-linux"
         "aarch64-darwin"
@@ -155,9 +164,12 @@
 
       nixosConfigurations = {
         base = nixpkgs.lib.nixosSystem {
-          modules = [ ./modules/base.nix ];
+          modules = [
+            ./modules/homelab.nix
+            ./modules/nixos.nix
+            ./modules/lxc.nix
+          ];
         };
-
       };
 
       darwinConfigurations = nixpkgs.lib.filterAttrs (
@@ -229,7 +241,7 @@
           };
 
         nixosDefaults.imports = [
-          ./modules/base.nix
+          ./modules/nixos.nix
           agenix.nixosModules.default
           ./modules/agenix
           ./modules/services/backup
@@ -247,86 +259,40 @@
           imports = [ ./hosts/macbook.nix ];
         };
 
-        dashboard = {
-          imports = [ ./hosts/dashboard.nix ];
-          homelab.lanAddress = "192.168.1.152";
-        };
+        dashboard = lxc "dashboard" { homelab.lanAddress = "192.168.1.152"; };
 
-        monitoring = {
-          imports = [ ./hosts/monitoring.nix ];
-          homelab.lanAddress = "192.168.1.78";
-        };
+        monitoring = lxc "monitoring" { homelab.lanAddress = "192.168.1.78"; };
 
-        ingress = {
-          imports = [ ./hosts/ingress.nix ];
-          homelab.lanAddress = "192.168.1.149";
-        };
+        ingress = lxc "ingress" { homelab.lanAddress = "192.168.1.149"; };
 
-        dns1 = {
-          imports = [ ./hosts/dns.nix ];
-          homelab.lanAddress = "192.168.1.91";
-        };
+        dns1 = lxc "dns" { homelab.lanAddress = "192.168.1.91"; };
 
-        dns2 = {
-          imports = [ ./hosts/dns.nix ];
+        dns2 = lxc "dns" {
           homelab.lanAddress = "192.168.1.236";
           deployment.tags = [ "deploy-after-dns1" ];
         };
 
-        plex = {
-          imports = [ ./hosts/plex.nix ];
-          homelab.lanAddress = "192.168.1.237";
-        };
+        plex = lxc "plex" { homelab.lanAddress = "192.168.1.237"; };
 
-        arr = {
-          imports = [ ./hosts/arr.nix ];
-          homelab.lanAddress = "192.168.1.90";
-        };
+        arr = lxc "arr" { homelab.lanAddress = "192.168.1.90"; };
 
-        dlna = {
-          imports = [ ./hosts/dlna.nix ];
-          homelab.lanAddress = "192.168.1.66";
-        };
+        dlna = lxc "dlna" { homelab.lanAddress = "192.168.1.66"; };
 
-        gym = {
-          imports = [ ./hosts/gym.nix ];
-          homelab.lanAddress = "192.168.1.209";
-        };
+        gym = lxc "gym" { homelab.lanAddress = "192.168.1.209"; };
 
-        rss = {
-          imports = [ ./hosts/rss.nix ];
-          homelab.lanAddress = "192.168.1.153";
-        };
+        rss = lxc "rss" { homelab.lanAddress = "192.168.1.153"; };
 
-        photos = {
-          imports = [ ./hosts/photos.nix ];
-          homelab.lanAddress = "192.168.1.154";
-        };
+        photos = lxc "photos" { homelab.lanAddress = "192.168.1.154"; };
 
-        home = {
-          imports = [ ./hosts/home.nix ];
-          homelab.lanAddress = "192.168.1.117";
-        };
+        home = lxc "home" { homelab.lanAddress = "192.168.1.117"; };
 
-        brain = {
-          imports = [ ./hosts/brain.nix ];
-          homelab.lanAddress = "192.168.1.243";
-        };
+        brain = lxc "brain" { homelab.lanAddress = "192.168.1.243"; };
 
-        auth = {
-          imports = [ ./hosts/auth.nix ];
-          homelab.lanAddress = "192.168.1.31";
-        };
+        auth = lxc "auth" { homelab.lanAddress = "192.168.1.31"; };
 
-        forge = {
-          imports = [ ./hosts/forge.nix ];
-          homelab.lanAddress = "192.168.1.115";
-        };
+        forge = lxc "forge" { homelab.lanAddress = "192.168.1.115"; };
 
-        builder = {
-          imports = [ ./hosts/builder.nix ];
-          homelab.lanAddress = "192.168.1.224";
-        };
+        builder = lxc "builder" { homelab.lanAddress = "192.168.1.224"; };
       };
     };
 
