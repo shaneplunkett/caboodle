@@ -1,12 +1,9 @@
-{ ... }:
+{ inputs, ... }:
 {
-
   imports = [
-    ./maintenance.nix
+    inputs.home-manager.darwinModules.home-manager
     ./settings.nix
-    ./user.nix
     ./homebrew.nix
     ./packages.nix
   ];
-
 }

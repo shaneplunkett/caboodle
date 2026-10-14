@@ -16,6 +16,9 @@ modules/           anything more than one host can import
   darwin/          every Mac: Nix settings, the deploy user, the firewall
   agenix/          secrets, their recipients, and the homelab.secrets option
   services/<name>/ one folder per service
+  workstation/     every machine Shane sits at: home-manager, fish, fonts, and a folder per class
+home/              Shane's home-manager configs, one per machine, and their modules
+pkgs/              packages the flake builds itself, and the overlays that add them for workstations
 terraform/         Proxmox LXCs/VMs, Hetzner, Cloudflare
 proxmox/           config installed on the Proxmox nodes themselves
 docs/              notes that the code can't explain

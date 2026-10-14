@@ -12,6 +12,39 @@ Nix settings and the homelab cache, weekly GC, fish, Shane as the primary
 user with the builder's key, and node exporter when `homelab.monitoring` is
 on. The host file adds the deploy settings, auto-login, and staying awake.
 
+It's also a machine Shane sits at, so it imports `modules/workstation` and
+`modules/workstation/darwin`, the same modules the MacBook will get. They
+bring home-manager, which the host file points at
+`home/shane/homemacserver.nix`, and Homebrew through nix-homebrew. That
+home config runs vex-code as a login agent. The host file also adds
+vex-brain's vex-sync daemons and turns off the home-manager sync agents they
+replace, so sync runs from boot with nobody logged in.
+
+The mini's nixpkgs is `workstationPkgs` in `flake.nix`, which adds the
+overlays from `pkgs/overlays.nix`. The LXCs don't get them: one of them
+patches `forgejo-cli`, which the forge host runs.
+
+## Homebrew
+
+nix-homebrew owns `/opt/homebrew`, with the core and cask taps pinned as
+flake inputs, and `onActivation.cleanup = "uninstall"` removes any cask or
+formula that isn't declared. The first activation from the hive removes the
+ChatGPT and Claude casks nix-config installed, on purpose, since a headless
+server doesn't want them. Anything that should stay has to be declared.
+
+BlueBubbles is how Shane uses iMessage from NixOS, and the host file declares
+its cask. It was installed by hand rather than through Homebrew, and Homebrew
+won't install a cask over an app it didn't put there, which fails activation
+and so the deploy. Before the hive first declares it, adopt it on the mini:
+
+```sh
+brew install --cask --adopt bluebubbles
+```
+
+Binning the app and letting brew reinstall it works too. Its config and
+pairing live under `~/Library` and survive either. Any other app installed by
+hand needs the same before its cask is declared.
+
 ## The firewall
 
 The macOS application firewall lets signed apps accept connections and
@@ -30,20 +63,6 @@ disk, CPU and HostDown alerts work as on the LXCs.
 No routes, no backup paths, and Tailscale is still the Homebrew app rather
 than the declared daemon, which is why `homelab.tailscale.enable` is off and
 colmena reaches it by LAN address.
-
-The vex-sync daemons and the vex-code agent are still nix-config's. A switch
-from the hive removes the vex-sync daemons, since the previous system
-declared them and this one doesn't; vex-code is a home-manager agent and
-keeps running until the next reboot. Homebrew isn't managed from here, so
-the casks nix-config installed stay put.
-
-BlueBubbles is on the mini too, as a login agent, and no config declares it.
-It's how Shane uses iMessage from NixOS, so it stays. It was installed by
-hand rather than through Homebrew, and Homebrew won't install a cask over an
-app it didn't put there. When the hive takes over Homebrew and declares
-`bluebubbles`, first run `brew install --cask --adopt bluebubbles` on the
-mini, or bin the app and let brew reinstall it. Its config and pairing live
-under `~/Library` and survive either.
 
 ## Deploying
 
@@ -81,3 +100,28 @@ vex-code, don't change.
 - Root's `PATH` on macOS has no Nix, so colmena runs Nix from
   `/run/current-system/sw/bin`. That needs nix-darwin to manage Nix, which
   it does by default and which the Lix installer doesn't get in the way of.
+
+## Workstation gotchas
+
+What the workstation modules and overlays do that their code can't say.
+
+- `nixvim` keeps its own nixpkgs pin. Upstream tests against one revision,
+  and following ours breaks `vimPlugins`.
+- codex and claude-code come straight from `llm-agents`' outputs, as do the
+  ChatGPT and Claude desktop apps on Linux, so they match Numtide's cache.
+- The project-packages overlay reads the system from `prev`, since going
+  through `final.stdenv` recurses.
+- Bitwarden desktop runs on Electron from `electron-nixpkgs`, a separate
+  nixpkgs input so that security-sensitive runtime stays current. Upstream
+  pins an older Electron 43, so the overlay rewrites `package.json` to the
+  version it's given. On darwin it links its Rust outputs with lld, because
+  Apple's ld from cctools 1010.6 traps on the stubs for `desktop_napi`.
+- `fj` prints its first-run keys-file notice to stdout, nixpkgs captures it
+  into the generated completions, and fish then runs `Could` as a command.
+  The overlay deletes that line until upstream sends it to stderr.
+- `sesh` builds with Go 1.26. Its build runs mockery, and mockery 3.8.0
+  can't read Go 1.27's export data.
+- The download tuning in `nix-settings.nix` keeps a full flake update from
+  turning into a machine-wide resource spike.
+- The laptop turns off Spotlight's Command+Space (symbolic hotkey 64) so
+  vicinae can have it.

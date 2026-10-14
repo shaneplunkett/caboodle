@@ -1,5 +1,11 @@
-{ config, ... }:
+{ config, inputs, ... }:
 {
+  imports = [
+    ../modules/workstation
+    ../modules/workstation/darwin
+    inputs.vex-brain.darwinModules.vex-sync
+  ];
+
   deployment = {
     systemType = "darwin";
     targetUser = "shane";
@@ -20,6 +26,18 @@
     restartAfterPowerFailure = true;
   };
   system.defaults.loginwindow.autoLoginUser = "shane";
+
+  home-manager.users.shane = {
+    imports = [ ../home/shane/homemacserver.nix ];
+    programs.vex-cli.sync.enable = false;
+  };
+
+  services.vex-sync = {
+    enable = true;
+    user = "shane";
+  };
+
+  homebrew.casks = [ "bluebubbles" ];
 
   system.stateVersion = 6;
 }

@@ -85,14 +85,6 @@ _:
     };
   };
 
-  networking.applicationFirewall = {
-    enable = true;
-    blockAllIncoming = false;
-    allowSigned = true;
-    allowSignedApp = true;
-    enableStealthMode = true;
-  };
-
   security.pam.services.sudo_local = {
     enable = true;
     reattach = true;

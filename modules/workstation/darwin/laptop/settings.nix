@@ -1,12 +1,10 @@
 _: {
-
   system = {
     defaults = {
       SoftwareUpdate = {
         AutomaticallyInstallMacOSUpdates = true;
       };
 
-      # Free Command+Space (symbolic hotkey 64) from Spotlight for vicinae.
       CustomUserPreferences."com.apple.symbolichotkeys".AppleSymbolicHotKeys."64" = {
         enabled = false;
         value = {
@@ -21,4 +19,11 @@ _: {
     };
   };
 
+  networking.applicationFirewall = {
+    enable = true;
+    blockAllIncoming = false;
+    allowSigned = true;
+    allowSignedApp = true;
+    enableStealthMode = true;
+  };
 }
