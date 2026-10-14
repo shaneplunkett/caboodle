@@ -17,6 +17,7 @@
       "original": {
         "owner": "ryantm",
         "repo": "agenix",
+        "rev": "3daa710894355fa2fad8243380af373a2b4046ef",
         "type": "github"
       }
     },
@@ -114,6 +115,7 @@
       "original": {
         "owner": "catppuccin",
         "repo": "nix",
+        "rev": "2e605f61db52a45a7ff1db414df395ef566565a3",
         "type": "github"
       }
     },
@@ -139,6 +141,7 @@
       "original": {
         "owner": "stepbrobd",
         "repo": "colmena",
+        "rev": "eee6f1800c4b9b680c925be75da82f467ab6c1b6",
         "type": "github"
       }
     },
@@ -217,6 +220,7 @@
       "original": {
         "owner": "nix-community",
         "repo": "home-manager",
+        "rev": "92a0ed1be12f1e20093faf8af63bae2c74ad521e",
         "type": "github"
       }
     },
@@ -287,6 +291,7 @@
       "original": {
         "owner": "numtide",
         "repo": "llm-agents.nix",
+        "rev": "6eb6a99cbc74f65804751ca91869cd13a9006e91",
         "type": "github"
       }
     },
@@ -338,6 +343,7 @@
       "original": {
         "owner": "nix-darwin",
         "repo": "nix-darwin",
+        "rev": "4cff07de74b50e64bdd68cd4e722ab5b6b35ee48",
         "type": "github"
       }
     },
@@ -356,6 +362,7 @@
       "original": {
         "owner": "zhaofengli",
         "repo": "nix-homebrew",
+        "rev": "c11cccfdd36dd69b5323d70d354b2853379c2426",
         "type": "github"
       }
     },
@@ -376,6 +383,7 @@
       "original": {
         "owner": "nix-community",
         "repo": "nix-index-database",
+        "rev": "9a2dd40780eeab8543aa97c59c26f11267025616",
         "type": "github"
       }
     },
@@ -470,6 +478,7 @@
       "original": {
         "owner": "nix-community",
         "repo": "nixvim",
+        "rev": "5b912bd8374a21a3d4f878ac6fae7828401c7bd7",
         "type": "github"
       }
     },
@@ -480,16 +489,18 @@
       "locked": {
         "lastModified": 1791942860,
         "narHash": "sha256-kHlo7IkhPivjLmHlxVZeTMBarNLPfkqQ2nlS2SQ2zfQ=",
-        "owner": "noctalia-dev",
-        "repo": "noctalia",
+        "ref": "cachix",
         "rev": "fc2af27c0e616006bf858cad3b7c9711a028e501",
-        "type": "github"
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/noctalia-dev/noctalia"
       },
       "original": {
-        "owner": "noctalia-dev",
         "ref": "cachix",
-        "repo": "noctalia",
-        "type": "github"
+        "rev": "fc2af27c0e616006bf858cad3b7c9711a028e501",
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/noctalia-dev/noctalia"
       }
     },
     "noctalia-greeter": {
@@ -507,6 +518,7 @@
       "original": {
         "owner": "noctalia-dev",
         "repo": "noctalia-greeter",
+        "rev": "05fc8e3763de7940233358b5e0b1a5ae1967bcf1",
         "type": "github"
       }
     },
@@ -543,6 +555,7 @@
       "original": {
         "owner": "mst-mkt",
         "repo": "omniwm.nix",
+        "rev": "84974635e841f74cff825b39d608e51f1d034fbb",
         "type": "github"
       }
     },

@@ -15,12 +15,13 @@
 
   services.renovate = {
     enable = true;
-    schedule = "Sun 06:30 Australia/Melbourne";
+    schedule = "hourly";
     runtimePackages = [
       pkgs.nodejs
       pkgs.pnpm
       pkgs.uv
       pkgs.go
+      config.nix.package
     ];
     credentials = {
       RENOVATE_TOKEN = config.age.secrets.forge-bot-token.path;
@@ -33,6 +34,8 @@
       autodiscover = true;
       autodiscoverNamespaces = [ "shane" ];
       minimumReleaseAge = "1 day";
+      schedule = [ "before 9am on sunday" ];
+      timezone = "Australia/Melbourne";
     };
   };
 }

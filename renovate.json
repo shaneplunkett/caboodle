@@ -9,8 +9,9 @@
   ],
   "dependencyDashboard": false,
   "prHourlyLimit": 0,
+  "platformAutomerge": false,
   "nix": {
-    "enabled": false
+    "enabled": true
   },
   "customManagers": [
     {
@@ -78,6 +79,9 @@
     },
     {
       "description": "One PR for the tools pinned in flake.nix",
+      "matchManagers": [
+        "custom.regex"
+      ],
       "matchFileNames": [
         "flake.nix"
       ],
@@ -89,6 +93,60 @@
         "github-actions"
       ],
       "groupName": "workflow actions"
+    },
+    {
+      "description": "One PR per flake input, merged by Renovate on a later hourly run once CI builds it. git-refs has no release dates, so minimumReleaseAge would hold every input forever.",
+      "matchManagers": [
+        "nix"
+      ],
+      "commitMessageTopic": "flake input {{depName}}",
+      "schedule": [
+        "at any time"
+      ],
+      "minimumReleaseAge": null,
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "The update workflow owns the inputs on the forge, which Renovate can't reach over SSH",
+      "matchManagers": [
+        "nix"
+      ],
+      "matchPackageNames": [
+        "/^ssh://forgejo@forge//"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "One PR for Noctalia's shell and greeter",
+      "matchManagers": [
+        "nix"
+      ],
+      "matchDepNames": [
+        "/^noctalia/"
+      ],
+      "groupName": "Noctalia"
+    },
+    {
+      "description": "One PR for nix-darwin and home-manager, which move together",
+      "matchManagers": [
+        "nix"
+      ],
+      "matchDepNames": [
+        "nix-darwin",
+        "home-manager"
+      ],
+      "groupName": "nix-darwin and home-manager"
+    },
+    {
+      "description": "nixpkgs moves every host at once, so it waits for review",
+      "matchManagers": [
+        "nix"
+      ],
+      "matchDepNames": [
+        "nixpkgs"
+      ],
+      "automerge": false
     }
   ]
 }

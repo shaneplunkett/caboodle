@@ -10,3 +10,5 @@ concurrency:
 jobs:
   update:
     uses: shane/workflows/.forgejo/workflows/flake-update.yml@v1.3.2
+    with:
+      title: "flake.lock: update nixpkgs, Homebrew and the forge inputs"

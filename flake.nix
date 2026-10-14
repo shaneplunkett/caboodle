@@ -6,17 +6,17 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     colmena = {
-      url = "github:stepbrobd/colmena";
+      url = "github:stepbrobd/colmena/eee6f1800c4b9b680c925be75da82f467ab6c1b6";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.stable.follows = "nixpkgs";
       inputs.nix-github-actions.follows = "";
     };
     agenix = {
-      url = "github:ryantm/agenix";
+      url = "github:ryantm/agenix/3daa710894355fa2fad8243380af373a2b4046ef";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-darwin = {
-      url = "github:nix-darwin/nix-darwin";
+      url = "github:nix-darwin/nix-darwin/4cff07de74b50e64bdd68cd4e722ab5b6b35ee48";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     vex-brain = {
@@ -24,16 +24,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/92a0ed1be12f1e20093faf8af63bae2c74ad521e";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixvim.url = "github:nix-community/nixvim";
+    nixvim.url = "github:nix-community/nixvim/5b912bd8374a21a3d4f878ac6fae7828401c7bd7";
     catppuccin = {
-      url = "github:catppuccin/nix";
+      url = "github:catppuccin/nix/2e605f61db52a45a7ff1db414df395ef566565a3";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-index-database = {
-      url = "github:nix-community/nix-index-database";
+      url = "github:nix-community/nix-index-database/9a2dd40780eeab8543aa97c59c26f11267025616";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-config-private.url = "git+ssh://forgejo@forge/shane/nix-config-private";
@@ -46,9 +46,9 @@
       url = "git+ssh://forgejo@forge/shane/vex-code?shallow=1";
       flake = false;
     };
-    llm-agents.url = "github:numtide/llm-agents.nix";
+    llm-agents.url = "github:numtide/llm-agents.nix/6eb6a99cbc74f65804751ca91869cd13a9006e91";
     electron-nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew/c11cccfdd36dd69b5323d70d354b2853379c2426";
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
       flake = false;
@@ -58,11 +58,11 @@
       flake = false;
     };
     omniwm = {
-      url = "github:mst-mkt/omniwm.nix";
+      url = "github:mst-mkt/omniwm.nix/84974635e841f74cff825b39d608e51f1d034fbb";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    noctalia.url = "github:noctalia-dev/noctalia/cachix";
-    noctalia-greeter.url = "github:noctalia-dev/noctalia-greeter";
+    noctalia.url = "git+https://github.com/noctalia-dev/noctalia?ref=cachix&rev=fc2af27c0e616006bf858cad3b7c9711a028e501&shallow=1";
+    noctalia-greeter.url = "github:noctalia-dev/noctalia-greeter/05fc8e3763de7940233358b5e0b1a5ae1967bcf1";
     noctalia-plugins = {
       url = "git+ssh://forgejo@forge/shane/noctalia-plugins";
       flake = false;

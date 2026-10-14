@@ -70,7 +70,10 @@ writes to `/tmp` directly bypasses this, so use `mktemp` or `$TMPDIR`.
 
 The update workflow runs weekly, or from the Actions tab with Run workflow.
 It calls `flake-update.yml` in `shane/workflows`, shared with nix-config, and
-the README there covers what it does and its inputs. In short, it pushes the
+the README there covers what it does and its inputs. Inputs pinned to a
+commit in `flake.nix` don't move with `nix flake update`, so it only moves
+the unpinned ones, and Renovate moves the rest (see
+[Flake inputs](#flake-inputs)). In short, it pushes the
 `nix flake update` to `update/flake-lock` as `forge-bot` and opens a pull
 request straight away, so `build.yml` checks the real head while the update
 builds every host in `hydraJobs` before and after. Then it fills the
@@ -111,13 +114,51 @@ keys on both nodes.
 
 ## Renovate
 
-Renovate runs on the builder every Sunday morning, as `forge-bot`, for the
-pins a flake update doesn't touch: container images in Nix modules, flake
-inputs pinned to a GitHub tag, the `npx` packages in the dev shell, and
-Terraform providers. Each update is its own pull request asking
-`metrokitten` to review, which pings Discord. The repo's rules are in
-`renovate.json`, and its Nix manager is off, because the update workflow owns
-`flake.lock`.
+Renovate runs on the builder every hour, as `forge-bot`, for the pins a
+flake update doesn't touch: container images in Nix modules, flake inputs
+pinned to a tag or a commit, the `npx` packages in the dev shell, and
+Terraform providers. The service's config makes "before 9am on Sunday",
+Melbourne time, the default schedule for every repo, so new pull requests
+still turn up as a Sunday batch and the hourly runs only keep open ones
+current. Each update is its own pull request asking `metrokitten` to review,
+which pings Discord. The repo's rules are in `renovate.json`.
+
+### Flake inputs
+
+Renovate's Nix manager only updates an input whose commit is written into
+`flake.nix`. For an input that's only locked in `flake.lock` it offers
+nothing per input, just lock file maintenance, which is one pull request for
+everything. So the inputs it owns are pinned, `github:owner/repo/<commit>`,
+or `git+https://github.com/owner/repo?ref=<branch>&rev=<commit>` for one that
+follows a branch, since `github:` won't take a branch and a commit together.
+To add one, write its current commit into the URL and run `nix flake lock`.
+
+Each pinned input gets its own pull request, at any hour rather than on
+Sunday. The Noctalia shell and greeter share one, and so do nix-darwin and
+home-manager. They merge themselves once the build check is green, and
+nothing asks for a review. Renovate does the merge on its next run rather
+than asking Forgejo to merge when checks pass, because `main` has no
+required checks and Forgejo would merge on the first status, pending or
+failed. Renovate only merges on a run that didn't just push to the branch,
+and a busy input like noctalia's `cachix` branch gains commits most hours.
+That's why it runs hourly: the quiet hour is when it merges.
+`minimumReleaseAge` is off for these, because Renovate reads commits through
+`git-refs`, which has no release dates, so the one-day wait would hold every
+input forever.
+
+The rest stay unpinned, and the weekly update below moves them in one pull
+request for review:
+
+- nixpkgs, because it moves every host at once. Renovate couldn't track it
+  anyway: it matches lock node names against input names, and the root's
+  nixpkgs isn't the node called `nixpkgs` while another input locks its own.
+- electron-nixpkgs, which a pin would turn into a clone of nixpkgs.
+- The Homebrew taps, which change every few minutes, so their pull request
+  would never sit still for a run.
+- The inputs on the forge. Renovate has no SSH key, so it can't reach
+  `forgejo@forge`, and `renovate.json` turns them off.
+
+### Repos and lock files
 
 It finds repos by itself, by listing every repo in the `shane` org
 (`autodiscoverNamespaces`). Each one gets an onboarding pull request first,
@@ -126,7 +167,7 @@ without merging tells Renovate to leave the repo alone. Renovate's default
 search only returns repos the bot has access to and the public couldn't see
 anyway, so once the org went public it stopped finding the public ones.
 Renovate regenerates lock files with whatever is in `runtimePackages`:
-`nodejs` (npm), `pnpm`, `uv` and `go`. A repo whose package manager isn't
+`nodejs` (npm), `pnpm`, `uv`, `go`, and Nix for `flake.lock`. A repo whose package manager isn't
 there gets pull requests that change the manifest but not the lock file,
 with an "Artifact update problem" comment and an empty error, so add the
 tool to the list.
