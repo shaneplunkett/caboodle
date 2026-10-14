@@ -12,7 +12,7 @@ Everything comes from the repo's `flake.nix` via direnv (`use flake` in `.envrc`
 - **`cloudflared`**: tunnel runtime and management.
 - **`dig`, `doggo`**: checking public DNS from outside the LAN's own answers.
 
-Agent skills from `cloudflare/skills` (`cloudflare`, `cloudflare-one`, `wrangler`, `workers-best-practices`) are pinned in `skills-lock.json`.
+Agent skills from `cloudflare/skills` (`cloudflare`, `cf-cli`, `cloudflare-one`, `wrangler`, `workers-best-practices`) are pinned in `skills-lock.json`.
 
 ## Credentials
 
