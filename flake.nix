@@ -61,6 +61,17 @@
       url = "github:mst-mkt/omniwm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    hyprland.url = "github:hyprwm/Hyprland";
+    hyprland-plugins = {
+      url = "github:hyprwm/hyprland-plugins";
+      inputs.hyprland.follows = "hyprland";
+    };
+    noctalia.url = "github:noctalia-dev/noctalia/cachix";
+    noctalia-greeter.url = "github:noctalia-dev/noctalia-greeter";
+    noctalia-plugins = {
+      url = "git+ssh://forgejo@forge/shane/noctalia-plugins";
+      flake = false;
+    };
   };
   outputs =
     {
@@ -162,15 +173,19 @@
         }
       );
 
-      nixosConfigurations = {
-        base = nixpkgs.lib.nixosSystem {
-          modules = [
-            ./modules/homelab.nix
-            ./modules/nixos.nix
-            ./modules/lxc.nix
-          ];
+      nixosConfigurations =
+        nixpkgs.lib.filterAttrs (
+          _: node: node.config.deployment.systemType == "nixos"
+        ) self.colmenaHive.nodes
+        // {
+          base = nixpkgs.lib.nixosSystem {
+            modules = [
+              ./modules/homelab.nix
+              ./modules/nixos.nix
+              ./modules/lxc.nix
+            ];
+          };
         };
-      };
 
       darwinConfigurations = nixpkgs.lib.filterAttrs (
         _: node: node.config.deployment.systemType == "darwin"
@@ -216,6 +231,7 @@
           nodeNixpkgs = {
             mini = workstationPkgs "aarch64-darwin";
             macbook = workstationPkgs "aarch64-darwin";
+            desktop = workstationPkgs "x86_64-linux";
           };
           inherit nix-darwin;
           specialArgs = { inherit inputs vex-brain; };
@@ -257,6 +273,10 @@
 
         macbook = {
           imports = [ ./hosts/macbook.nix ];
+        };
+
+        desktop = {
+          imports = [ ./hosts/desktop ];
         };
 
         dashboard = lxc "dashboard" { homelab.lanAddress = "192.168.1.152"; };

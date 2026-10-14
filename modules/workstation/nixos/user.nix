@@ -36,6 +36,9 @@ in
       users = [ "shane" ];
       commands = map nopasswd (
         (map switchCommand switchActions)
+        ++ [
+          "/run/current-system/sw/bin/nix-env --profile /nix/var/nix/profiles/system --set /nix/store/*-nixos-system-*"
+        ]
         ++ (lib.concatMap (
           env:
           (map (action: "${env} * ${switchCommand action}") switchActions)
