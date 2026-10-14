@@ -57,6 +57,10 @@
       url = "github:homebrew/homebrew-cask";
       flake = false;
     };
+    omniwm = {
+      url = "github:mst-mkt/omniwm.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs =
     {
@@ -197,7 +201,10 @@
             system = "x86_64-linux";
             overlays = [ colmena.overlays.default ];
           };
-          nodeNixpkgs.mini = workstationPkgs "aarch64-darwin";
+          nodeNixpkgs = {
+            mini = workstationPkgs "aarch64-darwin";
+            macbook = workstationPkgs "aarch64-darwin";
+          };
           inherit nix-darwin;
           specialArgs = { inherit inputs vex-brain; };
         };
@@ -234,6 +241,10 @@
 
         mini = {
           imports = [ ./hosts/mini.nix ];
+        };
+
+        macbook = {
+          imports = [ ./hosts/macbook.nix ];
         };
 
         dashboard = {

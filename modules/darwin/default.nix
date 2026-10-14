@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, ... }:
 {
   nixpkgs.config.allowUnfree = true;
 
@@ -52,5 +52,5 @@
     inherit (config.homelab.monitoring) enable;
   };
 
-  system.defaults.SoftwareUpdate.AutomaticallyInstallMacOSUpdates = false;
+  system.defaults.SoftwareUpdate.AutomaticallyInstallMacOSUpdates = lib.mkDefault false;
 }
