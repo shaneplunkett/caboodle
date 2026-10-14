@@ -9,10 +9,10 @@ A self-hosted speech-to-text service on the Mac mini, for three jobs:
 
 Shane and agents both need to reach it, over an HTTP API and a web UI.
 
-Shane and Vex researched this in October 2026. Nothing is built yet, and
-where the mini sits in the homelab is still undecided (see
-[mini-server.md](mini-server.md)). Versions and benchmark numbers are a
-snapshot from then. Sources are inline.
+Shane and Vex researched this in October 2026. Nothing is built yet. The
+mini has since joined the hive (see [docs/mini](../mini/README.md)).
+Versions and benchmark numbers are a snapshot from then. Sources are
+inline.
 
 ## Findings
 
@@ -256,7 +256,6 @@ These are the parts that depend on how the mini joins the homelab.
 
 ## Open questions
 
-- How does the mini join the homelab? See [mini-server.md](mini-server.md).
 - Does mlx-audio's diarisation return speaker labels over HTTP?
 - Is the gap between Parakeet's tidying and Whisper's accuracy acceptable
   for transcripts, or do long files go to Whisper?

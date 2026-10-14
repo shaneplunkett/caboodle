@@ -29,7 +29,13 @@ powered-off desktop doesn't page anyone. Its logs still reach Loki.
 with an agenix OAuth secret, and the desktop's host key isn't one of its
 recipients. The desktop runs Tailscale from its own
 `hosts/desktop/modules/networking.nix` instead, with MagicDNS through
-resolved.
+resolved. Without resolved, tailscaled overwrites `/etc/resolv.conf` and
+fights NetworkManager, which is what broke DNS here in March. With it,
+tailscaled registers `100.100.100.100` on `tailscale0`, which answers
+`.ts.net` names and forwards the rest to the tailnet's resolvers, Blocky on
+dns1 and dns2. If Tailscale is down, the LAN link's DHCP gives the same two.
+`FallbackDNS` is empty so resolved never goes round them to a public
+resolver, and its mDNS is off because Avahi already has port 5353.
 
 ## Switching
 
@@ -86,9 +92,13 @@ Nothing switches the desktop from another machine any more.
   arguments. A module can take them as function arguments but can't use
   them in `imports`, since module arguments aren't known yet when imports
   are resolved.
-- Hyprland and Noctalia keep their own nixpkgs pins. Following ours would
-  change their hashes and miss their Cachix caches, so everything would
-  build locally.
+- Noctalia keeps its own nixpkgs pin. Following ours would change its
+  hashes and miss its Cachix cache, so it would build locally. Hyprland
+  comes from our nixpkgs, so the NixOS cache has it.
+- The SSH aliases in `home/shane/modules/common/ssh.nix`, which the Macs
+  share, reach each machine by its MagicDNS name and set `HostKeyAlias` to
+  the short name, so `known_hosts` keeps one key per machine however
+  `HostName` is spelt.
 - `noctalia` tracks upstream's `cachix` branch, which trails main to the
   newest commit their CI has cached.
 - `noctalia-plugins` is only a source tree. Noctalia reads its `plugins/`

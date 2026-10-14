@@ -45,7 +45,6 @@ silently drops the rest, and anything Nix builds is only ad-hoc signed. So
 the host file turns it off, which makes the mini a LAN server like the
 LXCs, whose firewalls open each service's port to the whole LAN anyway.
 That's what lets Prometheus scrape it and, later, ingress route to it.
-`docs/research/mini-server.md` has the alternatives that were considered.
 
 Prometheus's memory alert reads `node_memory_MemAvailable_bytes`, which
 macOS's node exporter doesn't publish, so it never fires for the mini. The
