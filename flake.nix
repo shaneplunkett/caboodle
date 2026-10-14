@@ -1,5 +1,5 @@
 {
-  description = "Homelab Flake";
+  description = "caboodle: every machine Shane runs";
 
   inputs = {
 

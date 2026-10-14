@@ -27,9 +27,9 @@ powered-off desktop doesn't page anyone. Its logs still reach Loki.
 
 `homelab.tailscale.enable` is off too. The hive's Tailscale module joins
 with an agenix OAuth secret, and the desktop's host key isn't one of its
-recipients. The desktop runs Tailscale from its own
-`hosts/desktop/modules/networking.nix` instead, with MagicDNS through
-resolved. Without resolved, tailscaled overwrites `/etc/resolv.conf` and
+recipients. The desktop enables Tailscale itself
+instead, with MagicDNS through resolved
+(`hosts/desktop/modules/networking.nix`). Without resolved, tailscaled overwrites `/etc/resolv.conf` and
 fights NetworkManager, which is what broke DNS here in March. With it,
 tailscaled registers `100.100.100.100` on `tailscale0`, which answers
 `.ts.net` names and forwards the rest to the tailnet's resolvers, Blocky on
@@ -81,6 +81,21 @@ Here the PR check builds every host on the builder, the desktop included.
 Locally, `colmena build --on desktop` or `nix build .#hydraJobs.desktop`
 builds it on the desktop, and the switch is one of the commands above.
 Nothing switches the desktop from another machine any more.
+
+## Game streaming
+
+Sunshine streams the desktop to Moonlight on the Macs, over the LAN or
+Tailscale. Its admin UI only answers on the desktop itself, at
+`https://localhost:47990`. Give it a unique username and password, since
+whoever controls it can pair new clients. Moonlight shows a PIN, which goes
+on the UI's PIN page.
+
+- If encoding breaks after a Mesa or kernel update,
+  `, vainfo --display drm --device /dev/dri/renderD128` should list
+  `VAEntrypointEncSlice` for H.264, HEVC and AV1. `renderD128` has to stay
+  the discrete GPU; the iGPU is `renderD129`.
+- HDR needs KMS capture and `cap_sys_admin`, which this setup avoids, so
+  it's unproven here.
 
 ## Gotchas
 

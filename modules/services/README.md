@@ -68,8 +68,8 @@ These are the whys the Nix can't say for itself.
 
 ## Blocky and Unbound
 
-Blocky does ad blocking and local records, and forwards everything else to
-Unbound on the same host, which resolves from the roots. Both are fully
+Blocky does ad blocking and local records, and asks Unbound on the same
+host for everything else (`docs/internet-down.md` has the full chain). Both are fully
 declared in Nix with no state, so redundancy is the same host module on one
 host per Proxmox node. There's nothing to cluster or back up.
 

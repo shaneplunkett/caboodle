@@ -33,18 +33,9 @@ programs.mcp.servers = {
 };
 ```
 
-For HTTP MCP servers:
-
-```nix
-programs.mcp.servers = {
-  remote-server = {
-    url = "https://example.com/mcp";
-    headers = {
-      Authorization = "Bearer {env:REMOTE_SERVER_TOKEN}";
-    };
-  };
-};
-```
+A server that needs a secret gets a wrapper that reads it from rbw when it
+starts, as `context7` does in `default.nix`. Header values pass through to
+each harness literally, so an `{env:...}` placeholder isn't expanded.
 
 Prefer pinned Nix packages or derivations for server binaries. Avoid runtime
 `npx -y ...@latest` for durable servers; it depends on mutable network state and

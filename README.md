@@ -81,7 +81,8 @@ Flakes only see tracked files, so `git add` new files before building.
    Terraform reads every LAN address from the hive (`nix eval
    .#network`) and reserves the host's in UniFi before the container
    first boots, so it comes up on that address. Leave `mac_address` out and
-   Terraform makes one. A host that isn't in the hive fails the plan.
+   Terraform makes one. Never copy one from another host: a duplicated MAC
+   once had two containers fighting over one DHCP lease. A host that isn't in the hive fails the plan.
 4. Add the host's key to `modules/agenix/host-keys.nix`
    (`ssh-keyscan -t ed25519 <ip>`), name it in `agenix-rules.nix`, add it to
    the secrets it needs, and `agenix -r` to rekey. The builder trusts hosts
@@ -110,7 +111,7 @@ consuming service expects.
 ## Monitoring
 
 Prometheus, Alertmanager, Loki and Grafana run on the monitoring host. Every
-Nix host ships its journal to Loki automatically and is scraped unless it
+NixOS host ships its journal to Loki, and every host is scraped unless it
 turns `homelab.monitoring` off, as the desktop does. The Proxmox nodes are
 scraped too (see [proxmox](proxmox/README.md)). Alert rules
 live next to the service they watch, and everything routes through

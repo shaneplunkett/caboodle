@@ -22,10 +22,9 @@ from the store as an ordinary Python app:
 
 ## Deploying a new version
 
-```sh
-nix flake update vex-brain
-colmena apply --on brain
-```
+The weekly flake update moves the `vex-brain` input. For a new version
+sooner, run it from the Actions tab, or `nix flake update vex-brain` on a
+branch, and merging deploys it.
 
 The app runs its migrations on startup. If the update brings new files in
 `app/migrations/`, take a backup first with
@@ -37,16 +36,11 @@ The CLI, skills and Macs are deployed separately; see the vex-brain repo's
 
 ## Cloudflare
 
-`vex.shaneplunkett.dev` reaches the brain through a remotely managed tunnel
-(named `mcphub`, from before the move) and the `vex` Access app, which only
-lets the CLI's service token through. The tunnel's ingress points at
-`http://vex-brain:8000`, the old Docker container name, so the host maps
-`vex-brain` to `127.0.0.1`. `tunnel.nix` runs the connector with the tunnel
-token from the `cloudflared-brain` secret.
-
-The homelab Cloudflare token can read tunnels but not create or edit them,
-so changing the ingress (or giving the brain its own tunnel) needs a token
-with Cloudflare Tunnel edit.
+`vex.shaneplunkett.dev` reaches the brain through the `brain` tunnel and the
+`vex` Access app, which only lets the CLI's service token through. Both are
+in Terraform (`terraform/cloudflare-tunnel.tf`), so the ingress changes by
+pull request. It points at `http://vex-brain:8000`, the old Docker container
+name, so the host maps `vex-brain` to `127.0.0.1`.
 
 ## Backups and restores
 

@@ -3,8 +3,7 @@
 NixOS LXC on cube running Immich with the nixpkgs `services.immich` module,
 for Shane's photo library and iPhone backup. The container is
 `module "photos"` in `terraform/cube-photos.tf` and the service is
-`modules/services/immich`. Why it's built this way is in
-[docs/research/immich.md](../research/immich.md).
+`modules/services/immich`.
 
 ## Storage
 
@@ -32,8 +31,8 @@ with the password in Bitwarden.
 
 Immich matches a Pocket ID sign-in to an account by email, so the two have
 to agree. To give someone else access, make their account in Immich's admin
-pages with their Pocket ID email, and let them in on the Immich client's
-Access tab in Pocket ID.
+pages with their Pocket ID email, and add them to the `immich_users` group
+in Pocket ID.
 
 ## iPhone app
 
@@ -51,6 +50,12 @@ backups run, so opening the app is what reliably kicks one off.
   made in Immich, after the iCloud run. Exact copies are skipped. Google's
   compressed copies show up in Utilities, Review duplicates, which keeps the
   bigger file by default.
+
+## Updates
+
+Updates are one-way. Database migrations run on start, so the rollback is a
+restore. Read the release notes in any flake update pull request that bumps
+Immich.
 
 ## Backups
 

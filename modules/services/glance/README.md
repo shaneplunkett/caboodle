@@ -77,8 +77,9 @@ no standalone `.yml` files to fetch.
 5. **Check and ship:** `git add` the new folder (flakes can't see untracked
    files), then `colmena build --on <host>`, then apply.
 
-Leave a comment at the top of the widget's `default.nix` saying which
-community widget it came from.
+Add it to this list of widgets adapted from community-widgets, so updates
+know where to look: `proxmox-ve-stats` (from `proxmox-ve-stats`), `unraid`
+(from `unraid-widget`).
 
 ### Why not `$include`?
 

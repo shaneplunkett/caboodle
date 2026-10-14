@@ -21,8 +21,9 @@ vex-brain's vex-sync daemons and turns off the home-manager sync agents they
 replace, so sync runs from boot with nobody logged in.
 
 The mini's nixpkgs is `workstationPkgs` in `flake.nix`, which adds the
-overlays from `pkgs/overlays.nix`. The LXCs don't get them: one of them
-patches `forgejo-cli`, which the forge host runs.
+overlays from `pkgs/overlays.nix`. The LXCs don't get them: the overlays
+only change packages the workstations use, and keeping the servers on plain
+nixpkgs means a workstation tweak can never rebuild one.
 
 ## Homebrew
 

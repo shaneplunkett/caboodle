@@ -2,8 +2,7 @@
 
 NixOS LXC on PVE running Home Assistant at `https://home.shaneplunkett.com`.
 The container is `module "home"` in `terraform/pve-home.tf`, and the service is
-`modules/services/home-assistant`. The plan for moving the apartment onto it is
-in [the research notes](../research/home-assistant.md).
+`modules/services/home-assistant`.
 
 ## Why a container image
 
@@ -341,3 +340,19 @@ and opens YouTube.
   once to fetch a key, then it controls the bar locally. An account made with
   Sign in with Apple has no password until one's set through Bose's forgot
   password page.
+
+## Later
+
+- **SwitchBot lock,** through the built-in SwitchBot Bluetooth integration,
+  which needs an ESPHome Bluetooth proxy near the door. pve's own Bluetooth
+  can't do it: the kernel only allows Bluetooth sockets in the host's network
+  namespace, and containers get their own. Decide which automations may
+  unlock, not just lock.
+- **Bedside Zigbee remote,** bound straight to the bedroom bulbs so it works
+  with Home Assistant down.
+- **The bathroom Shelly.** Check it still works, and whether it's on old
+  HomeKit firmware like the balcony one was.
+- **Bathroom fan on humidity,** with a cheap Zigbee sensor, since the
+  HomePod's isn't reachable.
+- **3D printer integration,** and **a Thread border router of our own** so
+  Apple drops out entirely.

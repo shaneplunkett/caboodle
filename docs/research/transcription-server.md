@@ -231,18 +231,11 @@ transcribing.
 
 ## Fitting it into the homelab
 
-These are the parts that depend on how the mini joins the homelab.
-
-- **Routing.** Ingress reaches devices outside the hive through
-  `externalRoutes` in `modules/services/nginx-ingress`, and the mini already
-  has an entry in `modules/devices.nix`. Each app would be one line there.
-  The app has to listen on the LAN, not on loopback.
-- **The macOS firewall.** nix-config turns on the application firewall with
-  stealth mode on every Mac. It silently drops connections to binaries that
-  aren't properly signed, which includes everything built by Nix. During the
-  bake-off, a server listening on the mini's tailnet address accepted the
-  TCP connection and then never answered. Tailscale Serve worked, because
-  Tailscale itself is allowed. Ingress will hit the same wall.
+- **Routing.** The mini is a hive node with a LAN address, so each app is a
+  `homelab.routes` entry on it, like any LXC's. The app has to listen on
+  the LAN, not on loopback.
+- **The macOS firewall** is off on the mini (`docs/mini/README.md`), so
+  ingress can reach a Nix-built server there. The MacBook keeps it on.
 - **Sign-in.** mlx-audio has no login, so its UI would go behind the
   oauth2-proxy gate. Dictation clients and agents can't do a browser
   sign-in, so `/v1/` has to be an open path on the gate with its own key.

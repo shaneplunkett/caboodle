@@ -107,8 +107,6 @@ Final archives of retired services are kept on the box under
 
 ## Gotchas
 
-- **`TF_VAR_ssh_public_key` must be set** (the repo `.envrc` does it). Without
-  it, plan wants to destroy and recreate the Storage Box.
 - **Keep the restic password to letters and digits.** systemd reads the
   host's secret as an env file and the `restic-homelab` wrapper sources it
   with bash, and the two disagree about quotes and symbols.
