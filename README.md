@@ -1,8 +1,9 @@
-# Homelab
+# caboodle
 
-Infrastructure for a two-node Proxmox cluster (PVE and Cube) plus a little
-Hetzner and Cloudflare. Terraform creates the containers, Nix configures what
-runs inside them. What's actually deployed is whatever the code says, so this
+The whole kit and caboodle: every machine Shane runs, in one repo. That's a
+two-node Proxmox cluster (PVE and Cube) with a little Hetzner and Cloudflare,
+plus the desktop, the MacBook and the Mac mini. Terraform creates the
+containers, and Nix configures every machine. What's actually deployed is whatever the code says, so this
 README only covers how the pieces fit together.
 
 ## Layout

@@ -44,13 +44,13 @@ Root has no key for the forge, so `sudo darwin-rebuild switch` stalls on a
 password for `forgejo@forge` when it fetches the private inputs:
 
 ```sh
-nh darwin switch git+ssh://forgejo@forge/shane/homelab -H macbook
+nh darwin switch git+ssh://forgejo@forge/shane/caboodle -H macbook
 ```
 
 or, without nh:
 
 ```sh
-nix build --out-link /tmp/macbook git+ssh://forgejo@forge/shane/homelab#darwinConfigurations.macbook.system
+nix build --out-link /tmp/macbook git+ssh://forgejo@forge/shane/caboodle#darwinConfigurations.macbook.system
 sudo nix build --no-link --profile /nix/var/nix/profiles/system /tmp/macbook
 sudo /tmp/macbook/sw/bin/darwin-rebuild activate
 ```

@@ -69,7 +69,7 @@ or reach the forge by address:
 
 ```sh
 GIT_SSH_COMMAND='ssh -o HostKeyAlias=forge' \
-  git fetch "forgejo@$(tailscale ip -4 forge):shane/homelab.git" main
+  git fetch "forgejo@$(tailscale ip -4 forge):shane/caboodle.git" main
 ```
 
 Check how old the checkout is before trusting what it says:

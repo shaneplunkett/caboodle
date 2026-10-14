@@ -41,13 +41,18 @@ resource "forgejo_repository" "workflows" {
   archive_on_destroy                = true
 }
 
-data "forgejo_repository" "homelab" {
+data "forgejo_repository" "caboodle" {
   owner = local.forge_org
-  name  = "homelab"
+  name  = "caboodle"
 }
 
-resource "forgejo_branch_protection" "homelab_main" {
-  repository_id       = data.forgejo_repository.homelab.id
+moved {
+  from = forgejo_branch_protection.homelab_main
+  to   = forgejo_branch_protection.caboodle_main
+}
+
+resource "forgejo_branch_protection" "caboodle_main" {
+  repository_id       = data.forgejo_repository.caboodle.id
   branch_name         = "main"
   enable_push         = true
   enable_status_check = true

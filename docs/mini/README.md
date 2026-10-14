@@ -66,12 +66,12 @@ as `shane`, since root has no key for the forge and `sudo darwin-rebuild
 switch` would stall on a password for `forgejo@forge`:
 
 ```sh
-nix build --out-link /tmp/mini git+ssh://forgejo@forge/shane/homelab#darwinConfigurations.mini.system
+nix build --out-link /tmp/mini git+ssh://forgejo@forge/shane/caboodle#darwinConfigurations.mini.system
 sudo nix build --no-link --profile /nix/var/nix/profiles/system /tmp/mini
 sudo /tmp/mini/sw/bin/darwin-rebuild activate
 ```
 
-`nh darwin switch git+ssh://forgejo@forge/shane/homelab -H mini` does the
+`nh darwin switch git+ssh://forgejo@forge/shane/caboodle -H mini` does the
 same where nh is installed. `-H mini` names the config, since the hostname
 is `mini-server`.
 
