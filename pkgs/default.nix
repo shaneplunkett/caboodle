@@ -2,6 +2,7 @@
   pkgs,
   vexCodeSrc,
   isLinux ? false,
+  isDarwin ? false,
   isX86Linux ? false,
 }:
 let
@@ -24,6 +25,9 @@ in
   };
   cosmic-ext-ctl-v2 = pkgs.callPackage ./cosmic-ext-ctl-v2 { };
   hyprland-preview-share-picker = pkgs.callPackage ./hyprland-preview-share-picker { };
+}
+// optionalAttrs isDarwin {
+  bluebubbles-server = pkgs.callPackage ./bluebubbles-server { };
 }
 // optionalAttrs isX86Linux {
   linear-desktop = pkgs.callPackage ./linear-desktop {

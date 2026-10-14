@@ -6,6 +6,7 @@ let
       inherit pkgs;
       vexCodeSrc = inputs.vex-code;
       isLinux = inputs.nixpkgs.lib.hasSuffix "-linux" system;
+      isDarwin = inputs.nixpkgs.lib.hasSuffix "-darwin" system;
       isX86Linux = system == "x86_64-linux";
     };
 in

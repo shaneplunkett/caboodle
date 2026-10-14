@@ -32,11 +32,50 @@ formula that isn't declared. The first activation from the hive removes the
 ChatGPT and Claude casks nix-config installed, on purpose, since a headless
 server doesn't want them. Anything that should stay has to be declared.
 
-BlueBubbles is how Shane uses iMessage from NixOS. It's installed by hand
-and runs as its own login agent, and nothing declares it. Homebrew disabled
-its cask because the app isn't signed and fails Gatekeeper, so it can't be
-declared there. Cleanup leaves it alone, since brew never installed it.
-Packaging the server with Nix is parked.
+## BlueBubbles
+
+BlueBubbles Server is how Shane uses iMessage from NixOS. Homebrew disabled
+its cask because it fails Gatekeeper, so `pkgs/bluebubbles-server` packages
+the upstream DMG instead, and `home/shane/modules/mini-server/bluebubbles.nix`
+runs it as a login agent. `pkgs/bluebubbles` is the Linux client, a
+different thing.
+
+The app is signed with the developer's Developer ID but not notarized, which
+is what Gatekeeper rejects. Gatekeeper only assesses quarantined downloads,
+and nothing in the Nix store is quarantined, so it never runs. Full Disk
+Access and Accessibility are granted to the bundle ID and signing team, not
+the path, so the grants survive the move into the store and every rebuild,
+as long as the bytes stay as signed. That's why the package skips fixup:
+stripping or patching anything would break the signature and lose the
+grants.
+
+The agent copies upstream's own LaunchAgent: restart on a crash or a
+non-zero exit, not on a clean one. The app takes a single-instance lock and
+exits cleanly when another copy is running, so a second launch stays down
+rather than looping.
+
+Its settings live in its own database under `~/Library/Application
+Support/bluebubbles-server`, so two of them can't be declared and have to be
+set in the app:
+
+- **Auto Start Method** must be "Do Not Auto Start". Its login item or its
+  own LaunchAgent would race the declared one.
+- **Check for Updates** should be off. The store is read-only, so its
+  updater can't install anything. Updates come from bumping the package.
+
+### Moving from the hand-installed app
+
+The first deploy is harmless: the hand-installed copy is already running, so
+the declared one exits on the lock. Then, on the mini:
+
+1. In BlueBubbles' settings, set Auto Start Method to "Do Not Auto Start" and
+   turn off Check for Updates.
+2. Quit BlueBubbles and delete the hand-installed `BlueBubbles.app`.
+3. `launchctl kickstart gui/$(id -u)/org.nix-community.home.bluebubbles`
+4. Check a message gets through on the desktop, with no permission prompts
+   on the mini.
+
+Its log is `~/Library/Logs/bluebubbles-server.log`.
 
 ## The firewall
 
