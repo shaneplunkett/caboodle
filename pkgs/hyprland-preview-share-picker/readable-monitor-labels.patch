@@ -1,0 +1,71 @@
+diff --git a/src/views/outputs.rs b/src/views/outputs.rs
+--- a/src/views/outputs.rs
++++ b/src/views/outputs.rs
+@@ -8 +8 @@
+-use hyprland::data::{Monitor, Monitors};
++use hyprland::data::{Monitor, Monitors, Transforms};
+@@ -10 +10 @@
+-use hyprland_preview_share_picker_lib::image::Image;
++use hyprland_preview_share_picker_lib::image::{Image, ImageKind};
+@@ -11,0 +12 @@
++use image::imageops::{flip_horizontal, rotate90, rotate180, rotate270};
+@@ -70 +70,0 @@
+-            view.area = MonitorArea::from(&view.monitors)
+@@ -71,0 +72,2 @@
++        view.compact_output_gaps();
++        view.area = MonitorArea::from(&view.monitors);
+@@ -74,0 +77,22 @@
++    fn compact_output_gaps(&mut self) {
++        self.monitors.sort_by_key(|monitor| monitor.x);
++        if let Some(mut edge) = self.monitors.first().map(|monitor| monitor.x + monitor.width as i32) {
++            self.monitors.iter_mut().skip(1).for_each(|monitor| {
++                if monitor.x > edge {
++                    monitor.x = edge;
++                }
++                edge = edge.max(monitor.x + monitor.width as i32);
++            });
++        }
++
++        self.monitors.sort_by_key(|monitor| monitor.y);
++        if let Some(mut edge) = self.monitors.first().map(|monitor| monitor.y + monitor.height as i32) {
++            self.monitors.iter_mut().skip(1).for_each(|monitor| {
++                if monitor.y > edge {
++                    monitor.y = edge;
++                }
++                edge = edge.max(monitor.y + monitor.height as i32);
++            });
++        }
++    }
++
+@@ -226 +250 @@
+-                .label(&self.monitor.name)
++                .label(format!("{} ({})", self.monitor.description, self.monitor.name))
+@@ -244 +268 @@
+-        let clicks = self.config.windows.clicks;
++        let clicks = self.config.outputs.clicks;
+@@ -324,0 +349 @@
++        let transform = self.monitor.transform;
+@@ -330,0 +356,2 @@
++            #[strong]
++            transform,
+@@ -338 +365 @@
+-                let mut img = match Image::new(buffer) {
++                let img = match Image::new(buffer) {
+@@ -344,0 +372,17 @@
++
++                let buffer = match img.buffer {
++                    ImageKind::Rgb(buffer) => buffer,
++                    ImageKind::Xrgb(_) => unreachable!("the image was just converted to rgb"),
++                };
++                let buffer = match transform {
++                    Transforms::Normal => buffer,
++                    Transforms::Normal90 => rotate90(&buffer),
++                    Transforms::Normal180 => rotate180(&buffer),
++                    Transforms::Normal270 => rotate270(&buffer),
++                    Transforms::Flipped => flip_horizontal(&buffer),
++                    Transforms::Flipped90 => rotate90(&flip_horizontal(&buffer)),
++                    Transforms::Flipped180 => rotate180(&flip_horizontal(&buffer)),
++                    Transforms::Flipped270 => rotate270(&flip_horizontal(&buffer)),
++                };
++                let mut img =
++                    Image { aspect_ratio: buffer.width() as f64 / buffer.height() as f64, buffer: ImageKind::Rgb(buffer) };

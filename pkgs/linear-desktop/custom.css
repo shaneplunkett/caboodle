@@ -1,0 +1,115 @@
+/* Injected into every Linear window by inject-css.js (see default.nix).
+ *
+ * Linear derives its whole palette from the six-colour custom theme string
+ * (Settings -> Preferences -> Interface and theme), but several semantic
+ * tokens come out off-palette: text tiers land on white/grey instead of
+ * Catppuccin's blue-tinted text ramp, and focus/link/editor/scrollbar/toast
+ * colours are stock. Snap those to Catppuccin Mocha (lib/palette.nix) here.
+ * Variable names were dumped from the live app via --remote-debugging-port;
+ * Linear's derived elevation ladder (bg secondary/tertiary, borders) is left
+ * alone on purpose — it is already computed from the Mocha theme string. */
+
+* {
+  font-family: "@ui@", "Noto Color Emoji", sans-serif !important;
+}
+
+code,
+pre,
+kbd,
+samp,
+code *,
+pre * {
+  font-family: "@code@", "Noto Color Emoji", monospace !important;
+}
+
+:root {
+  /* Text hierarchy: text, subtext1, subtext0, overlay0 */
+  --color-text-primary: #cdd6f4 !important;
+  --color-text-secondary: #bac2de !important;
+  --color-text-tertiary: #a6adc8 !important;
+  --color-text-quaternary: #6c7086 !important;
+  --content-color: #7f849c !important; /* overlay1: muted/placeholder text */
+  --content-highlight-color: #cdd6f4 !important;
+
+  /* Chrome-level surfaces: mantle for the frame, base for content, with the
+   * border snapped to surface0. */
+  --bg-color: #181825 !important;
+  --bg-sidebar-color: #181825 !important;
+  --bg-base-color: #1e1e2e !important;
+  --color-bg-primary: #1e1e2e !important;
+  --bg-border-color: #313244 !important;
+
+  /* Accent-adjacent: mauve focus, blue links, mauve selection wash */
+  --focus-ring-color: #cba6f7 !important;
+  --focus-ring-outline: 1px solid #cba6f7 !important;
+  --app-link-color: #89b4fa !important;
+  --ai-selection-bg: #cba6f726 !important;
+
+  /* Editor */
+  --editor-text-color: #cdd6f4 !important;
+  --editor-surface-background: #11111b !important; /* crust */
+
+  /* Scrollbars: surface2, overlay0 on hover/drag */
+  --app-scrollbar-bg: #585b70 !important;
+  --app-scrollbar-bg-hover: #6c7086 !important;
+  --app-scrollbar-bg-active: #6c7086 !important;
+
+  /* Toasts: Mocha green/blue/yellow/red on base, translucent borders */
+  --normal-bg: #181825 !important;
+  --normal-bg-hover: #313244 !important;
+  --normal-border-hover: #45475a !important;
+  --success-bg: #1e1e2e !important;
+  --success-border: #a6e3a166 !important;
+  --success-text: #a6e3a1 !important;
+  --info-bg: #1e1e2e !important;
+  --info-border: #89b4fa66 !important;
+  --info-text: #89b4fa !important;
+  --warning-bg: #1e1e2e !important;
+  --warning-border: #f9e2af66 !important;
+  --warning-text: #f9e2af !important;
+  --error-bg: #1e1e2e !important;
+  --error-border: #f38ba866 !important;
+  --error-text: #f38ba8 !important;
+}
+
+::selection {
+  background: #cba6f74d;
+}
+
+/* Semantic icon colours (status, health, priority) sit outside the theme
+ * system as hardcoded SVG fills/strokes and inline styles. Swap Linear's
+ * stock palette for Mocha. Attribute selectors only fire when the exact
+ * stock value is present, so speculative entries cost nothing. */
+
+/* Indigo (Linear brand / in-progress) -> mauve */
+svg [fill="#5e6ad2" i], svg[fill="#5e6ad2" i] { fill: #cba6f7 !important; }
+svg [stroke="#5e6ad2" i], svg[stroke="#5e6ad2" i] { stroke: #cba6f7 !important; }
+[style*="#5e6ad2" i] { color: #cba6f7 !important; }
+
+/* Greens -> green */
+svg [fill="#26a544" i], svg[fill="#26a544" i], svg [fill="#4cb782" i], svg[fill="#4cb782" i] { fill: #a6e3a1 !important; }
+svg [stroke="#26a544" i], svg[stroke="#26a544" i], svg [stroke="#4cb782" i], svg[stroke="#4cb782" i] { stroke: #a6e3a1 !important; }
+[style*="#26a544" i], [style*="#4cb782" i] { color: #a6e3a1 !important; }
+
+/* Yellows -> yellow */
+svg [fill="#f0bf00" i], svg[fill="#f0bf00" i], svg [fill="#f2c94c" i], svg[fill="#f2c94c" i] { fill: #f9e2af !important; }
+svg [stroke="#f0bf00" i], svg[stroke="#f0bf00" i], svg [stroke="#f2c94c" i], svg[stroke="#f2c94c" i] { stroke: #f9e2af !important; }
+[style*="#f0bf00" i], [style*="#f2c94c" i] { color: #f9e2af !important; }
+
+/* Oranges (urgent / at-risk) -> peach */
+svg [fill="#fc7840" i], svg[fill="#fc7840" i], svg [fill="#f2994a" i], svg[fill="#f2994a" i] { fill: #fab387 !important; }
+svg [stroke="#fc7840" i], svg[stroke="#fc7840" i], svg [stroke="#f2994a" i], svg[stroke="#f2994a" i] { stroke: #fab387 !important; }
+[style*="#fc7840" i], [style*="#f2994a" i] { color: #fab387 !important; }
+
+/* Reds -> red */
+svg [fill="red" i], svg[fill="red" i], svg [fill="#eb5757" i], svg[fill="#eb5757" i], svg [fill="#f2453d" i], svg[fill="#f2453d" i] { fill: #f38ba8 !important; }
+svg [stroke="red" i], svg[stroke="red" i], svg [stroke="#eb5757" i], svg[stroke="#eb5757" i], svg [stroke="#f2453d" i], svg[stroke="#f2453d" i] { stroke: #f38ba8 !important; }
+[style*="#eb5757" i], [style*="#f2453d" i] { color: #f38ba8 !important; }
+
+/* Blues -> blue */
+svg [fill="#4ea7fc" i], svg[fill="#4ea7fc" i] { fill: #89b4fa !important; }
+svg [stroke="#4ea7fc" i], svg[stroke="#4ea7fc" i] { stroke: #89b4fa !important; }
+[style*="#4ea7fc" i] { color: #89b4fa !important; }
+
+/* Grey status rings -> surface2 */
+svg [stroke="#e2e2e2" i], svg[stroke="#e2e2e2" i] { stroke: #585b70 !important; }

@@ -1,0 +1,55 @@
+# Codex prefix_rule allow-list — surfaces in CODEX_HOME/rules/default.rules.
+#
+# Keeps codex from pausing on Shane's usual read commands.
+# Mutation-shaped commands are deliberately omitted.
+#
+# Syntax: Starlark. `decision` defaults to "allow" when omitted.
+
+# ─── git read ──────────────────────────────────────────────────────────────
+prefix_rule(pattern = ["git", "status"])
+prefix_rule(pattern = ["git", "log"])
+prefix_rule(pattern = ["git", "diff"])
+prefix_rule(pattern = ["git", "show"])
+prefix_rule(pattern = ["git", "branch"])
+prefix_rule(pattern = ["git", "remote"])
+prefix_rule(pattern = ["git", "fetch"])
+prefix_rule(pattern = ["git", "rev-parse"])
+
+# ─── filesystem read ───────────────────────────────────────────────────────
+prefix_rule(pattern = ["ls"])
+prefix_rule(pattern = ["cat"])
+prefix_rule(pattern = ["head"])
+prefix_rule(pattern = ["tail"])
+prefix_rule(pattern = ["readlink"])
+prefix_rule(pattern = ["echo"])
+prefix_rule(pattern = ["which"])
+prefix_rule(pattern = ["file"])
+prefix_rule(pattern = ["wc"])
+
+# ─── nix lint ──────────────────────────────────────────────────────────────
+prefix_rule(pattern = ["statix", "check"])
+prefix_rule(pattern = ["deadnix"])
+
+# ─── language runtimes (read/exec, sandbox handles writes) ─────────────────
+prefix_rule(pattern = ["python3"])
+prefix_rule(pattern = ["node"])
+prefix_rule(pattern = ["npx"])
+prefix_rule(pattern = ["curl"])
+
+# ─── github (read) ─────────────────────────────────────────────────────────
+prefix_rule(pattern = ["gh", "api"])
+prefix_rule(pattern = ["gh", "repo"])
+prefix_rule(pattern = ["gh", "release"])
+prefix_rule(pattern = ["gh", "pr", "view"])
+prefix_rule(pattern = ["gh", "pr", "list"])
+prefix_rule(pattern = ["gh", "issue", "view"])
+prefix_rule(pattern = ["gh", "issue", "list"])
+
+# ─── vex CLIs ──────────────────────────────────────────────────────────────
+prefix_rule(pattern = ["vex"])
+prefix_rule(pattern = ["td"])
+prefix_rule(pattern = ["tvly"])
+prefix_rule(pattern = ["bb"])
+prefix_rule(pattern = ["rbw", "get"])
+prefix_rule(pattern = ["rbw", "unlocked"])
+prefix_rule(pattern = ["himalaya"])

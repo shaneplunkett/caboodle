@@ -1,0 +1,42 @@
+diff --git a/src/video_core/renderer_vulkan/vk_pipeline_serialization.cpp b/src/video_core/renderer_vulkan/vk_pipeline_serialization.cpp
+--- a/src/video_core/renderer_vulkan/vk_pipeline_serialization.cpp
++++ b/src/video_core/renderer_vulkan/vk_pipeline_serialization.cpp
+@@ -269,6 +269,7 @@
+     // at the exact position rather than append
+ 
+     vk::ShaderModule module{};
++    bool insert_permutation = true;
+ 
+     auto [it_pgm, new_program] = program_cache.try_emplace(program->info.pgm_hash);
+     if (new_program) {
+@@ -277,23 +278,22 @@
+     } else {
+         const auto& it = std::ranges::find(it_pgm.value()->modules, spec, &Program::Module::spec);
+         if (it != it_pgm.value()->modules.end()) {
+-            // A matching permutation is valid only at its original index. A different index means
+-            // the store holds entries from more than one cache generation, so this pipeline is
+-            // left to compile at runtime.
+             const auto idx = std::distance(it_pgm.value()->modules.begin(), it);
+             if (perm_idx != idx) {
+                 LOG_WARNING(Render_Vulkan,
+-                            "Cached permutation {} of {}_{:x} conflicts with index {}, skipping "
+-                            "preload",
+-                            perm_idx, program->info.stage, program->info.pgm_hash, idx);
+-                return false;
++                            "Permutation {} duplicates permutation {}; reusing the preloaded "
++                            "module ({}_{:x})",
++                            perm_idx, idx, program->info.stage, program->info.pgm_hash);
+             }
+             module = it->module;
++            insert_permutation = false;
+         } else {
+             module = CompileSPV(spv, instance.GetDevice());
+         }
+     }
+-    it_pgm.value()->InsertPermut(module, std::move(spec), perm_idx);
++    if (insert_permutation) {
++        it_pgm.value()->InsertPermut(module, std::move(spec), perm_idx);
++    }
+ 
+     infos[stage] = &it_pgm.value()->info;
+     modules[stage] = module;

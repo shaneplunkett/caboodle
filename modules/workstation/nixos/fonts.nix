@@ -1,0 +1,3 @@
+_: {
+  fonts.enableDefaultPackages = true;
+}
