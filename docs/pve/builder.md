@@ -250,6 +250,9 @@ drops below `min-free`, and roots keep the latest builds safe from it.
 `min-free` has to leave more room than the disk alert does, or Discord
 hears about a full disk before Nix gets a chance to clear it.
 
+The build workflow also runs on pushes to `main` only to root each host's
+latest build, so the desktop and MacBook stay cached until they're switched.
+
 The name only resolves through Blocky, so the cache is reachable on the LAN
 and the tailnet and nowhere else.
 
