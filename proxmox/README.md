@@ -27,10 +27,8 @@ Why it's done this way:
 
 ## Node exporter
 
-`node-exporter.sh` installs Debian's node exporter and its NVMe collector,
-which is where the hardware alerts get disk health and temperatures. Terraform
-runs it on both nodes over SSH, again whenever the script changes, so a
-rebuilt node needs it re-run: `terraform apply -replace='terraform_data.node_exporter["<node>"]'`.
+A rebuilt node needs `node-exporter.sh` run again:
+`terraform apply -replace='terraform_data.node_exporter["<node>"]'`.
 
 - **Containers see the host's sensors.** Every LXC's node exporter reports the
   hypervisor's temperatures too, so the hardware rules only look at the
@@ -42,8 +40,8 @@ rebuilt node needs it re-run: `terraform apply -replace='terraform_data.node_exp
 ## Cube's second NVMe
 
 Cube's second NVMe is the `nvme-thin` storage, a thin pool `nvme` in volume
-group `nvme`. Terraform declares the storage, but Proxmox has to set up the
-disk first, and the provider can't do that. To make it again:
+group `nvme`. Proxmox has to set up the disk before Terraform can use it,
+and the provider can't do that. To make it again:
 
 ```sh
 dev=$(readlink -f /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_Plus_1TB_<serial>)

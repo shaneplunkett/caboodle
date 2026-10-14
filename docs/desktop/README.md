@@ -1,86 +1,41 @@
 # The desktop
 
 The NixOS desktop is a node in the hive like the LXCs and the mini, but
-merging never deploys it. It has no deploy tags, so the PR build check
-builds it on the builder, which fills the cache, and Shane switches it on
-the desktop when she's ready. See [amdgpu-crash-dumps](amdgpu-crash-dumps.md)
-for the GPU crash collector it runs.
+merging never deploys it. The PR build check builds it on the builder,
+which fills the cache, and Shane switches it on the desktop when she's
+ready. [docs/workstation](../workstation/README.md) covers what it shares
+with the Macs.
 
-## What the hive gives it
+Monitoring is off, so a powered-off desktop doesn't page anyone. Its logs
+still reach Loki.
 
-`nixosDefaults` in `flake.nix`, the same as every NixOS host:
-`modules/nixos.nix` (Nix settings, nh's weekly clean, node exporter wired
-to `homelab.monitoring`), agenix with no secrets asked for, the backup
-module with no paths so it does nothing, and alloy, which ships the
-journal to Loki as `desktop` while it's on. It isn't an LXC, so it doesn't
-get `modules/lxc.nix`.
-
-It's a machine Shane sits at, so it imports `modules/workstation`, which
-the Macs share, and `modules/workstation/nixos`: home-manager and
-catppuccin's NixOS modules, audio, Docker, locale, the Unraid shares, and
-Shane's user with her sudo rules. The host file points home-manager at
-`home/shane/home.nix` and picks Noctalia as the shell. Its nixpkgs is
-`workstationPkgs`, with the overlays the mini gets.
-
-`homelab.monitoring.enable` is off, so Prometheus doesn't scrape it and a
-powered-off desktop doesn't page anyone. Its logs still reach Loki.
-
-`homelab.tailscale.enable` is off too. The hive's Tailscale module joins
-with an agenix OAuth secret, and the desktop's host key isn't one of its
-recipients. The desktop enables Tailscale itself
-instead, with MagicDNS through resolved
-(`hosts/desktop/modules/networking.nix`). Without resolved, tailscaled overwrites `/etc/resolv.conf` and
-fights NetworkManager, which is what broke DNS here in March. With it,
-tailscaled registers `100.100.100.100` on `tailscale0`, which answers
-`.ts.net` names and forwards the rest to the tailnet's resolvers, Blocky on
-dns1 and dns2. If Tailscale is down, the LAN link's DHCP gives the same two.
-`FallbackDNS` is empty so resolved never goes round them to a public
+The hive's Tailscale is off too, because it joins with an agenix OAuth
+secret and the desktop's host key isn't one of its recipients. The desktop
+enables Tailscale itself, with MagicDNS through resolved. Without resolved,
+tailscaled overwrites `/etc/resolv.conf` and fights NetworkManager.
+`FallbackDNS` is empty so resolved never goes round Blocky to a public
 resolver, and its mDNS is off because Avahi already has port 5353.
 
 ## Switching
 
 Wait for the PR's `build (desktop)` check to go green first, so the switch
 downloads what the builder made instead of compiling it here. Then, from
-the caboodle checkout on the desktop:
+the caboodle checkout on the desktop, `git add` any new files and run
+either of:
 
 ```sh
 colmena apply-local --sudo
+nrs
 ```
 
-`apply-local` finds the node by hostname, and both are `desktop`. `--sudo`
-runs colmena's `nix-env --set` and `switch-to-configuration` through sudo.
-
-`nh os switch` does the same job with nh's build tree and diff. Home
-Manager sets `NH_FLAKE` to `~/Projects/personal/caboodle`, so it needs no
-arguments. `nrs` is a fish wrapper around it that also refreshes every
-open fish shell afterwards. Flakes only see tracked files, so `git add`
-new ones before either.
-
-Colmena can't deploy the desktop over SSH. Root has no keys there and sshd
-refuses root logins.
-
-Home Manager is part of the system switch. `home-manager switch` or
-running a generation's `activate` by hand fires its activation hooks
-outside a switch, so only do that when Shane asks for exactly that.
-
-Switching is passwordless. The sudo rules in
-`modules/workstation/nixos/user.nix` allow exactly the commands nh and
-colmena elevate. If either prompts for a password, look at the sudo
-command it ran rather than assuming Shane has to type it.
-
-## What replaced nix-config's tooling
-
-nix-config's `scripts/remote.sh [eval|build|switch] [host]` synced the
-working tree, uncommitted changes and all, to whichever machine did the
-work and ran nh there. Eval and build went to an always-on builder for the
-host's platform, and switch ran on the host itself. Its dev shell wrapped
-it as `switch`, `build` and `evaluate`, and `nrs` switched the current
-machine from `~/nix-config`.
-
-Here the PR check builds every host on the builder, the desktop included.
-Locally, `colmena build --on desktop` or `nix build .#hydraJobs.desktop`
-builds it on the desktop, and the switch is one of the commands above.
-Nothing switches the desktop from another machine any more.
+- Colmena can't deploy the desktop over SSH. Root has no keys there and
+  sshd refuses root logins.
+- Home Manager is part of the system switch. `home-manager switch` or
+  running a generation's `activate` by hand fires its activation hooks
+  outside a switch, so only do that when Shane asks for exactly that.
+- Switching is passwordless. If it prompts for a password, the sudo command
+  it ran didn't match a rule in `modules/workstation/nixos/user.nix`, so
+  look at that rather than assuming Shane has to type it.
 
 ## Game streaming
 
@@ -97,25 +52,41 @@ on the UI's PIN page.
 - HDR needs KMS capture and `cap_sys_admin`, which this setup avoids, so
   it's unproven here.
 
+## GPU crash dumps
+
+The desktop saves AMDGPU crash dumps by itself. Each one gets a directory
+under `/var/lib/amdgpu-crash-dumps/`, and a `.partial` dump means the
+capture didn't finish. Nothing is uploaded, but review them before sharing.
+
+Proton logs aren't collected. Set the game's Steam launch option to
+`PROTON_LOG=1 %command%` to get one.
+
+The collector only runs when a dump appears, so an inactive template is
+normal. To check on it:
+
+```sh
+systemctl cat amdgpu-dump@.service
+journalctl -b -u 'amdgpu-dump@*' --no-pager
+ls -l /var/lib/amdgpu-crash-dumps/
+```
+
+The kernel's dump expires after about five minutes and doesn't survive a
+reboot, and a hard lockup can stop the capture altogether. The tests use
+fixtures, so the first real crash is the only end-to-end test.
+
 ## Gotchas
 
-- nh's clean keeps two generations, as on the LXCs. nix-config kept a
-  week, and systemd-boot lists up to ten, so after the weekly clean the
-  older boot entries are gone.
+- nh's weekly clean deletes old generations, so the boot menu can only roll
+  back as far as the last clean.
 - NixOS modules get `palette` and `typography` from
   `modules/workstation/nixos`, and `shell` from the host file, as module
   arguments. A module can take them as function arguments but can't use
   them in `imports`, since module arguments aren't known yet when imports
   are resolved.
-- Noctalia keeps its own nixpkgs pin. Following ours would change its
-  hashes and miss its Cachix cache, so it would build locally. Hyprland
-  comes from our nixpkgs, so the NixOS cache has it.
-- The SSH aliases in `home/shane/modules/common/ssh.nix`, which the Macs
-  share, reach each machine by its MagicDNS name and set `HostKeyAlias` to
-  the short name, so `known_hosts` keeps one key per machine however
-  `HostName` is spelt.
-- `noctalia` tracks upstream's `cachix` branch, which trails main to the
-  newest commit their CI has cached.
+- Noctalia keeps its own nixpkgs pin, so it matches its Cachix cache
+  instead of building here, and tracks upstream's `cachix` branch, which
+  trails main to the newest commit their CI has cached. Hyprland comes from
+  our nixpkgs, so the NixOS cache has it.
 - `noctalia-plugins` is only a source tree. Noctalia reads its `plugins/`
   directory as a path source, so shipping a plugin change is
   `nix flake update noctalia-plugins`.

@@ -3,7 +3,7 @@
 NixOS LXC on PVE running Pocket ID, the homelab's single sign-on. It's an
 OIDC provider that only does passkeys, so there are no passwords anywhere.
 The container is `module "auth"` in `terraform/pve-auth.tf`, and the service
-is `modules/services/pocket-id`, using the nixpkgs module.
+is `modules/services/pocket-id`.
 
 The admin UI is `https://auth.shaneplunkett.com`. Pocket ID publishes its
 endpoints at `/.well-known/openid-configuration`, and most apps only need
@@ -43,8 +43,7 @@ callback URL and scopes each one wants.
 
    Add `pkce = false;` if the app doesn't support PKCE. An app that isn't a
    host in the hive, like Proxmox or Unraid, is declared in
-   `modules/services/pocket-id`. Every client is confidential, skips the
-   consent screen, and only lets its groups in.
+   `modules/services/pocket-id`.
 4. Point the app at Pocket ID in its module, reading the secret from
    `config.age.secrets.<app>-oidc-client-secret.path`.
    `modules/services/grafana` is the worked example.
@@ -52,14 +51,11 @@ callback URL and scopes each one wants.
    A new group is empty, so add yourself to it in Pocket ID under User Groups,
    then sign in from the app's login page.
 
-The `pocket-id-clients` job on auth does the creating, through Pocket ID's
-API with the `pocket-id-api-key` secret, an API key made in Pocket ID's UI.
-It runs when the declared clients change, and updates the declared fields
-and groups of clients that already exist. It only sets a secret when it
-creates a client, and it never deletes one, so a client removed from Nix
-stays in Pocket ID until it's deleted there. Its report is in
-`journalctl -u pocket-id-clients` on auth. If the key stops working, the unit
-fails and alerts.
+`secret` only matters when a client is created, so clients that already
+exist, like forgejo, home and oauth2-proxy, declare none. Changing it later
+does nothing. Clients are never deleted either, so one removed from Nix stays
+in Pocket ID until it's deleted there. The `pocket-id-clients` job's report is
+in `journalctl -u pocket-id-clients` on auth.
 
 ### Roles
 
@@ -68,9 +64,7 @@ Map roles from group names rather than emails. Grafana makes members of
 `grafana_admins` an Admin and everyone else a Viewer. Use the same
 `<app>_admins` pattern for the next app.
 
-The job creates a client's groups if they're missing, but who's in them is
-managed in Pocket ID under User Groups. The group's name is what goes in the
-claim, not its display name.
+The group's name is what goes in the claim, not its display name.
 
 ### Proxmox
 
@@ -108,12 +102,9 @@ The secret goes in on stdin so it stays out of sudo's log.
 
 ### Unraid
 
-Unraid (7.2 or later) keeps OIDC in its own UI, under Settings, Management
-Access, API, OIDC. It saves to
-`/boot/config/plugins/dynamix.my.servers/configs/oidc.json` on the flash
-drive.
+Unraid keeps OIDC in its own UI, under Settings, Management Access, API,
+OIDC.
 
-- The callback is `https://unraid.shaneplunkett.com/graphql/api/auth/oidc/callback`.
 - The issuer URL has no trailing slash.
 - Add `groups` to the scopes, and use Advanced authorization with one rule,
   `groups` contains `unraid_admins`. Every OIDC login signs in as root, so
@@ -123,24 +114,18 @@ drive.
 ### Apps without OIDC
 
 Apps with no OIDC login of their own sit behind oauth2-proxy on the ingress
-host, in `modules/services/nginx-ingress`. A route goes behind it by adding
-its name to `gated`, with the paths that should stay open. Only members of
-`media_admins` get through. One sign-in sets a cookie for the whole domain
-that lasts 30 days, so it covers every gated app at once.
+host. A route goes behind it by adding its name to `gated` in
+`modules/services/nginx-ingress`, with the paths that should stay open. One
+sign-in covers every gated app.
 
-The open paths are how the apps talk to each other through ingress.
-Maintainerr calls Sonarr, Radarr and Overseerr on `/api/`, Shelfarr calls
-SABnzbd (which answers on both `/api` and `/sabnzbd/api`), and SABnzbd and Shelfarr fetch NZBs from Prowlarr's
-`/<n>/download` links. Every open path still needs that app's API key. Before
-gating a new app, search the arr host's `/var/lib` for its hostname to find
-what calls it.
+The open paths are how the apps talk to each other through ingress, like
+Maintainerr calling the arr apps on `/api/`, or SABnzbd fetching NZBs from
+Prowlarr. Every open path still needs that app's API key. Before gating a new
+app, search the arr host's `/var/lib` for its hostname to find what calls it.
 
-oauth2-proxy's own callback lives on `oauth.shaneplunkett.com`, which has
-nothing else on it.
-
-Glance's tiles for gated apps check the app's LAN address directly, using the
-`/` proxy target from ingress. Through ingress, every gated app would redirect
-to the sign-in page and look up even when the app was down.
+Glance's tiles for gated apps check the app's LAN address directly, because
+through ingress they'd hit the sign-in redirect and look up even when the app
+was down.
 
 - **Pocket ID doesn't verify emails** without a mail server, so every
   `email_verified` claim is false. oauth2-proxy refuses those by default,
@@ -149,12 +134,9 @@ to the sign-in page and look up even when the app was down.
   decides who gets in, not the email.
 - **The apps' own ports are still open on the LAN**, so the gate only covers
   the `shaneplunkett.com` names.
-- **Behind the gate, the apps skip their own logins.** Ingress counts as a
-  local address, so the passkey is the only sign-in. The arr apps do this with
-  `auth.required = "DisabledForLocalAddresses"`, and SABnzbd with
-  `inet_exposure = 5`. Deluge's web password can't be turned off, so it still
-  asks, but its session lasts 30 days instead of an idle hour. deluge-web
-  owns `web.conf`, so Nix sets `session_timeout` there before each start.
+- **Behind the gate, the apps skip their own logins,** because ingress counts
+  as a local address. Deluge's web password can't be turned off, so it still
+  asks.
 
 ## Getting back in
 
@@ -171,10 +153,6 @@ It prints a link that works once within the hour. Sign in with it and
 register a new passkey.
 
 ## Backups and restores
-
-The backup's `prepare` step copies the SQLite database to
-`/var/lib/pocket-id/dumps` with `.backup`, and restic backs that up along
-with the rest of `/var/lib/pocket-id`. The live database files are excluded.
 
 Pocket ID encrypts its signing keys with the `pocket-id-encryption-key`
 secret, so a restore is useless without it. The key is in agenix and in

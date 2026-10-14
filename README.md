@@ -24,27 +24,25 @@ pkgs/              packages the flake builds itself, and the overlays that add t
 terraform/         Proxmox LXCs/VMs, Hetzner, Cloudflare
 proxmox/           config installed on the Proxmox nodes themselves
 docs/              notes that the code can't explain
-tools/             small helpers (minirack planner, Cloudflare MCP headers)
+tools/             small helpers (minirack planner, Cloudflare MCP headers, Music Assistant's YouTube cookie)
 ```
 
 ## Nix hosts
 
 Every host is a node in the colmena hive in `flake.nix`: the NixOS LXCs, the
-desktop and the Macs. What every node gets lives in `colmenaHive.defaults`,
-which only holds options and data, since it has to evaluate on both systems.
-`nixosDefaults` is what every NixOS host gets and `darwinDefaults` what every
-Mac gets. An LXC is written with the `lxc` helper,
-`plex = lxc "plex" { homelab.lanAddress = "..."; };`, which adds
-`modules/lxc.nix` to `hosts/plex.nix`. An LXC's own file under `hosts/` just
-imports the services it runs.
+desktop and the Macs. The hive's defaults only hold options and data, since
+they have to evaluate on both systems.
 
 A service that runs on both kinds of host keeps its options in an
 `options.nix` next to its `default.nix`, so the hive can read them from any
-node, and the NixOS half and the darwin half each read the same facts. There are two
-Macs. The mini is a server, deployed on merge like the LXCs; see
-[docs/mini](docs/mini/README.md). The MacBook is built by every pull request
-but switched by hand; see [docs/macbook](docs/macbook/README.md). So is the
-desktop; see [docs/desktop](docs/desktop/README.md).
+node, and the NixOS half and the darwin half each read the same facts.
+
+The mini is a server, deployed on merge like the LXCs; see
+[docs/mini](docs/mini/README.md). The MacBook and the desktop are built by
+every pull request but switched by hand; see
+[docs/macbook](docs/macbook/README.md) and
+[docs/desktop](docs/desktop/README.md). What the three share is in
+[docs/workstation](docs/workstation/README.md).
 
 Modules can read the whole hive through colmena's `nodes` and `name`
 arguments, so things like scrape targets, log shipping and dashboard tiles are
@@ -78,11 +76,11 @@ Flakes only see tracked files, so `git add` new files before building.
 2. Add `hosts/<host>.nix` and a node in the hive pointing at it,
    `<host> = lxc "<host>" { homelab.lanAddress = "..."; };`.
 3. Add a `terraform/<node>-<host>.tf` using `modules/nixos-lxc` and apply it.
-   Terraform reads every LAN address from the hive (`nix eval
-   .#network`) and reserves the host's in UniFi before the container
-   first boots, so it comes up on that address. Leave `mac_address` out and
-   Terraform makes one. Never copy one from another host: a duplicated MAC
-   once had two containers fighting over one DHCP lease. A host that isn't in the hive fails the plan.
+   Terraform reserves the host's address in UniFi before the container first
+   boots, and a host that isn't in the hive fails the plan. Leave
+   `mac_address` out and Terraform makes one. Never copy one from another
+   host: a duplicated MAC once had two containers fighting over one DHCP
+   lease.
 4. Add the host's key to `modules/agenix/host-keys.nix`
    (`ssh-keyscan -t ed25519 <ip>`), name it in `agenix-rules.nix`, add it to
    the secrets it needs, and `agenix -r` to rekey. The builder trusts hosts
@@ -104,9 +102,6 @@ straight in, so they never land on disk or in shell history:
 cd modules/agenix
 printf 'KEY=%s\n' "$(rbw get <entry>)" | agenix -e <name>.age
 ```
-
-Whether a secret is a raw value or a `KEY=value` env file depends on what the
-consuming service expects.
 
 ## Monitoring
 
@@ -136,25 +131,13 @@ the host's `lanAddress`, and Terraform makes the UniFi rule.
 
 ## Changes and deploys
 
-The forge is the source of truth, and GitHub is a push mirror of it. Every
-pull request builds every host on the builder, and every push to `main`
-deploys every host tagged `deploy-on-merge`, one deploy at a time, then
-dns2 once dns1 is answering. That includes the builder, whose runner restarts
-gracefully after the deploy rather than during it; see
-[builder.md](docs/pve/builder.md).
-
-Terraform works the same way: a pull request touching `terraform/` gets its
-plan posted as a comment, and merging applies it, before any host deploys. See
-[docs/pve/builder.md](docs/pve/builder.md).
-
-Updates are pull requests too. A weekly `nix flake update` moves most
-flake inputs in one pull request for review, with each host's package
-changes, new evaluation warnings and the upstream changelogs. Fast movers
-with nothing to review, `llm-agents` and the Homebrew taps, are pinned to a
-commit in `flake.nix` and get theirs from Renovate, merged once it builds.
-See [builder.md](docs/pve/builder.md#updates).
+How pull requests build, merges deploy, Terraform applies and updates arrive
+is in [docs/pve/builder.md](docs/pve/builder.md).
 
 ## Tools
 
 - [minirack](tools/minirack/README.md): a visual planner for the 10" minirack
   layout and cabling. Run `bun tools/minirack/server.ts`.
+- `tools/music-assistant/youtube-cookie.py`: signs in to YouTube Music in a
+  throwaway Chrome profile and hands the cookie to Music Assistant. Run it
+  when the YouTube Music source starts failing.

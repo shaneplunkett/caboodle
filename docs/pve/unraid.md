@@ -4,16 +4,9 @@
 
 Unraid server running as a VM on PVE, declared in `terraform/pve-unraid.tf`.
 
-## PCIe Passthrough
-
-Two devices are passed through to Unraid (the bus IDs are in the Terraform):
-
-- **NVMe SSD**: fast cache/storage
-- **SAS HBA**: gives Unraid direct access to any drives connected to it
-
 ## Updates
 
-Unraid checks weekly for OS and plugin updates and posts them to the homelab
+Unraid checks for OS and plugin updates and posts them to the homelab
 alerts channel through its own Discord webhook, set up under Settings,
 Notification Settings, Notification Agents. Updates are applied from its UI.
 The notification grid has to have Agents ticked for Notices, Warnings and
@@ -21,11 +14,10 @@ Alerts, or Unraid finds updates but never tells Discord.
 
 ## Disk health
 
-The monitoring host reads SMART from every Unraid disk over SSH every 15
-minutes, with its own key (`unraid-smart-ssh-key` in agenix). On Unraid that
-key is locked to one forced command that runs `smartctl` on each disk, so it
-can't open a shell or run anything else. Add it again after replacing the USB
-stick:
+The monitoring host reads SMART from every Unraid disk over SSH, with its
+own key (`unraid-smart-ssh-key` in agenix). On Unraid that key is locked to
+one forced command that runs `smartctl` on each disk, so it can't open a
+shell or run anything else. Add it again after replacing the USB stick:
 
 ```sh
 ssh root@<unraid> 'cat >> ~/.ssh/authorized_keys' < modules/services/unraid-smart/authorized_key

@@ -2,7 +2,7 @@
 
 The forge, the DNS hosts and the monitoring stack are all on the LAN, so a
 bad ISP day can lock you out of the things you'd fix it with. This is the
-order that worked on 9 Oct 2026, from a laptop on 4G.
+order to work through, from a laptop on 4G.
 
 ## How DNS is meant to fail
 
@@ -12,7 +12,7 @@ and Cloudflare itself, also over DoT. So LAN DNS should only break when the
 internet can't reach either of them.
 
 Latency matters more than you'd think. A new DoT connection takes three
-round trips before the first answer, and Blocky gives each upstream 3s, so
+round trips before the first answer, and Blocky's upstream timeout is 3s, so
 round trips over about 1s start failing lookups. Unbound keeps its
 connections open once they're up, so failures cluster after a restart or a
 quiet spell.

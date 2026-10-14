@@ -1,8 +1,7 @@
 # Arr
 
-NixOS LXC on Cube running the media automation stack. The container is
-`module "arr"` in `terraform/cube-arr.tf`, and the apps are
-`modules/services/arr`, one file per app.
+NixOS LXC on Cube running the media automation stack, one module file per
+app.
 
 ## How the apps find each other
 
@@ -11,7 +10,8 @@ app sync, Seerr's servers) in their own databases, as the host's LAN address
 and each app's port. Nix can't declare any of that, so moving or rebuilding
 the host has to keep:
 
-- **The address.** It's a fixed DHCP reservation for the container's MAC.
+- **The address.** It's the host's `lanAddress`, which Terraform reserves
+  for the container's MAC.
 - **The ports.** Sonarr Anime is a second Sonarr on its own port, not a
   remapped container port.
 - **The API keys.** Sonarr, Sonarr Anime, Radarr, Prowlarr and SABnzbd get
@@ -29,9 +29,8 @@ and files still land as 99:100.
 ## Containers
 
 Maintainerr, Shelfarr and Calibre-Web-Automated have no NixOS module, so they
-run under Podman with `virtualisation.oci-containers`. Their images are
-pinned by tag (or by digest when there's no matching tag), so updating one
-means bumping the pin.
+run under Podman with `virtualisation.oci-containers`. Renovate opens the
+pull requests that move their images.
 
 - **Podman needs `XDG_RUNTIME_DIR=/run`.** Without it, rootful Podman puts
   network namespaces in `/run/user/0`, and every root SSH login (like a
@@ -47,7 +46,7 @@ means bumping the pin.
 ## SABnzbd
 
 Nix writes its settings into `sabnzbd.ini` on each start, and they win over
-anything set in the web UI. Credentials are in the `sabnzbd` secret.
+anything set in the web UI.
 
 - The ini is writable (`allowConfigWrite`). Read-only, SABnzbd still tries
   to save it every 30 seconds or so, and fills the Warnings tab with "Cannot
@@ -67,14 +66,9 @@ labels are state in the data folder.
 - Torrents are outgoing only. Deluge uses a random listening port and
   nothing is forwarded to it.
 
-## Backups
+## Restoring a database
 
-Each app's data folder is backed up, minus logs, posters (`MediaCover` comes
-back on a refresh) and the apps' own backup zips. The SQLite databases listed
-in `homelab.arr.databases` are excluded as live files and dumped into a
-`dumps/` folder next to them before each run.
-
-To restore a database, follow the restore steps in
-[docs/hetzner](../hetzner/README.md) for the app's folder. Then, with the app
-stopped, copy the dump from `dumps/` over the database, delete its `-wal` and
-`-shm` files, and start the app.
+The SQLite databases are backed up as dumps in a `dumps/` folder next to
+them. Follow the restore steps in [docs/hetzner](../hetzner/README.md) for
+the app's folder. Then, with the app stopped, copy the dump from `dumps/`
+over the database, delete its `-wal` and `-shm` files, and start the app.

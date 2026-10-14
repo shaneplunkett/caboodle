@@ -7,8 +7,6 @@ by Prometheus or Loki on another host.
 
 Glance has its own [README](glance/README.md).
 
-These are the whys the Nix can't say for itself.
-
 ## Alertmanager
 
 - The config goes through envsubst so the Discord webhook can come from an
@@ -56,8 +54,6 @@ These are the whys the Nix can't say for itself.
 
 - Conditions only compare integers, so fractional values (like CPU ratios)
   can't be checked there. Leave those to Prometheus.
-- Gatus watches the monitoring stack from the dashboard host, so a dead
-  Prometheus or Alertmanager still pages Discord directly.
 
 ## nginx-ingress
 

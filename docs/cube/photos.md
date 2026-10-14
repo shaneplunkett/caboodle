@@ -1,16 +1,13 @@
 # Photos
 
-NixOS LXC on cube running Immich with the nixpkgs `services.immich` module,
-for Shane's photo library and iPhone backup. The container is
-`module "photos"` in `terraform/cube-photos.tf` and the service is
-`modules/services/immich`.
+NixOS LXC on cube running Immich, for Shane's photo library and iPhone
+backup.
 
 ## Storage
 
-Everything lives on the container's own disk, on cube's `nvme-thin` pool:
-originals and thumbnails in `/var/lib/immich`, Postgres in
-`/var/lib/postgresql`. Nothing is on Unraid, so the stale NFS mounts in
-[README.md](README.md) can't take it down.
+Everything lives on the container's own disk, on cube's NVMe. Nothing is on
+Unraid, so the stale NFS mounts in [README.md](README.md) can't take it
+down.
 
 The disk alert is also the "library is filling up" alert. Grow the disk in
 the Terraform before it fills.
@@ -43,13 +40,9 @@ backups run, so opening the app is what reliably kicks one off.
 
 ## Importing
 
-- **iCloud:** the app's own backup, with all albums selected. It downloads
-  each iCloud original, uploads it and deletes the local copy. Do the first
-  run at home, plugged in, with the app open.
-- **Google Takeout:** `immich-go upload from-google-photos` with an API key
-  made in Immich, after the iCloud run. Exact copies are skipped. Google's
-  compressed copies show up in Utilities, Review duplicates, which keeps the
-  bigger file by default.
+iCloud comes in through the app's own backup, with all albums selected.
+Google Takeout goes in with `immich-go upload from-google-photos` and an API
+key made in Immich.
 
 ## Updates
 
@@ -59,13 +52,9 @@ Immich.
 
 ## Backups
 
-The backup module sends all of `/var/lib/immich` to the Storage Box and R2.
-Immich dumps its database into `/var/lib/immich/backups` before restic runs,
-so the dump is the database backup and Postgres's live files are left out.
-
-The host runs on UTC and Immich's cron follows the host clock, so the
-dump is set to 15:00 UTC. That's 2am in Melbourne in summer and 1am in
-winter, ahead of the 3am backup either way.
+Immich's own database dump is the database backup. The host runs on UTC and
+Immich's cron follows the host clock, so the dump time is set in UTC to land
+before the nightly backup, which runs on Melbourne time.
 
 To restore, rebuild the host, `restic-homelab restore` `/var/lib/immich` with
 Immich stopped, start it on the empty database, and pick Restore from backup

@@ -2,22 +2,19 @@
 
 NixOS LXC on PVE running FreshRSS, the feed reader at
 `https://rss.shaneplunkett.com`. The container is `module "rss"` in
-`terraform/pve-rss.tf`, and the service is `modules/services/freshrss`, using
-the nixpkgs module (nginx and php-fpm, SQLite).
+`terraform/pve-rss.tf`, and the service is `modules/services/freshrss`.
 
 ## Signing in
 
 The ingress gates it with oauth2-proxy, so Pocket ID's passkey is the only
-login. FreshRSS runs in `http_auth` mode and takes the username from the
-`X-User` header the ingress sends, which is the Pocket ID user's `sub` (a
-UUID), not their username. The admin is the UUID in `defaultUser`. Anyone else
-who gets through the gate is registered as a normal user on their first visit.
+login. FreshRSS takes the username from the `X-User` header the ingress
+sends, which is the Pocket ID user's `sub` (a UUID), not their username.
+Anyone else who gets through the gate is registered as a normal user on their
+first visit.
 
-The header only counts when the request comes from the ingress host and isn't
-under `/api/`, because nginx on the rss host turns it into `REMOTE_USER` for
-those requests and nothing else. `/api/` skips the gate so phone apps work, and
-the gate doesn't set `X-User` there, so a client could send its own. Keep the
-`/api/` exception in the nginx map if you touch it.
+`/api/` skips the gate so phone apps work, and the gate doesn't set `X-User`
+there, so a client could send its own. That's why the nginx map ignores the
+header under `/api/`. Keep that exception if you touch it.
 
 ## Phone apps
 
@@ -27,9 +24,9 @@ Settings, Profile. Readrops, FeedMe and NetNewsWire all speak it.
 
 ## Extensions
 
-The YouTube and Af_Readability extensions are installed from Nix but start
-switched off. FreshRSS keeps which extensions are on, and their settings, in
-each user's own config, so turn them on under Settings, Extensions:
+The YouTube and Af_Readability extensions start switched off. FreshRSS
+keeps which extensions are on, and their settings, in each user's own config,
+so turn them on under Settings, Extensions:
 
 - **YouTube** plays videos inside the article. Turn on the no-cookie domain
   in its settings.
@@ -42,9 +39,8 @@ original website" setting does the same job by hand.
 
 ## Backups
 
-Each user's `db.sqlite` is copied with SQLite's `.backup` before restic runs,
-and the live file is excluded, so a backup never catches it mid-write. To
-restore, put `backup.sqlite` back as `db.sqlite` with the service stopped.
+To restore a user, put their `backup.sqlite` back as `db.sqlite` with the
+service stopped.
 
 ## Theme
 

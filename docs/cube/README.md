@@ -2,7 +2,8 @@
 
 ## Summary
 
-Secondary Proxmox host. Runs critical always-on services (Plex, media automation) that need to stay stable and unaffected by experiments on PVE.
+Secondary Proxmox host. Runs the always-on services that need to stay
+stable and away from experiments on PVE.
 
 Per-service docs:
 
@@ -21,14 +22,15 @@ LXCs don't mount NFS themselves. They bind-mount the host path `/mnt/pve/<storag
 - **Unraid's shares go stale on Cube whenever Unraid restarts**, and the
   Media share can also come up empty after Cube itself reboots. Unraid's
   user shares hand out new file IDs each boot, so the kernel rejects the old
-  mounts with `NFS: server 192.168.1.132 error: fileid changed` in `dmesg`,
+  mounts with `NFS: server <unraid> error: fileid changed` in `dmesg`,
   Proxmox shows the storage as inactive, and Plex, arr and dlna see an
   empty `/mnt/media` or `/mnt/programs`. Remount, then restart the
-  containers so their bind mounts pick up the new mounts:
+  containers with bind mounts so they pick up the new mounts:
 
   ```sh
   ssh shane@<cube> 'for s in appdata media programs; do sudo umount -l /mnt/pve/unraid-$s; done; sudo pvesm status'
-  ssh shane@<cube> 'sudo pct reboot 102 && sudo pct reboot 104 && sudo pct reboot 109'
+  ssh shane@<cube>
+  sudo pct list | awk '$NF ~ /^(plex|arr|dlna)$/ {print $1}' | xargs -n1 sudo pct reboot
   ```
 
   If a manual mount says `Operation not permitted`, Unraid isn't exporting

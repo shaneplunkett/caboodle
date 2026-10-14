@@ -6,27 +6,18 @@ by the builder when a change reaches `main`.
 
 ## Nix host backups
 
-Nix hosts are rebuilt from git, so only their data is backed up. A service
-lists its data with `homelab.backup.paths` (plus `exclude` and a `prepare`
-step for things like database dumps), and any host with paths gets three
-restic jobs from `modules/services/backup`: a daily backup, a weekly prune
-and a weekly partial check. They share a lock, so maintenance waits for a
-backup instead of failing it.
+Nix hosts are rebuilt from git, so only their data is backed up, from each
+service's `homelab.backup.paths`. A host's restic jobs share a lock, so
+maintenance waits for a backup instead of failing it.
 
-Each host has its own Storage Box subaccount (`terraform/hetzner.tf`), which
-only sees its own folder, and its own restic repo inside it. restic reaches
-the box through rclone's SFTP backend, because subaccounts only take
-passwords. The host's agenix secret `backup-<host>` holds its restic password
-and subaccount login.
+Each host gets its own Storage Box subaccount, which only sees its own
+folder. restic reaches it through rclone's SFTP backend, because subaccounts
+only take passwords.
 
-Each host also backs up to its own Cloudflare R2 bucket, `restic-<host>`, as
-the third copy (`terraform/cloudflare-r2.tf`). Its token can only reach that
-bucket. The Storage Box backup's timer starts the R2 backup
-(`restic-backups-r2`) too, ordered after it, so R2 runs once the Storage Box
-one finishes, even if it failed, and their `prepare` dumps never overlap. The
-R2 jobs use the same lock and the same restic password, kept with the token in
-`backup-r2-<host>`. R2 doesn't charge for egress, so restoring from it is
-free.
+A third copy goes to the host's own Cloudflare R2 bucket, with a token that
+can only reach that bucket. The R2 backup runs after the Storage Box one,
+even if that failed, so their `prepare` dumps never overlap. R2 doesn't
+charge for egress, so restoring from it is free.
 
 ### Adding a host
 
@@ -94,16 +85,12 @@ so restore that and put it back in place. For Gatus, that means copying
 
 ### Monitoring
 
-Each job stamps its last success into node exporter's textfile directory,
-and `modules/services/backup/monitoring.nix` alerts when a stamp goes stale
-or a host that backs up has never succeeded. The monitoring host also probes
-the box over SFTP and polls Hetzner's API for usage, since a full box fails
-every host at once.
+Besides each host's backup alerts, the monitoring host watches the box
+itself, its SFTP and its usage, since a full box fails every host at once.
 
 ## Retired services
 
-Final archives of retired services are kept on the box under
-`<service>-final-archives/`.
+Their final archives are on the box under `<service>-final-archives/`.
 
 ## Gotchas
 

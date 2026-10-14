@@ -4,15 +4,11 @@ Cloudflare is the registrar and DNS for the personal domains, and also runs Page
 
 ## Tooling
 
-Everything comes from the repo's `flake.nix` via direnv (`use flake` in `.envrc`).
-
-- **Cloudflare MCP** (`.mcp.json`): the Code Mode server at `https://mcp.cloudflare.com/mcp`. It covers the whole API: DNS, DNSSEC, Registrar, Access, tunnels, Pages, Workers and analytics.
-- **`cf`**: the official Cloudflare CLI (beta), a scriptable fallback for the same API. It isn't in nixpkgs yet, so the flake runs a pinned npm release through `npx`.
-- **`wrangler`**: Workers and Pages projects only. It has no DNS, zone, Registrar or Access commands.
-- **`cloudflared`**: tunnel runtime and management.
-- **`dig`, `doggo`**: checking public DNS from outside the LAN's own answers.
-
-Agent skills from `cloudflare/skills` (`cloudflare`, `cf-cli`, `cloudflare-one`, `wrangler`, `workers-best-practices`) are pinned in `skills-lock.json`.
+The Cloudflare MCP (`.mcp.json`) covers the whole API: DNS, DNSSEC,
+Registrar, Access, tunnels, Pages, Workers and analytics. `cf` is the
+official CLI, a scriptable fallback for the same API, and it's beta.
+`wrangler` only does Workers and Pages, with no DNS, zone, Registrar or
+Access commands.
 
 ## Credentials
 
@@ -21,8 +17,7 @@ Agent skills from `cloudflare/skills` (`cloudflare`, `cf-cli`, `cloudflare-one`,
 
 The ingress host's ACME renewals use a third token, scoped to DNS edit on the personal zones only, kept in agenix as `cloudflare-dns`. Terraform manages its permissions.
 
-- `.envrc` exports the user token as `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for `cf` and `wrangler`, and the Terraform token as `TF_VAR_cloudflare_api_token`.
-- The MCP server reads the user token through `tools/cloudflare/mcp-headers.sh`, so it never sits in a config file.
+The `.envrc` is gitignored and reads both tokens from rbw when direnv loads it. The MCP server reads the user token through `tools/cloudflare/mcp-headers.sh`, so it never sits in a config file.
 
 Don't add client IP filtering to the user token, since the MCP server rejects IP-filtered tokens.
 
@@ -48,12 +43,7 @@ Zone permissions only take effect when the token's Zone Resources point at the a
 
 ## Gotchas
 
-- Terraform owns these, in `terraform/cloudflare*.tf`. Change them in code, because a change made through the MCP or the dashboard gets reverted on the next apply.
-  - the account tokens
-  - the personal zones' DNS records and DNSSEC
-  - the brain's tunnel and its routes
-  - the Access apps and their policies
-  - Red Book's Pages custom domain
+- Anything in `terraform/cloudflare*.tf` has to change in code. A change made through the MCP or the dashboard gets reverted on the next apply.
 - The repo and its plan comments are public, so private values reach Terraform through agenix as `sensitive` variables, the same way the provider tokens do. The Editor policy's emails are `terraform-access-emails`. The Vex CLI's service token stays out of Terraform, and its policy refers to it by ID.
 - Some things stay out of Terraform on purpose. The Red Book Pages project belongs to its own repo's `wrangler` deploys. Martin's zones and his Workers custom domains belong to his site.
 - The dashboard's account-token page has no zone picker. It puts every permission into one account-wide policy, so zone permissions save and display but grant nothing, and saving an account token there drops any zone policy added through the API. Change account tokens through Terraform.
