@@ -219,8 +219,8 @@ stops them working and lands on Shane to fix.
 
 ## 5. First slice: Seerr
 
-Seerr is `routes.overseer` in `modules/arr/seerr.nix`. It isn't behind the
-oauth2-proxy gate, and its own Plex sign-in is the only login.
+Seerr is `routes.overseer` in `modules/services/arr/seerr.nix`. It isn't
+behind the oauth2-proxy gate, and its own Plex sign-in is the only login.
 
 1. Create the DMZ VLAN and its zone policies in Terraform.
 2. Create the `cloudflared` LXC in the DMZ, with its tunnel token in agenix

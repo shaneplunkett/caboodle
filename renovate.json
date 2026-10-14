@@ -65,7 +65,7 @@
     {
       "description": "One PR for the arr stack's container images",
       "matchFileNames": [
-        "modules/arr/**"
+        "modules/services/arr/**"
       ],
       "groupName": "arr containers"
     },

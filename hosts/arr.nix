@@ -1,5 +1,5 @@
 {
   imports = [
-    ../modules/arr
+    ../modules/services/arr
   ];
 }

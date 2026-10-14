@@ -1,8 +1,8 @@
 # Arr
 
 NixOS LXC on Cube running the media automation stack. The container is
-`module "arr"` in `terraform/cube-arr.tf`, and the apps are `modules/arr`,
-one file per app.
+`module "arr"` in `terraform/cube-arr.tf`, and the apps are
+`modules/services/arr`, one file per app.
 
 ## How the apps find each other
 
