@@ -40,3 +40,20 @@ resource "forgejo_repository" "workflows" {
   default_delete_branch_after_merge = true
   archive_on_destroy                = true
 }
+
+data "forgejo_repository" "homelab" {
+  owner = local.forge_org
+  name  = "homelab"
+}
+
+resource "forgejo_branch_protection" "homelab_main" {
+  repository_id       = data.forgejo_repository.homelab.id
+  branch_name         = "main"
+  enable_push         = true
+  enable_status_check = true
+  status_check_contexts = [
+    "/ hosts (pull_request)",
+    "/ build (*) (pull_request)",
+    "/ check* (pull_request)",
+  ]
+}

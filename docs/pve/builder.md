@@ -135,21 +135,29 @@ To add one, write its current commit into the URL and run `nix flake lock`.
 
 Each pinned input gets its own pull request, on any morning rather than
 only Sunday. The Noctalia shell and greeter share one, and so do nix-darwin
-and home-manager. They merge themselves once the build check is green, and
-nothing asks for a review. Renovate does the merge on its next run rather
-than asking Forgejo to merge when checks pass, because `main` has no
-required checks and Forgejo would merge on the first status, pending or
-failed.
+and home-manager. When Renovate opens one it asks Forgejo to merge it once
+the checks pass (`platformAutomerge`), and nothing asks for a review. So a
+busy input like llm-agents or noctalia's `cachix` branch merges the moment
+CI goes green, rather than waiting for a run of Renovate that didn't just
+push a newer commit, which on a daily schedule could take weeks.
 
-Renovate only merges on a run that didn't just push to the branch. A quiet
-input merges the morning after its pull request opens. A busy one, like
-llm-agents or noctalia's `cachix` branch, usually has a newer commit by the
-next morning, so Renovate refreshes the branch instead and the pull request
-waits for a quiet day, or for you to merge it. A creation schedule with
-`updateNotScheduled: false` doesn't help: outside its schedule Renovate
-returns before it checks automerge at all, so those pull requests would
-never merge themselves. Requiring the build check on `main` would let
-Forgejo merge the moment CI goes green, which fixes this for every input.
+That relies on `main` requiring the build check, set in
+`terraform/forge-config.tf`. Without required checks, Forgejo merges a
+scheduled pull request on the first status it sees, pending or failed. The
+required contexts are globs over the status names, and Forgejo takes the
+worst state across everything a glob matches:
+
+- `/ hosts`, the job that lists the hosts. The per-host builds only exist
+  once it finishes, so without it a pull request could pass on `check`
+  alone before any build had started.
+- `/ build (*)`, every host's build.
+- `/ check*`, the check. The caller's job and the called workflow's job are
+  both named `check`, so Forgejo calls one of them `check-1`.
+
+Each name starts with `/ ` because the called workflows have no `name:`. If
+one gains a name, or a job is renamed, nothing matches and every pull
+request waits as pending, so the contexts need changing with it. Shane, as
+an org owner, can still merge past a failed check.
 
 `minimumReleaseAge` is off for these, because Renovate reads commits through
 `git-refs`, which has no release dates, so the one-day wait would hold every

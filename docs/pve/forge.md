@@ -51,6 +51,10 @@ per-repo exception goes in Terraform next to the default it overrides.
   public. That's set by hand, because the provider can't import an org and
   the API can't set an org public. The sign-in requirement still hides
   everything from anyone not signed in.
+- **`homelab`'s `main`** requires the build check to pass before a pull
+  request merges, so Renovate can hand its flake input updates to Forgejo
+  to merge. `docs/pve/builder.md` covers why and what the contexts match.
+  Pushing straight to `main` still works as before.
 
 The provider is `svalabs/forgejo`, and it signs in with
 `terraform-forgejo-token`, a token from Shane's account (an org owner) with
