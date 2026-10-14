@@ -4,13 +4,13 @@ import argparse
 import datetime
 import json
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import time
+from pathlib import Path
 
 
 def sync_directory(path):
@@ -31,7 +31,7 @@ def capture(device, destination):
         return None
 
     destination.mkdir(mode=0o750, parents=True, exist_ok=True)
-    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+    stamp = datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%S.%fZ")
     saved = Path(tempfile.mkdtemp(prefix=f"{stamp}-{device.name}-", dir=destination))
     saved.chmod(0o750)
     sync_directory(destination)
@@ -72,12 +72,25 @@ def capture_journal(saved, delay):
     with (saved / "kernel.log").open("xb") as target:
         try:
             result = subprocess.run(
-                ["journalctl", "--dmesg", "--boot", "--since", "5 minutes ago",
-                 "--no-pager", "--output=short-iso-precise"],
-                stdout=target, stderr=subprocess.STDOUT, timeout=15, check=False,
+                [
+                    "journalctl",
+                    "--dmesg",
+                    "--boot",
+                    "--since",
+                    "5 minutes ago",
+                    "--no-pager",
+                    "--output=short-iso-precise",
+                ],
+                stdout=target,
+                stderr=subprocess.STDOUT,
+                timeout=15,
+                check=False,
             )
             if result.returncode:
-                print(f"Journal capture failed ({result.returncode}); GPU dump is saved", file=sys.stderr)
+                print(
+                    f"Journal capture failed ({result.returncode}); GPU dump is saved",
+                    file=sys.stderr,
+                )
         except (OSError, subprocess.TimeoutExpired) as error:
             print(f"Journal capture failed; GPU dump is saved: {error}", file=sys.stderr)
         finally:

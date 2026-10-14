@@ -2,7 +2,7 @@
 // before app "ready", so every window and webview Slack ever creates is
 // covered. webContents.insertCSS applies via the devtools protocol, outside
 // the page's CSP, so the remote UI cannot block it.
-;(() => {
+void (() => {
   const { app } = require("electron");
   const fs = require("fs");
   const path = require("path");

@@ -2,7 +2,7 @@
 // app "ready", so every window and webview the app ever creates is covered.
 // webContents.insertCSS applies via the devtools protocol, outside the page's
 // CSP, so Linear's remote UI cannot block it.
-;(() => {
+void (() => {
   const { app } = require("electron");
   const fs = require("fs");
   const path = require("path");
