@@ -22,8 +22,9 @@ Read `README.md` for how the repo fits together.
   (`origin`; GitHub is a mirror of it). Commit on a branch and file it with
   the `file-pr` skill, which opens it as Vex and asks Shane to review. Done is
   a green build check, plus a Terraform plan comment showing what you expect
-  when `terraform/` changed. Shane merges: merging deploys every host and
-  applies Terraform.
+  when `terraform/` changed. Shane merges: merging applies Terraform and
+  deploys every host but the desktop and the MacBook. CI builds those two,
+  and Shane switches each by hand per its doc under `docs/`.
 - **CI:** the files in `.forgejo/workflows/` are callers of `shane/workflows`
   (build check, flake update, checkout), pinned to a tag. Change CI behaviour
   there, following its `AGENTS.md`, and Renovate moves the pins here. Steps

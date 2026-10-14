@@ -9,12 +9,12 @@ README only covers how the pieces fit together.
 
 ```
 flake.nix          colmena hive, dev shell, and the base LXC template
-hosts/<host>.nix   which services a host runs
+hosts/<host>.nix   what a host runs (the desktop's is a folder)
 modules/           anything more than one host can import
   homelab.nix      the homelab.* options every host declares, whatever it runs
   nixos.nix        every NixOS host: Nix settings, nh's clean, node exporter
   lxc.nix          every LXC: Proxmox LXC support, the platform, root's keys
-  darwin/          every Mac: Nix settings, the deploy user, the firewall
+  darwin/          every Mac: Nix settings, the deploy user, node exporter
   agenix/          secrets, their recipients, and the homelab.secrets option
   services/<name>/ one folder per service
   workstation/     every machine Shane sits at: home-manager, fish, fonts, and a folder per class
@@ -34,7 +34,7 @@ which only holds options and data, since it has to evaluate on both systems.
 `nixosDefaults` is what every NixOS host gets and `darwinDefaults` what every
 Mac gets. An LXC is written with the `lxc` helper,
 `plex = lxc "plex" { homelab.lanAddress = "..."; };`, which adds
-`modules/lxc.nix` to `hosts/plex.nix`. A host's own file under `hosts/` just
+`modules/lxc.nix` to `hosts/plex.nix`. An LXC's own file under `hosts/` just
 imports the services it runs.
 
 A service that runs on both kinds of host keeps its options in an

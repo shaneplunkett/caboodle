@@ -1,5 +1,8 @@
 # The Mac mini and the homelab
 
+> Superseded: the mini is a hive node now; see [docs/mini](../mini/README.md).
+> The rest is kept as the reasoning that led there.
+
 The mini runs real homelab work, but it lives outside the homelab's rules.
 Its config is in nix-config, not this repo, and it skips most of what every
 hive host gets for free. The transcription server
