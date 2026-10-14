@@ -169,6 +169,7 @@
             devices
             ;
           inherit (nixpkgs) lib;
+          onLan = lib.filterAttrs (_: node: node.config.homelab.lanAddress != null) self.colmenaHive.nodes;
           forwardList = lib.concatLists (
             lib.mapAttrsToList (
               _: node:
@@ -176,7 +177,7 @@
                 inherit name port;
                 ip = node.config.homelab.lanAddress;
               }) node.config.homelab.portForwards
-            ) self.colmenaHive.nodes
+            ) onLan
           );
           forwards =
             assert lib.assertMsg (
@@ -187,7 +188,7 @@
         in
         {
           inherit gateway devices forwards;
-          hosts = builtins.mapAttrs (_: node: node.config.homelab.lanAddress) self.colmenaHive.nodes;
+          hosts = builtins.mapAttrs (_: node: node.config.homelab.lanAddress) onLan;
         };
 
       colmenaHive = colmena.lib.makeHive {

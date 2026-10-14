@@ -23,7 +23,9 @@
       };
       clientLookup = {
         upstream = "127.0.0.1:5335";
-        clients = lib.mapAttrs (_: node: [ node.config.homelab.lanAddress ]) nodes;
+        clients = lib.mapAttrs (_: node: [ node.config.homelab.lanAddress ]) (
+          lib.filterAttrs (_: node: node.config.homelab.lanAddress != null) nodes
+        );
       };
       caching = {
         prefetching = true;

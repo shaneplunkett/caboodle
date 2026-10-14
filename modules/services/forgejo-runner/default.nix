@@ -8,6 +8,7 @@
 let
   unit = "forgejo-runner-builder";
   lanAddress = name: nodes.${name}.config.homelab.lanAddress;
+  onLan = lib.attrNames (lib.filterAttrs (_: node: node.config.homelab.lanAddress != null) nodes);
 in
 {
   imports = [ ./darwin-builder.nix ];
@@ -98,7 +99,7 @@ in
         Host ${name} ${lanAddress name}
           HostName ${lanAddress name}
           IdentityFile /run/credentials/${unit}.service/ssh-key
-      '') (lib.attrNames nodes)
+      '') onLan
       + ''
         Host ${lib.concatStringsSep " " (lib.attrValues config.homelab.proxmoxNodes)}
           User shane

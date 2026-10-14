@@ -1,9 +1,10 @@
-{ lib, ... }:
+{ config, lib, ... }:
 {
   options.homelab = {
     lanAddress = lib.mkOption {
-      type = lib.types.str;
-      description = "The host's LAN address, for anything that must keep working without Tailscale.";
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "The host's LAN address, for anything that must keep working without Tailscale. A host that's always on the LAN has one; a laptop doesn't.";
     };
 
     metricsDir = lib.mkOption {
@@ -97,4 +98,17 @@
       description = "Ports the gateway forwards from the internet to this host, by rule name. The WAN and local port match.";
     };
   };
+
+  config.assertions = [
+    {
+      assertion =
+        config.homelab.lanAddress != null
+        || (
+          !config.homelab.monitoring.enable
+          && config.homelab.routes == { }
+          && config.homelab.portForwards == { }
+        );
+      message = "homelab.monitoring, homelab.routes and homelab.portForwards all reach the host by its LAN address, so a host using any of them needs homelab.lanAddress.";
+    }
+  ];
 }
