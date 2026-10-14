@@ -6,8 +6,10 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     colmena = {
-      url = "github:nix-community/colmena/v0.5.0";
+      url = "github:stepbrobd/colmena";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.stable.follows = "nixpkgs";
+      inputs.nix-github-actions.follows = "";
     };
     agenix = {
       url = "github:ryantm/agenix";
@@ -40,6 +42,7 @@
             import nixpkgs {
               inherit system;
               config.allowUnfreePredicate = pkg: nixpkgs.lib.getName pkg == "terraform";
+              overlays = [ colmena.overlays.default ];
             }
           )
         );
@@ -140,7 +143,10 @@
         };
 
       colmenaHive = colmena.lib.makeHive {
-        meta.nixpkgs = import nixpkgs { system = "x86_64-linux"; };
+        meta.nixpkgs = import nixpkgs {
+          system = "x86_64-linux";
+          overlays = [ colmena.overlays.default ];
+        };
         meta.specialArgs = { inherit vex-brain; };
         defaults =
           {
