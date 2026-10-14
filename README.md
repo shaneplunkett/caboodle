@@ -28,23 +28,25 @@ tools/             small helpers (minirack planner, Cloudflare MCP headers)
 ## Nix hosts
 
 Every host is a node in the colmena hive in `flake.nix`, the NixOS LXCs and
-the Mac mini alike. What every node gets lives in `colmenaHive.defaults`,
+the Macs alike. What every node gets lives in `colmenaHive.defaults`,
 which only holds options and data, since it has to evaluate on both systems.
 `nixosDefaults` is what every LXC gets and `darwinDefaults` what every Mac
 gets. A host's own file under `hosts/` just imports the services it runs.
 
 A service that runs on both kinds of host keeps its options in an
 `options.nix` next to its `default.nix`, so the hive can read them from any
-node, and the NixOS half and the darwin half each read the same facts. The
-mini is the only Mac for now; see [docs/mini](docs/mini/README.md) for what
-it does and doesn't get from the hive yet.
+node, and the NixOS half and the darwin half each read the same facts. There are two
+Macs. The mini is a server, deployed on merge like the LXCs; see
+[docs/mini](docs/mini/README.md). The MacBook is built by every pull request
+but switched by hand; see [docs/macbook](docs/macbook/README.md).
 
 Modules can read the whole hive through colmena's `nodes` and `name`
 arguments, so things like scrape targets, log shipping and dashboard tiles are
 generated from the hive instead of kept as hand-written lists.
 
 Every address on the LAN is written once. A host's is its
-`homelab.lanAddress` in the hive. Everything else, from the gateway and the
+`homelab.lanAddress` in the hive. A laptop has none, and anything that walks
+the hive skips it. Everything else, from the gateway and the
 Proxmox nodes to the IoT devices, is in `modules/devices.nix`, and modules
 read it as `config.homelab.devices.<name>.ip`. Terraform reads both through
 `nix eval .#network` and reserves each address in UniFi, so adding a device is

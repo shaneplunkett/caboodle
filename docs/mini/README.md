@@ -13,7 +13,7 @@ user with the builder's key, and node exporter when `homelab.monitoring` is
 on. The host file adds the deploy settings, auto-login, and staying awake.
 
 It's also a machine Shane sits at, so it imports `modules/workstation` and
-`modules/workstation/darwin`, the same modules the MacBook will get. They
+`modules/workstation/darwin`, the same modules the MacBook gets. They
 bring home-manager, which the host file points at
 `home/shane/homemacserver.nix`, and Homebrew through nix-homebrew. That
 home config runs vex-code as a login agent. The host file also adds
