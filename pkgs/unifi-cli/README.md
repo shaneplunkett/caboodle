@@ -4,7 +4,7 @@ Read-only Go CLI for Shane's UniFi Cloud Gateway Max.
 
 Auth via official `X-API-KEY` header. Controller URL, key, and site are
 loaded from env vars by the nix home-manager wrapper at
-`~/nix-config/home/shane/modules/common/unifi.nix`. The wrapper pulls
+`home/shane/modules/agent-clis/default.nix`. The wrapper pulls
 the API key from Bitwarden (rbw entry: **Unifi API Key**) at every
 invocation so rotation is `edit-in-web-UI → rbw sync` — no rebuild.
 

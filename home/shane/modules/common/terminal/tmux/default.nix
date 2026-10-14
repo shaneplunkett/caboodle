@@ -180,8 +180,8 @@ in
 
         session = [
           {
-            name = "nix-config";
-            path = "~/nix-config";
+            name = "homelab";
+            path = "~/Projects/personal/homelab";
             startup_command = workspaceStartupCommand;
           }
           {

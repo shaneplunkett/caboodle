@@ -35,22 +35,15 @@ let
   codexPackage = pkgs.codex;
   codexConfigDir = ".codex";
   codexCodeConfigDir = ".codex-code";
-  # Vanilla home: same account auth as the main dir, but none of the managed
-  # context, skills, hooks, or MCP servers land here. Used for PR reviews via
-  # the Codex plugin for Claude Code (CODEX_HOME) and the Codex Bare provider.
   codexBareConfigDir = ".codex-bare";
   codexMcpServer =
     _name: server:
     let
       isHttp = (server.url or null) != null;
       alwaysStripKeys = [
-        # Codex accepts bearer_token_env_var and headers, but rejects a literal
-        # bearer_token even for HTTP transports.
         "bearer_token"
         "disabled"
         "headers"
-        # Shared MCP entries may carry OAuth metadata that Codex treats as an
-        # instruction to start an OAuth flow during initialisation.
         "oauth"
         "oauth_resource"
         "type"
@@ -87,7 +80,6 @@ let
 
   sharedCodexHooks = aiHelpers.hooksFor "codex";
 
-  # The main profile adds Vex's session context on top of the shared hooks.
   codexHooks = sharedCodexHooks // {
     SessionStart = (sharedCodexHooks.SessionStart or [ ]) ++ [
       {
@@ -114,9 +106,6 @@ let
       hooks = true;
       memories = false;
 
-      # GPT-5.6 Sol's reserved collaboration.spawn_agent schema hides custom
-      # agent and model routing. Use a non-reserved namespace until upstream
-      # fixes openai/codex#31814 and #32031.
       multi_agent_v2 = {
         hide_spawn_agent_metadata = false;
         tool_namespace = "agents";
@@ -174,7 +163,7 @@ let
     sandbox_mode = "danger-full-access";
     approval_policy = "never";
 
-    projects."/home/shane/nix-config".trust_level = "trusted";
+    projects."/home/shane/Projects/personal/homelab".trust_level = "trusted";
 
     hooks = codexHooks;
   }
@@ -212,8 +201,6 @@ let
     }
   ];
 
-  # Stock Codex apart from a pinned model and the remote plugin/app sync that
-  # would otherwise populate the home on first app-server start.
   codexBareSettings = {
     model = "gpt-6-astra";
     model_reasoning_effort = "medium";
@@ -349,7 +336,6 @@ let
 
 in
 {
-  # Published artifacts other modules consume (e.g. vex-code).
   options.vex.ai.codex = {
     configDir = lib.mkOption {
       type = lib.types.str;
@@ -393,8 +379,6 @@ in
           lib.concatMapStringsSep "\n" mutableConfigActivation mutableCodexHomes
         );
 
-        # Code Girly has her own writable Codex home and session history, but
-        # shares the account token that Codex refreshes in the Vex home.
         codexCodeAuth = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           codeDir="${homeDirectory}/${codexCodeConfigDir}"
           $DRY_RUN_CMD mkdir -p "$codeDir"
@@ -403,10 +387,6 @@ in
           fi
         '';
 
-        # Codex rewrites auth.json in place on token refresh, so a symlink
-        # keeps the bare home on the same account with a single credential
-        # file rather than a copy that drifts. config.toml is merged rather
-        # than linked so Codex can still write runtime fields into it.
         codexBareHome = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           bareDir="${homeDirectory}/${codexBareConfigDir}"
           $DRY_RUN_CMD mkdir -p "$bareDir"

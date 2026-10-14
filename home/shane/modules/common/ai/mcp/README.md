@@ -11,7 +11,10 @@ import `home/shane/modules/common/ai`.
 - The Codex module converts it to Codex's `mcp_servers` shape with
   transport-aware filtering. `command` servers stay stdio-only, `url` servers
   stay streamable-HTTP-only, `headers` maps to `http_headers` only for HTTP,
-  and `disabled` maps to `enabled`.
+  and `disabled` maps to `enabled`. It drops a literal `bearer_token`, which
+  Codex rejects even over HTTP (`bearer_token_env_var` and headers work), and
+  any `oauth` metadata, which Codex takes as an order to start an OAuth flow
+  while it initialises.
 - Keep server definitions here unless a server is genuinely harness-specific.
 
 ## Adding a server
