@@ -80,11 +80,10 @@ hostname.
 
 ## Gotchas
 
-- The `nrs` fish function still switches from `~/nix-config` and resolves
-  the Mac by hostname against the `darwinConfigurations` names, which no
-  longer match (`macbook` and `mini` against `Shanes-MacBook-Pro` and
-  `mini-server`). Set `NRS_HOST` or use the commands above until it's
-  pointed at the homelab.
+- The `nrs` fish function switches from `NH_FLAKE`, the homelab checkout
+  at `~/Projects/personal/homelab`, so it needs a clone there. It matches
+  the Mac's hostname against each darwin node's `networking.hostName` as
+  well as its name, which is how `Shanes-MacBook-Pro` finds `macbook`.
 - The `nrs` function's list of darwin hosts is generated from the hive, so
   adding a Mac changes every Mac's home-manager generation, the mini's
   included.

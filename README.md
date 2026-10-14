@@ -12,7 +12,8 @@ flake.nix          colmena hive, dev shell, and the base LXC template
 hosts/<host>.nix   which services a host runs
 modules/           anything more than one host can import
   homelab.nix      the homelab.* options every host declares, whatever it runs
-  base.nix         every NixOS LXC: Proxmox LXC support, SSH, node exporter
+  nixos.nix        every NixOS host: Nix settings, nh's clean, node exporter
+  lxc.nix          every LXC: Proxmox LXC support, the platform, root's keys
   darwin/          every Mac: Nix settings, the deploy user, the firewall
   agenix/          secrets, their recipients, and the homelab.secrets option
   services/<name>/ one folder per service
@@ -27,18 +28,22 @@ tools/             small helpers (minirack planner, Cloudflare MCP headers)
 
 ## Nix hosts
 
-Every host is a node in the colmena hive in `flake.nix`, the NixOS LXCs and
-the Macs alike. What every node gets lives in `colmenaHive.defaults`,
+Every host is a node in the colmena hive in `flake.nix`: the NixOS LXCs, the
+desktop and the Macs. What every node gets lives in `colmenaHive.defaults`,
 which only holds options and data, since it has to evaluate on both systems.
-`nixosDefaults` is what every LXC gets and `darwinDefaults` what every Mac
-gets. A host's own file under `hosts/` just imports the services it runs.
+`nixosDefaults` is what every NixOS host gets and `darwinDefaults` what every
+Mac gets. An LXC is written with the `lxc` helper,
+`plex = lxc "plex" { homelab.lanAddress = "..."; };`, which adds
+`modules/lxc.nix` to `hosts/plex.nix`. A host's own file under `hosts/` just
+imports the services it runs.
 
 A service that runs on both kinds of host keeps its options in an
 `options.nix` next to its `default.nix`, so the hive can read them from any
 node, and the NixOS half and the darwin half each read the same facts. There are two
 Macs. The mini is a server, deployed on merge like the LXCs; see
 [docs/mini](docs/mini/README.md). The MacBook is built by every pull request
-but switched by hand; see [docs/macbook](docs/macbook/README.md).
+but switched by hand; see [docs/macbook](docs/macbook/README.md). So is the
+desktop; see [docs/desktop](docs/desktop/README.md).
 
 Modules can read the whole hive through colmena's `nodes` and `name`
 arguments, so things like scrape targets, log shipping and dashboard tiles are
@@ -70,7 +75,7 @@ Flakes only see tracked files, so `git add` new files before building.
    upload it to each node's `local:vztmpl` under the name
    `terraform/modules/nixos-lxc` expects.
 2. Add `hosts/<host>.nix` and a node in the hive pointing at it,
-   with the host's `homelab.lanAddress`.
+   `<host> = lxc "<host>" { homelab.lanAddress = "..."; };`.
 3. Add a `terraform/<node>-<host>.tf` using `modules/nixos-lxc` and apply it.
    Terraform reads every LAN address from the hive (`nix eval
    .#network`) and reserves the host's in UniFi before the container
@@ -104,8 +109,9 @@ consuming service expects.
 ## Monitoring
 
 Prometheus, Alertmanager, Loki and Grafana run on the monitoring host. Every
-Nix host is scraped and ships its journal to Loki automatically, and the
-Proxmox nodes are scraped too (see [proxmox](proxmox/README.md)). Alert rules
+Nix host ships its journal to Loki automatically and is scraped unless it
+turns `homelab.monitoring` off, as the desktop does. The Proxmox nodes are
+scraped too (see [proxmox](proxmox/README.md)). Alert rules
 live next to the service they watch, and everything routes through
 Alertmanager to Discord. Gatus on the dashboard host watches the monitoring
 stack itself, so a dead Alertmanager still gets noticed.

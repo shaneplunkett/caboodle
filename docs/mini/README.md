@@ -118,3 +118,9 @@ What the workstation modules and overlays do that their code can't say.
   turning into a machine-wide resource spike.
 - The laptop turns off Spotlight's Command+Space (symbolic hotkey 64) so
   vicinae can have it.
+- The login shell stays bash on Linux and zsh on macOS, so agents and
+  scripts get a POSIX shell, and an interactive one hands over to fish.
+  `-c` commands, `nix develop`, `nix-shell` and a shell started from fish
+  stay put. `nix develop` applies its environment after the rc file, so
+  handing over would lose it. A direnv environment is already exported
+  (`DIRENV_DIR`) and survives the exec, so that one does hand over.
