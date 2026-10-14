@@ -32,18 +32,11 @@ formula that isn't declared. The first activation from the hive removes the
 ChatGPT and Claude casks nix-config installed, on purpose, since a headless
 server doesn't want them. Anything that should stay has to be declared.
 
-BlueBubbles is how Shane uses iMessage from NixOS, and the host file declares
-its cask. It was installed by hand rather than through Homebrew, and Homebrew
-won't install a cask over an app it didn't put there, which fails activation
-and so the deploy. Before the hive first declares it, adopt it on the mini:
-
-```sh
-brew install --cask --adopt bluebubbles
-```
-
-Binning the app and letting brew reinstall it works too. Its config and
-pairing live under `~/Library` and survive either. Any other app installed by
-hand needs the same before its cask is declared.
+BlueBubbles is how Shane uses iMessage from NixOS. It's installed by hand
+and runs as its own login agent, and nothing declares it. Homebrew disabled
+its cask because the app isn't signed and fails Gatekeeper, so it can't be
+declared there. Cleanup leaves it alone, since brew never installed it.
+Packaging the server with Nix is parked.
 
 ## The firewall
 

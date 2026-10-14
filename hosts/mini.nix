@@ -37,7 +37,5 @@
     user = "shane";
   };
 
-  homebrew.casks = [ "bluebubbles" ];
-
   system.stateVersion = 6;
 }
