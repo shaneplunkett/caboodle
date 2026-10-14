@@ -95,7 +95,7 @@
       "groupName": "workflow actions"
     },
     {
-      "description": "One PR per flake input, merged by Renovate on a later hourly run once CI builds it. git-refs has no release dates, so minimumReleaseAge would hold every input forever.",
+      "description": "One PR per flake input, merged by Renovate on a later run once CI builds it. git-refs has no release dates, so minimumReleaseAge would hold every input forever.",
       "matchManagers": [
         "nix"
       ],

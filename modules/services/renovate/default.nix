@@ -15,7 +15,7 @@
 
   services.renovate = {
     enable = true;
-    schedule = "hourly";
+    schedule = "06:30 Australia/Melbourne";
     runtimePackages = [
       pkgs.nodejs
       pkgs.pnpm

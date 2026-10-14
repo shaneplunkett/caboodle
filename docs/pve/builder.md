@@ -114,13 +114,13 @@ keys on both nodes.
 
 ## Renovate
 
-Renovate runs on the builder every hour, as `forge-bot`, for the pins a
-flake update doesn't touch: container images in Nix modules, flake inputs
-pinned to a tag or a commit, the `npx` packages in the dev shell, and
-Terraform providers. The service's config makes "before 9am on Sunday",
-Melbourne time, the default schedule for every repo, so new pull requests
-still turn up as a Sunday batch and the hourly runs only keep open ones
-current. Each update is its own pull request asking `metrokitten` to review,
+Renovate runs on the builder every morning at 06:30 Melbourne time, as
+`forge-bot`, for the pins a flake update doesn't touch: container images in
+Nix modules, flake inputs pinned to a tag or a commit, the `npx` packages in
+the dev shell, and Terraform providers. The service's config makes "before
+9am on Sunday", Melbourne time, the default schedule for every repo, so new
+pull requests still turn up as a Sunday batch and the other mornings only
+keep open ones current. Each update is its own pull request asking `metrokitten` to review,
 which pings Discord. The repo's rules are in `renovate.json`.
 
 ### Flake inputs
@@ -133,15 +133,24 @@ or `git+https://github.com/owner/repo?ref=<branch>&rev=<commit>` for one that
 follows a branch, since `github:` won't take a branch and a commit together.
 To add one, write its current commit into the URL and run `nix flake lock`.
 
-Each pinned input gets its own pull request, at any hour rather than on
-Sunday. The Noctalia shell and greeter share one, and so do nix-darwin and
-home-manager. They merge themselves once the build check is green, and
+Each pinned input gets its own pull request, on any morning rather than
+only Sunday. The Noctalia shell and greeter share one, and so do nix-darwin
+and home-manager. They merge themselves once the build check is green, and
 nothing asks for a review. Renovate does the merge on its next run rather
 than asking Forgejo to merge when checks pass, because `main` has no
 required checks and Forgejo would merge on the first status, pending or
-failed. Renovate only merges on a run that didn't just push to the branch,
-and a busy input like noctalia's `cachix` branch gains commits most hours.
-That's why it runs hourly: the quiet hour is when it merges.
+failed.
+
+Renovate only merges on a run that didn't just push to the branch. A quiet
+input merges the morning after its pull request opens. A busy one, like
+llm-agents or noctalia's `cachix` branch, usually has a newer commit by the
+next morning, so Renovate refreshes the branch instead and the pull request
+waits for a quiet day, or for you to merge it. A creation schedule with
+`updateNotScheduled: false` doesn't help: outside its schedule Renovate
+returns before it checks automerge at all, so those pull requests would
+never merge themselves. Requiring the build check on `main` would let
+Forgejo merge the moment CI goes green, which fixes this for every input.
+
 `minimumReleaseAge` is off for these, because Renovate reads commits through
 `git-refs`, which has no release dates, so the one-day wait would hold every
 input forever.
