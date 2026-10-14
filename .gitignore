@@ -1,9 +1,0 @@
-.DS_Store
-result/
-result
-# Harness-local state: skill symlinks and session files. The checked-in
-# hook config is the one exception.
-.agents
-.codex/*
-!.codex/hooks.json
-.claude/settings.local.json
