@@ -487,17 +487,17 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1791942860,
-        "narHash": "sha256-kHlo7IkhPivjLmHlxVZeTMBarNLPfkqQ2nlS2SQ2zfQ=",
+        "lastModified": 1791964679,
+        "narHash": "sha256-/Uuhh7uZvcNQYeZmuFjErs9GmDXvsspgIRZacSC+ywk=",
         "ref": "cachix",
-        "rev": "fc2af27c0e616006bf858cad3b7c9711a028e501",
+        "rev": "488660a7994b51069b6542f070d5c433c66b5629",
         "shallow": true,
         "type": "git",
         "url": "https://github.com/noctalia-dev/noctalia"
       },
       "original": {
         "ref": "cachix",
-        "rev": "fc2af27c0e616006bf858cad3b7c9711a028e501",
+        "rev": "488660a7994b51069b6542f070d5c433c66b5629",
         "shallow": true,
         "type": "git",
         "url": "https://github.com/noctalia-dev/noctalia"

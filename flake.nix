@@ -61,7 +61,7 @@
       url = "github:mst-mkt/omniwm.nix/84974635e841f74cff825b39d608e51f1d034fbb";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    noctalia.url = "git+https://github.com/noctalia-dev/noctalia?ref=cachix&rev=fc2af27c0e616006bf858cad3b7c9711a028e501&shallow=1";
+    noctalia.url = "git+https://github.com/noctalia-dev/noctalia?ref=cachix&rev=488660a7994b51069b6542f070d5c433c66b5629&shallow=1";
     noctalia-greeter.url = "github:noctalia-dev/noctalia-greeter/05fc8e3763de7940233358b5e0b1a5ae1967bcf1";
     noctalia-plugins = {
       url = "git+ssh://forgejo@forge/shane/noctalia-plugins";
