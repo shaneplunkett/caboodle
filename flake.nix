@@ -21,6 +21,40 @@
     };
     vex-brain = {
       url = "git+ssh://forgejo@forge/shane/vex-brain";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixvim.url = "github:nix-community/nixvim";
+    catppuccin = {
+      url = "github:catppuccin/nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nix-config-private.url = "git+ssh://forgejo@forge/shane/nix-config-private";
+    ai-skills = {
+      url = "git+ssh://forgejo@forge/shane/ai-skills";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.vex-brain.follows = "vex-brain";
+    };
+    vex-code = {
+      url = "git+ssh://forgejo@forge/shane/vex-code?shallow=1";
+      flake = false;
+    };
+    llm-agents.url = "github:numtide/llm-agents.nix";
+    electron-nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    homebrew-core = {
+      url = "github:homebrew/homebrew-core";
+      flake = false;
+    };
+    homebrew-cask = {
+      url = "github:homebrew/homebrew-cask";
       flake = false;
     };
   };
@@ -33,8 +67,15 @@
       nix-darwin,
       vex-brain,
       ...
-    }:
+    }@inputs:
     let
+      workstationPkgs =
+        system:
+        import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          overlays = [ colmena.overlays.default ] ++ import ./pkgs/overlays.nix { inherit inputs; };
+        };
       systems = [
         "x86_64-linux"
         "aarch64-darwin"
@@ -74,8 +115,6 @@
       devShells = forAllSystems (
         pkgs:
         let
-          # Official Cloudflare CLI (beta) isn't in nixpkgs yet, so run the
-          # pinned npm release. Bump the version here when upgrading.
           cf = pkgs.writeShellScriptBin "cf" ''
             exec ${pkgs.nodejs_22}/bin/npx --yes cf@1.0.0-beta.14 "$@"
           '';
@@ -157,9 +196,9 @@
             system = "x86_64-linux";
             overlays = [ colmena.overlays.default ];
           };
-          nodeNixpkgs.mini = import nixpkgs { system = "aarch64-darwin"; };
+          nodeNixpkgs.mini = workstationPkgs "aarch64-darwin";
           inherit nix-darwin;
-          specialArgs = { inherit vex-brain; };
+          specialArgs = { inherit inputs vex-brain; };
         };
         defaults =
           {

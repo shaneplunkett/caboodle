@@ -20,14 +20,14 @@ in
 // optionalAttrs isLinux {
   bluebubbles = pkgs.callPackage ./bluebubbles { };
   bluebubbles-themed = pkgs.callPackage ./bluebubbles-themed {
-    palette = import ../lib/palette.nix;
+    palette = import ../home/palette.nix;
   };
   cosmic-ext-ctl-v2 = pkgs.callPackage ./cosmic-ext-ctl-v2 { };
   hyprland-preview-share-picker = pkgs.callPackage ./hyprland-preview-share-picker { };
 }
 // optionalAttrs isX86Linux {
   linear-desktop = pkgs.callPackage ./linear-desktop {
-    typography = import ../lib/typography.nix;
+    typography = import ../home/typography.nix;
   };
   slack-themed = pkgs.callPackage ./slack-themed { };
   orca-studio = pkgs.callPackage ./orca-studio { };
