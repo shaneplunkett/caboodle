@@ -28,6 +28,14 @@ declared them and this one doesn't; vex-code is a home-manager agent and
 keeps running until the next reboot. Homebrew isn't managed from here, so
 the casks nix-config installed stay put.
 
+BlueBubbles is on the mini too, as a login agent, and no config declares it.
+It's how Shane uses iMessage from NixOS, so it stays. It was installed by
+hand rather than through Homebrew, and Homebrew won't install a cask over an
+app it didn't put there. When the hive takes over Homebrew and declares
+`bluebubbles`, first run `brew install --cask --adopt bluebubbles` on the
+mini, or bin the app and let brew reinstall it. Its config and pairing live
+under `~/Library` and survive either.
+
 ## Deploying
 
 The mini isn't tagged `deploy-on-merge`, so merging builds it and nothing
