@@ -8,15 +8,12 @@
 let
   fish = lib.getExe config.programs.fish.package;
 
-  # Every Mac the flake can switch, matched against this machine's names.
-  darwinHosts = lib.concatStringsSep " " (lib.attrNames inputs.self.darwinConfigurations);
+  darwinHosts = lib.concatMapStrings (name: ''
+    case ${inputs.self.darwinConfigurations.${name}.config.networking.hostName} ${name}
+      echo ${name}
+      return 0
+  '') (lib.attrNames inputs.self.darwinConfigurations);
 
-  # The login shell stays bash (Linux) or zsh (macOS), so agents and scripts
-  # get a POSIX-ish shell; interactive shells hand over to fish. `-c`
-  # commands, nix develop/nix-shell, and a shell typed from fish all stay
-  # put. nix develop applies its environment after the rc file, so it must
-  # stay; a direnv environment is already exported (DIRENV_DIR) and survives
-  # the exec.
   handOverToFish =
     { executionString, isLogin }:
     lib.mkBefore ''
@@ -91,9 +88,7 @@ in
           set -a candidates (hostname -s 2>/dev/null) (hostname 2>/dev/null)
           for candidate in $candidates
             switch $candidate
-              case ${darwinHosts}
-                echo $candidate
-                return 0
+              ${darwinHosts}
             end
           end
 
@@ -179,10 +174,10 @@ in
 
           if test (uname) = Darwin
             set -l host (__nrs_darwin_host); or return 1
-            nh darwin switch $argv "$HOME/nix-config" -H $host
+            nh darwin switch $argv -H $host
             set switch_status $status
           else
-            nh os switch $argv "$HOME/nix-config" -H (hostname)
+            nh os switch $argv -H (hostname)
             set switch_status $status
           end
 

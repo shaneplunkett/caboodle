@@ -2,6 +2,6 @@
 {
   programs.nh = {
     enable = true;
-    flake = "${config.home.homeDirectory}/nix-config";
+    flake = "${config.home.homeDirectory}/Projects/personal/homelab";
   };
 }
