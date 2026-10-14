@@ -95,7 +95,7 @@
       "groupName": "workflow actions"
     },
     {
-      "description": "One PR per flake input, merged by Forgejo as soon as CI builds it. git-refs has no release dates, so minimumReleaseAge would hold every input forever.",
+      "description": "One PR per pinned flake input, merged by Forgejo as soon as CI builds it. git-refs has no release dates, so minimumReleaseAge would hold every input forever.",
       "matchManagers": [
         "nix"
       ],
@@ -118,35 +118,14 @@
       "enabled": false
     },
     {
-      "description": "One PR for Noctalia's shell and greeter",
+      "description": "One PR for the Homebrew taps",
       "matchManagers": [
         "nix"
       ],
       "matchDepNames": [
-        "/^noctalia/"
+        "/^homebrew-/"
       ],
-      "groupName": "Noctalia"
-    },
-    {
-      "description": "One PR for nix-darwin and home-manager, which move together",
-      "matchManagers": [
-        "nix"
-      ],
-      "matchDepNames": [
-        "nix-darwin",
-        "home-manager"
-      ],
-      "groupName": "nix-darwin and home-manager"
-    },
-    {
-      "description": "nixpkgs moves every host at once, so it waits for review",
-      "matchManagers": [
-        "nix"
-      ],
-      "matchDepNames": [
-        "nixpkgs"
-      ],
-      "automerge": false
+      "groupName": "Homebrew taps"
     }
   ]
 }

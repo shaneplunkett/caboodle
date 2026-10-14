@@ -1,6 +1,6 @@
 on:
   schedule:
-    - cron: "0 19 * * 6"
+    - cron: "0 11 * * 5" # Friday 22:00 Melbourne (21:00 outside daylight saving), ready for Saturday
   workflow_dispatch:
 
 concurrency:
@@ -11,4 +11,5 @@ jobs:
   update:
     uses: shane/workflows/.forgejo/workflows/flake-update.yml@v1.3.2
     with:
-      title: "flake.lock: update nixpkgs, Homebrew and the forge inputs"
+      title: "flake.lock: update every unpinned input"
+      notes: scripts/flake-update-notes.sh

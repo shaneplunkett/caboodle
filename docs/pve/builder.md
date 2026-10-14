@@ -64,9 +64,17 @@ re-run it.
 ## Updates
 
 The weekly flake update calls `flake-update.yml` in `shane/workflows`, and
-its README covers how it works. It only moves the inputs that aren't pinned
+its README covers how it works. It runs Friday night so the pull request is
+ready to review on Saturday, and it only moves the inputs that aren't pinned
 in `flake.nix`. Renovate moves the pinned ones. Its pull request comes from
 `forge-bot`, since a pull request can't ask its own author to review.
+
+`scripts/flake-update-notes.sh` adds the changelogs for nixpkgs,
+home-manager, nix-darwin and omniwm, and the `flake-update` skill triages
+the pull request. Those inputs stay out of Renovate, because a merge on
+green would skip the news and new evaluation warnings that only the weekly
+pull request shows. A warning doesn't fail a build, so nothing else would
+surface it.
 
 ## Renovate
 
@@ -103,14 +111,18 @@ required because the per-host builds don't exist until it finishes, and
 `minimumReleaseAge` is off for them, because `git-refs` has no release dates
 and the wait would hold every input forever.
 
-These stay unpinned, for the weekly update:
+Only the fast movers with nothing to review are pinned: `llm-agents` and the
+Homebrew taps, which share a pull request. Everything else waits for the
+weekly update, and these couldn't go to Renovate anyway:
 
-- nixpkgs, which moves every host at once and needs a review. Renovate can't
-  track it anyway, because another input locks its own `nixpkgs` node.
+- nixpkgs, because another input locks its own `nixpkgs` node.
 - electron-nixpkgs, which a pin would turn into a clone of nixpkgs.
-- The Homebrew taps, which change every few minutes, so their pull request
-  would never sit still.
 - The inputs on the forge, which Renovate can't reach without an SSH key.
+
+Moving an input between the two without moving its lock means editing its
+`original` in `flake.lock` to match the new URL, adding or dropping the
+`rev`. Change only `flake.nix` and `nix flake lock` relocks it at the
+latest commit.
 
 ### Repos and lock files
 

@@ -146,11 +146,12 @@ Terraform works the same way: a pull request touching `terraform/` gets its
 plan posted as a comment, and merging applies it, before any host deploys. See
 [docs/pve/builder.md](docs/pve/builder.md).
 
-Updates are pull requests too. Flake inputs pinned to a commit in
-`flake.nix` get one from Renovate each, merged once it builds. nixpkgs,
-the Homebrew taps and the inputs on the forge stay unpinned, and a weekly
-`nix flake update` moves them in one pull request for review. See
-[builder.md](docs/pve/builder.md#renovate).
+Updates are pull requests too. A weekly `nix flake update` moves most
+flake inputs in one pull request for review, with each host's package
+changes, new evaluation warnings and the upstream changelogs. Fast movers
+with nothing to review, `llm-agents` and the Homebrew taps, are pinned to a
+commit in `flake.nix` and get theirs from Renovate, merged once it builds.
+See [builder.md](docs/pve/builder.md#updates).
 
 ## Tools
 
