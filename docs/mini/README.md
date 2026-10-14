@@ -41,11 +41,19 @@ under `~/Library` and survive either.
 The mini isn't tagged `deploy-on-merge`, so merging builds it and nothing
 more. The first switch has to happen on the mini, because colmena deploys
 as `shane` and runs `sudo` without a password, and the sudo rule allowing
-that is part of the system being switched to:
+that is part of the system being switched to. Build as `shane`, since root
+has no key for the forge and `sudo darwin-rebuild switch` would stall on a
+password for `forgejo@forge`:
 
 ```sh
-sudo darwin-rebuild switch --flake git+ssh://forgejo@forge/shane/homelab#mini
+nix build --out-link /tmp/mini git+ssh://forgejo@forge/shane/homelab#darwinConfigurations.mini.system
+sudo nix build --no-link --profile /nix/var/nix/profiles/system /tmp/mini
+sudo /tmp/mini/sw/bin/darwin-rebuild activate
 ```
+
+`nh darwin switch git+ssh://forgejo@forge/shane/homelab -H mini` does the
+same where nh is installed. `-H mini` names the config, since the hostname
+is `mini-server`.
 
 After that, `colmena apply --on mini` works from anywhere with the builder's
 key, and the tag can go back on. `apply-local` would also do, but it matches
