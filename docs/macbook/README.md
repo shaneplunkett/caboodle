@@ -80,8 +80,8 @@ hostname.
 
 ## Gotchas
 
-- The `nrs` fish function switches from `NH_FLAKE`, the homelab checkout
-  at `~/Projects/personal/homelab`, so it needs a clone there. It matches
+- The `nrs` fish function switches from `NH_FLAKE`, the caboodle checkout
+  at `~/Projects/personal/caboodle`, so it needs a clone there. It matches
   the Mac's hostname against each darwin node's `networking.hostName` as
   well as its name, which is how `Shanes-MacBook-Pro` finds `macbook`.
 - The `nrs` function's list of darwin hosts is generated from the hive, so

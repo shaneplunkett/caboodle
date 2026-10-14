@@ -41,7 +41,7 @@ resolver, and its mDNS is off because Avahi already has port 5353.
 
 Wait for the PR's `build (desktop)` check to go green first, so the switch
 downloads what the builder made instead of compiling it here. Then, from
-the homelab checkout on the desktop:
+the caboodle checkout on the desktop:
 
 ```sh
 colmena apply-local --sudo
@@ -51,7 +51,7 @@ colmena apply-local --sudo
 runs colmena's `nix-env --set` and `switch-to-configuration` through sudo.
 
 `nh os switch` does the same job with nh's build tree and diff. Home
-Manager sets `NH_FLAKE` to `~/Projects/personal/homelab`, so it needs no
+Manager sets `NH_FLAKE` to `~/Projects/personal/caboodle`, so it needs no
 arguments. `nrs` is a fish wrapper around it that also refreshes every
 open fish shell afterwards. Flakes only see tracked files, so `git add`
 new ones before either.

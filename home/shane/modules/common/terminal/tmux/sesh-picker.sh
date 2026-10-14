@@ -67,7 +67,7 @@ list_workspaces() {
 find_projects() {
   {
     printf '%s\n' "$HOME"
-    printf '%s\n' "$HOME/Projects/personal/homelab"
+    printf '%s\n' "$HOME/Projects/personal/caboodle"
     printf '%s\n' "$HOME/ai-skills"
     fd -H -t d -d 1 \
       -E .git -E node_modules -E .direnv -E .next -E dist \

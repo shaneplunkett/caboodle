@@ -163,7 +163,7 @@ let
     sandbox_mode = "danger-full-access";
     approval_policy = "never";
 
-    projects."/home/shane/Projects/personal/homelab".trust_level = "trusted";
+    projects."/home/shane/Projects/personal/caboodle".trust_level = "trusted";
 
     hooks = codexHooks;
   }

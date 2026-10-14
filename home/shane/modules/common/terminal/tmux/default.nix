@@ -180,8 +180,8 @@ in
 
         session = [
           {
-            name = "homelab";
-            path = "~/Projects/personal/homelab";
+            name = "caboodle";
+            path = "~/Projects/personal/caboodle";
             startup_command = workspaceStartupCommand;
           }
           {
