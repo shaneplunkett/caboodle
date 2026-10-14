@@ -15,6 +15,10 @@
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-darwin = {
+      url = "github:nix-darwin/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     vex-brain = {
       url = "git+ssh://forgejo@forge/shane/vex-brain";
       flake = false;
@@ -26,6 +30,7 @@
       nixpkgs,
       colmena,
       agenix,
+      nix-darwin,
       vex-brain,
       ...
     }:
@@ -112,6 +117,10 @@
 
       };
 
+      darwinConfigurations = nixpkgs.lib.filterAttrs (
+        _: node: node.config.deployment.systemType == "darwin"
+      ) self.colmenaHive.nodes;
+
       hydraJobs = self.colmenaHive.toplevel;
 
       network =
@@ -143,11 +152,15 @@
         };
 
       colmenaHive = colmena.lib.makeHive {
-        meta.nixpkgs = import nixpkgs {
-          system = "x86_64-linux";
-          overlays = [ colmena.overlays.default ];
+        meta = {
+          nixpkgs = import nixpkgs {
+            system = "x86_64-linux";
+            overlays = [ colmena.overlays.default ];
+          };
+          nodeNixpkgs.mini = import nixpkgs { system = "aarch64-darwin"; };
+          inherit nix-darwin;
+          specialArgs = { inherit vex-brain; };
         };
-        meta.specialArgs = { inherit vex-brain; };
         defaults =
           {
             config,
@@ -161,15 +174,27 @@
             );
             deployment.tags = lib.mkDefault [ "deploy-on-merge" ];
             imports = [
-              ./modules/base.nix
+              ./modules/homelab.nix
               ./modules/devices.nix
-              agenix.nixosModules.default
-              ./modules/agenix
-              ./modules/services/backup
-              ./modules/services/alloy
-              ./modules/services/tailscale
+              ./modules/services/tailscale/options.nix
+              ./modules/services/backup/options.nix
             ];
           };
+
+        nixosDefaults.imports = [
+          ./modules/base.nix
+          agenix.nixosModules.default
+          ./modules/agenix
+          ./modules/services/backup
+          ./modules/services/alloy
+          ./modules/services/tailscale
+        ];
+
+        darwinDefaults.imports = [ ./modules/darwin ];
+
+        mini = {
+          imports = [ ./hosts/mini.nix ];
+        };
 
         dashboard = {
           imports = [ ./hosts/dashboard.nix ];

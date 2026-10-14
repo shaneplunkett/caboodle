@@ -1,6 +1,6 @@
 { lib, nodes, ... }:
 let
-  dnsHosts = lib.filterAttrs (_: node: node.config.services.unbound.enable) nodes;
+  dnsHosts = lib.filterAttrs (_: node: node.config.services.unbound.enable or false) nodes;
 in
 {
   services = {

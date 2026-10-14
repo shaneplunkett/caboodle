@@ -6,7 +6,7 @@
 }:
 let
   links = import ../grafana/links.nix;
-  dnsHosts = lib.filterAttrs (_: node: node.config.services.blocky.enable) nodes;
+  dnsHosts = lib.filterAttrs (_: node: node.config.services.blocky.enable or false) nodes;
 in
 {
   services.prometheus.scrapeConfigs = [

@@ -11,7 +11,9 @@ README only covers how the pieces fit together.
 flake.nix          colmena hive, dev shell, and the base LXC template
 hosts/<host>.nix   which services a host runs
 modules/           anything more than one host can import
+  homelab.nix      the homelab.* options every host declares, whatever it runs
   base.nix         every NixOS LXC: Proxmox LXC support, SSH, node exporter
+  darwin/          every Mac: Nix settings, the deploy user, the firewall
   agenix/          secrets, their recipients, and the homelab.secrets option
   services/<name>/ one folder per service
 terraform/         Proxmox LXCs/VMs, Hetzner, Cloudflare
@@ -22,9 +24,17 @@ tools/             small helpers (minirack planner, Cloudflare MCP headers)
 
 ## Nix hosts
 
-Each NixOS LXC is a node in the colmena hive in `flake.nix`. Defaults every
-node gets live in `colmenaHive.defaults`; a host's own file under `hosts/`
-just imports the services it runs.
+Every host is a node in the colmena hive in `flake.nix`, the NixOS LXCs and
+the Mac mini alike. What every node gets lives in `colmenaHive.defaults`,
+which only holds options and data, since it has to evaluate on both systems.
+`nixosDefaults` is what every LXC gets and `darwinDefaults` what every Mac
+gets. A host's own file under `hosts/` just imports the services it runs.
+
+A service that runs on both kinds of host keeps its options in an
+`options.nix` next to its `default.nix`, so the hive can read them from any
+node, and the NixOS half and the darwin half each read the same facts. The
+mini is the only Mac for now; see [docs/mini](docs/mini/README.md) for what
+it does and doesn't get from the hive yet.
 
 Modules can read the whole hive through colmena's `nodes` and `name`
 arguments, so things like scrape targets, log shipping and dashboard tiles are

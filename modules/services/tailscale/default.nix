@@ -3,12 +3,7 @@ let
   cfg = config.homelab.tailscale;
 in
 {
-  options.homelab.tailscale = {
-    enable = lib.mkEnableOption "joining the tailnet" // {
-      default = true;
-    };
-    subnetRouter = lib.mkEnableOption "advertising the LAN to the tailnet";
-  };
+  imports = [ ./options.nix ];
 
   config = lib.mkIf cfg.enable {
     homelab.secrets = [ "tailscale-oauth" ];
