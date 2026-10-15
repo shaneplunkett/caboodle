@@ -5,6 +5,19 @@ Read `README.md` for how the repo fits together.
 - **Nix:** check changes with `colmena build --on <host>` and `git add` new
   files first (flakes ignore untracked files). Don't add comments to Nix code;
   it should read for itself.
+- **Derivation diff:** every pull request names which hive nodes change and
+  why. Compare `hydraJobs`' derivation paths between the base and your branch,
+  each unpacked into a temp directory with `git archive` and evaluated as a
+  `path:` flake, which also works inside a worktree:
+
+  ```sh
+  nix eval --json path:/tmp/dd/<side>#hydraJobs --apply 'js: builtins.mapAttrs (_: d: d.drvPath) js'
+  ```
+
+  A package built from `lib.cleanSource ./.` changes with any file in its
+  folder, its README included. For one node,
+  `nix path-info --derivation .#hydraJobs.<node>` hits the eval cache on a
+  repeat run, and `nix eval` never does.
 - **Checks:** `scripts/check.sh` is the one gate: nixfmt, statix and deadnix
   for Nix; `terraform fmt`, `validate` and tflint for Terraform; ruff's
   formatter and linter for Python; Biome for JavaScript and TypeScript. Hooks
