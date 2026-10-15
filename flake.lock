@@ -23,21 +23,19 @@
     "ai-skills": {
       "inputs": {
         "langsmith-skills": "langsmith-skills",
-        "matt-skills": "matt-skills",
         "nixpkgs": [
           "nixpkgs"
         ],
-        "tavily-skills": "tavily-skills",
         "vex-brain": [
           "vex-brain"
         ]
       },
       "locked": {
-        "lastModified": 1791725672,
-        "narHash": "sha256-SxcxGz7AklbKyfOWk8GlGcprr6DqJ7dxD19bGyDbWHo=",
+        "lastModified": 1792077036,
+        "narHash": "sha256-KdgHh7A+pxrnC4vrRTEmfY4/0fhybrP9kBwkNmBp6eo=",
         "ref": "refs/heads/main",
-        "rev": "4b82e4deec09c17315bbe675616562afa93dc035",
-        "revCount": 121,
+        "rev": "5aacc759be0a741c63bdd0c158237cb6383bd015",
+        "revCount": 147,
         "type": "git",
         "url": "ssh://forgejo@forge/shane/ai-skills"
       },
@@ -290,22 +288,6 @@
         "owner": "numtide",
         "repo": "llm-agents.nix",
         "rev": "4e80fdc9b04f4531a78c89f6dff66e0a4d920b3f",
-        "type": "github"
-      }
-    },
-    "matt-skills": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1791199038,
-        "narHash": "sha256-oN3OQPouK6wrrGzmgNdvdOVLsOJVGaK7cy3BZoE10AA=",
-        "owner": "mattpocock",
-        "repo": "skills",
-        "rev": "4588b32ecab9ecc9fc8cc6b6c5e7d675b6004b0d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "mattpocock",
-        "repo": "skills",
         "type": "github"
       }
     },
@@ -619,22 +601,6 @@
         "owner": "nix-systems",
         "ref": "future-26.11",
         "repo": "default",
-        "type": "github"
-      }
-    },
-    "tavily-skills": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1788534966,
-        "narHash": "sha256-bsNT2xRbA3eXPgBibHPPnKqMnItHr0/eKI5p0HyijS8=",
-        "owner": "tavily-ai",
-        "repo": "skills",
-        "rev": "778122e5f9c680f541eeceda5a5b36405eb7980c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "tavily-ai",
-        "repo": "skills",
         "type": "github"
       }
     },
