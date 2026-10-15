@@ -71,10 +71,6 @@ let
     meta.mainProgram = "t3-hyprland-snap-shot";
   };
 
-  # nixpkgs splits t3code into an unwrapped pnpm build plus a symlinkJoin
-  # wrapper that puts the enabled agent CLIs on PATH. The fork source, pnpm
-  # swap, and branding belong on the unwrapped build; the agent toggles on
-  # the wrapper.
   unwrapped = (t3code.unwrapped.override { pnpm_11 = pnpm; }).overrideAttrs (
     finalAttrs: previousAttrs: {
       pname = "vex-code-unwrapped";
@@ -82,13 +78,9 @@ let
       src = namedSrc;
 
       patches = (previousAttrs.patches or [ ]) ++ [
-        # Spellcheck in the OS locale (en-AU) instead of the bundled en-US.
         ./patches/spellcheck-system-locale.patch
-        # Catppuccin syntax highlighting for code blocks and diffs.
         ./patches/catppuccin-code-theme.patch
-        # Chat italics in the theme's primary colour (mauve under Mocha).
         ./patches/markdown-italics-primary.patch
-        # Body text follows the theme; the boot style hard-codes neutral white.
         ./patches/body-text-follows-theme.patch
       ];
 

@@ -1,4 +1,3 @@
-# Catppuccin for COSMIC apps (COSMIC Files and the file picker).
 # COSMIC apps read a fully built theme that cosmic-settings-daemon normally
 # generates from builder settings. Outside COSMIC nothing does, so write the
 # builder settings from the palette and the shared accent, and build the
@@ -51,8 +50,6 @@ let
     ext_indigo = "mauve";
   };
 
-  # One file per builder field, as COSMIC's config keeps them. Spacing,
-  # corner radii, gaps and blur stay at COSMIC's defaults.
   builder =
     lib.mapAttrs (_: name: "Some(${colour name})") {
       bg_color = "base";
@@ -102,7 +99,6 @@ let
         cp -r $XDG_CONFIG_HOME/cosmic/com.system76.CosmicTheme.Dark/v2 $out
       '';
 
-  # COSMIC's font setting: a family plus enum weight, stretch and style.
   font = family: "(family: \"${family}\", weight: Normal, stretch: Normal, style: Normal)";
 in
 {
@@ -110,7 +106,6 @@ in
     "cosmic/com.system76.CosmicTheme.Dark/v2".source = theme;
     "cosmic/com.system76.CosmicTheme.Mode/v1/is_dark".text = "true";
 
-    # Same icons and fonts as GTK and Qt (theme.nix).
     "cosmic/com.system76.CosmicTk/v1/icon_theme".text = "\"${config.gtk.iconTheme.name}\"";
     "cosmic/com.system76.CosmicTk/v1/interface_font".text = font config.gtk.font.name;
     "cosmic/com.system76.CosmicTk/v1/monospace_font".text = font (

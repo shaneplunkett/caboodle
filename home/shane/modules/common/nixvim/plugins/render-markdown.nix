@@ -31,7 +31,6 @@ _: {
     };
   };
 
-  # Word-boundary wrapping and narrow sign column for markdown files
   autoCmd = [
     {
       event = "FileType";

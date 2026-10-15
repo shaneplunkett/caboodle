@@ -5,7 +5,6 @@ let
   fontSize = 12;
   cursorSize = 24;
 
-  # One icon theme for GTK, Qt and noctalia's app icons alike.
   iconTheme = {
     name = "Reversal-purple-dark";
     package = pkgs.reversal-icon-theme.override { colorVariants = [ "purple" ]; };
@@ -81,7 +80,6 @@ in
     ];
   };
 
-  # qt6ct carries the icons and fonts; Kvantum draws the widgets in Catppuccin.
   qt = {
     enable = true;
     platformTheme.name = "qtct";
@@ -101,7 +99,6 @@ in
   };
 
   catppuccin = {
-    # Flavour and accent come from the shared catppuccin settings.
     kvantum.enable = true;
     cursors.enable = true;
     # iconTheme above owns the icons, for GTK and Qt alike.

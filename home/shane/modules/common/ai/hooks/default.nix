@@ -1,11 +1,6 @@
-# Hooks shared by every AI harness. Declare a hook once in `sharedHooks`;
-# `hooksFor "<harness>"` renders the settings shape Claude Code and Codex
-# both use. Exposed through ../lib.nix as `aiHelpers.hooksFor`.
-#
 # Each script is run as `<script> <harness>` with the hook payload on stdin.
 { pkgs, lib }:
 let
-  # Tool-name matcher per harness for each kind of tool a hook can watch.
   matchers = {
     claude = {
       shell = "Bash";
@@ -17,8 +12,6 @@ let
     };
   };
 
-  # Print the paths a file-edit payload touched, one per line. Claude Code
-  # sends tool_input.file_path; Codex sends the apply_patch text instead.
   changedFiles = pkgs.writeShellApplication {
     name = "hook-changed-files";
     runtimeInputs = [ pkgs.jq ];

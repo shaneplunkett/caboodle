@@ -1,13 +1,5 @@
 { lib, pkgs }:
 
-# mkRbwWrapper — declarative wrapper-builder for CLIs that need API keys
-# fetched from rbw (Bitwarden) at invocation time.
-#
-# Example:
-#   mkRbwWrapper {
-#     package = pkgs.tavily-cli;
-#     secrets = [ { var = "TAVILY_API_KEY"; entry = "tavily-api-key"; } ];
-#   }
 {
   package,
   mainProgram ? package.meta.mainProgram or null,
@@ -25,8 +17,7 @@ let
 
   # Entry names are double-quoted (not single-quoted) so they can be
   # safely nested inside the single-quoted makeWrapper --run script.
-  # Entries like "Unifi API Key" contain spaces; single-quote nesting
-  # broke shell tokenization at the makeWrapper call site.
+  # Entries like "Unifi API Key" contain spaces.
   rbwFetch =
     entry: field:
     if field == null then

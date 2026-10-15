@@ -83,10 +83,8 @@
           enable = true;
           settings.telemetry.enable = false;
         };
-        # High performance Typescript LSP (wrapper around VSCode's TS service)
         vtsls = {
           enable = true;
-          # Recommended settings for web dev
           settings = {
             typescript = {
               updateImportsOnFileMove.enabled = "always";

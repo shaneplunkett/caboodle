@@ -1,5 +1,3 @@
-# Raycast-style launcher; owns SUPER+space and SUPER+V in hyprland.nix.
-# Catppuccin's autoEnable themes it to match everything else.
 { config, ... }:
 let
   # Catppuccin's module asks for a "Catppuccin Mocha Mauve" icon theme under a
@@ -12,8 +10,6 @@ in
     systemd.enable = true;
 
     settings = {
-      # Same font as the rest of the desktop (set in theme.nix). Size stays
-      # unset so vicinae picks its own sensible default.
       font.normal.family = config.gtk.font.name;
 
       theme = {

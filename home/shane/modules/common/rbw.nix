@@ -20,9 +20,6 @@ in
     };
   };
 
-  # Unlock once per desktop session. This used to happen accidentally when the
-  # interactive shell fetched an Aikido token; keep it explicit now that the
-  # work-only tooling is gone.
   programs.fish.loginShellInit = ''
     if test "$TERM_PROGRAM" = ghostty; and not ${rbw} unlocked >/dev/null 2>&1
       ${rbw} unlock

@@ -10,7 +10,6 @@ _: {
         };
       };
 
-      # Shift accent from blue/lavender to mauve to match the rest of the system
       custom_highlights.__raw = ''
         function(colors)
           return {

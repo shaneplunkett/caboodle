@@ -1,13 +1,10 @@
-# File management: COSMIC Files, which also compresses and extracts archives
-# from its right-click menu, so there's no separate archive app. It shares
-# libcosmic and the Catppuccin theme with the file picker (cosmic.nix), and
-# mounts drives and network shares through GIO, so gvfs runs on the desktop.
+# COSMIC Files mounts drives and network shares through GIO, so gvfs runs on
+# the desktop.
 { pkgs, ... }:
 {
   home.packages = [ pkgs.cosmic-files ];
 
   xdg = {
-    # Listed as "Files" in vicinae.
     desktopEntries."com.system76.CosmicFiles" = {
       name = "Files";
       comment = "Access and organise files";
