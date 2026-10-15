@@ -36,7 +36,7 @@ type config struct {
 
 func loadConfig(cmd *cli.Command) *config {
 	c := &config{
-		controllerURL: strings.TrimRight(envOr("UNIFI_CONTROLLER_URL", "https://192.168.1.1"), "/"),
+		controllerURL: strings.TrimRight(os.Getenv("UNIFI_CONTROLLER_URL"), "/"),
 		apiKey:        os.Getenv("UNIFI_API_KEY"),
 		site:          envOr("UNIFI_SITE", "default"),
 		timeout:       parseDurationOr("UNIFI_TIMEOUT", 10*time.Second),
@@ -70,6 +70,10 @@ func parseDurationOr(k string, def time.Duration) time.Duration {
 }
 
 func (c *config) request(ctx context.Context, method, path string, body io.Reader) ([]byte, error) {
+	if c.controllerURL == "" {
+		fmt.Fprintln(os.Stderr, "unifi: UNIFI_CONTROLLER_URL is unset. Point it at the gateway, like https://<gateway>.")
+		os.Exit(3)
+	}
 	if c.apiKey == "" {
 		fmt.Fprintln(os.Stderr, "unifi: UNIFI_API_KEY is unset. Add an entry named 'Unifi API Key' in Bitwarden with the API key as the password, then `rbw sync`.")
 		os.Exit(3)

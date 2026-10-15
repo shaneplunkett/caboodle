@@ -1,6 +1,9 @@
-# CLIs the agent stack invokes, each wrapped to pull its API key from rbw at
-# invocation.
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  osConfig,
+  ...
+}:
 let
   mkRbwWrapper = import ./mk-rbw-wrapper.nix { inherit lib pkgs; };
 in
@@ -58,11 +61,7 @@ in
           entry = "Unifi API Key";
         }
       ];
-      extraEnv = {
-        UNIFI_CONTROLLER_URL = "https://192.168.1.1";
-        UNIFI_SITE = "default";
-        UNIFI_TIMEOUT = "10s";
-      };
+      extraEnv.UNIFI_CONTROLLER_URL = "https://${osConfig.homelab.gateway}";
     })
   ];
 }
