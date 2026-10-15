@@ -89,8 +89,6 @@ Flakes only see tracked files, so `git add` new files before building.
 5. `colmena apply --on <host>`. Colmena reaches hosts by their tailnet
    name, which doesn't exist until this first deploy joins it, so for this
    one deploy temporarily set `deployment.targetHost` to the LAN address.
-6. `colmena apply --on builder`, so its SSH config and known hosts include
-   the new host. Until then, every merge deploy fails to reach it.
 
 ## Secrets
 

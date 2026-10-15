@@ -28,6 +28,11 @@ Every push to `main` deploys the hosts tagged `deploy-on-merge`. Deploys
 queue rather than cancel each other. The hosts don't use Tailscale's DNS, so
 the builder reaches each one by its LAN address from the hive.
 
+The builder deploys first, on its own. Its SSH config and known hosts come
+from the hive, so a host added in the same push can't be reached until the
+builder has switched. Deployed alongside the rest, it lost that race and the
+new host failed its first deploy.
+
 dns2 deploys in a later job, once dns1 answers. Deploying both at once
 restarted Blocky on both and left the network without DNS, so a bad DNS
 change now only takes one of them down.
