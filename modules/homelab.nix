@@ -7,6 +7,12 @@
       description = "The host's LAN address, for anything that must keep working without Tailscale. A host that's always on the LAN has one; a laptop doesn't.";
     };
 
+    sshUser = lib.mkOption {
+      type = lib.types.str;
+      default = "root";
+      description = "Who Shane logs in as over SSH.";
+    };
+
     metricsDir = lib.mkOption {
       type = lib.types.str;
       default = "/var/lib/prometheus-node-exporter-text";

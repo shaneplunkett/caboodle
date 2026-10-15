@@ -89,7 +89,7 @@ in
         (lanAddress name)
       ];
       inherit publicKey;
-    }) (import ../../agenix/host-keys.nix);
+    }) (lib.getAttrs onLan (import ../../agenix/host-keys.nix));
     extraConfig =
       lib.concatMapStrings (name: ''
         Host ${name} ${lanAddress name}

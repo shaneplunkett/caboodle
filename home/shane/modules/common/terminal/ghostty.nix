@@ -22,7 +22,7 @@ in
       font-size = if isDarwin then 21 else 14;
       command = fishCommand;
       shell-integration = "fish";
-      shell-integration-features = "cursor,no-sudo,title";
+      shell-integration-features = "cursor,no-sudo,title,ssh-env,ssh-terminfo";
       confirm-close-surface = false;
     }
     // lib.optionalAttrs isDarwin {

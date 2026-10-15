@@ -4,6 +4,6 @@
     ./fonts.nix
     ./home-manager.nix
     ./nix-settings.nix
-    ./ssh-known-hosts.nix
+    ./ssh.nix
   ];
 }
