@@ -12,7 +12,8 @@ resource "proxmox_virtual_environment_vm" "unraid" {
   machine       = "q35"
   scsi_hardware = "virtio-scsi-single"
   boot_order    = ["usb0"]
-  started       = true
+  on_boot       = false
+  started       = false
 
   cpu {
     cores   = 4

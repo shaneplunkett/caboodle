@@ -86,14 +86,14 @@ and nothing gets debugged twice at once.
 
 ## Phase 1 checks
 
-1. Run Unraid's mover so the cache starts empty.
-2. Stop Unraid, start the NAS VM, and check every drive and both pools mount.
-3. Restart Plex and arr, since their NFS file handles go stale in the swap.
-   Plex plays and arr sees the library.
-4. Turn off `homelab.nas.readOnly` and deploy. A download lands on the NVMe,
+1. Stop Unraid, start the NAS VM, and check every drive and both pools
+   mount. The cache doesn't need emptying first, since `/mnt/user` includes
+   it.
+2. Clear the stale handles, then check Plex plays and arr sees the library.
+3. Turn off `homelab.nas.readOnly` and deploy. A download lands on the NVMe,
    arr hardlinks it into the library, and the mover moves both copies as one
    file.
-5. Leave it running for a week or two, then delete the Unraid VM.
+4. Leave it running for a week or two, then delete the Unraid VM.
 
 ## Gotchas
 
@@ -108,9 +108,17 @@ and nothing gets debugged twice at once.
 - **The mover keeps hardlinks** by handing rsync the whole file list with
   `-H`. Moving files one at a time would split each torrent from its library
   copy and use the space twice.
-- **Terraform still says `started = true` for Unraid.** If it applies while
-  the NAS VM holds the devices, Unraid fails to start, and nothing breaks.
-  Set it to false when phase 1 merges.
+- **Only one of Unraid and the NAS VM may start on boot.** Both claim the
+  same devices and MAC. Unraid stays in Terraform, stopped and off at boot,
+  so rolling back is flipping those two settings.
+- **Clients keep stale handles after a swap.** Lazily unmount the shares on
+  each Proxmox node (`umount -l /mnt/pve/unraid-*`, and Proxmox mounts them
+  again), restart the containers that bind them, and do the same for the
+  desktop's SMB mounts.
+- **The mover skips SQLite's `-wal`, `-shm` and `-journal` files.**
+  Calibre-Web-Automated keeps its database in `Media/library`, open all the
+  time. Unraid's mover skipped open files, so its sidecars sat on the cache
+  for days. Moving them under an open database can corrupt it.
 - **A pool with a missing disk doesn't mount**, which matches Unraid refusing
   to start its array. arr would otherwise see files vanish.
 
@@ -122,4 +130,6 @@ and nothing gets debugged twice at once.
 - Retiring Unraid's UI, its Glance widget, its Pocket ID client and its
   ingress route.
 - Whether the desktop moves from SMB to NFS.
-- Whether the mover should skip files a client still has open.
+- Whether the mover should skip every file a client still has open. NFS
+  clients' open files aren't visible on the server, so this needs more than
+  `fuser`.

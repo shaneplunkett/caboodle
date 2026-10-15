@@ -315,7 +315,6 @@
             ./modules/vm.nix
             ./hosts/nas.nix
           ];
-          deployment.tags = [ ];
         };
       };
     };

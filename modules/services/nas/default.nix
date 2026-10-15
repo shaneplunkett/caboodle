@@ -136,7 +136,8 @@ in
         serviceConfig.Type = "oneshot";
         script = ''
           cd /mnt/cache
-          find ${lib.escapeShellArgs moved} -type f -mmin +1440 -print0 \
+          find ${lib.escapeShellArgs moved} -type f -mmin +1440 \
+            ! -name '*-wal' ! -name '*-shm' ! -name '*-journal' -print0 \
             | rsync -aHAX --from0 --files-from=- --remove-source-files --preallocate . /mnt/user0/
         '';
       };
