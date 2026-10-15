@@ -18,6 +18,10 @@ let
   overrides = {
     unifi.title = "UniFi";
     plex.alt-status-codes = [ 401 ];
+    bubbles = {
+      title = "BlueBubbles";
+      icon = "di:bluebubbles.png";
+    };
     coffee = {
       title = "Coffee";
       icon = "mdi:coffee";
