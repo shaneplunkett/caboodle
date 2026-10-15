@@ -6,7 +6,9 @@ Read `README.md` for how the repo fits together.
   files first (flakes ignore untracked files). Don't add comments to Nix code;
   it should read for itself.
 - **Derivation diff:** every pull request names which hive nodes change and
-  why. Compare `hydraJobs`' derivation paths between the base and your branch,
+  why. Fetch and rebase onto `origin/main` first: other agents' fetches move
+  it under you, and a stale base counts their changes as yours. Then compare
+  `hydraJobs`' derivation paths between `origin/main` and your branch,
   each unpacked into a temp directory with `git archive` and evaluated as a
   `path:` flake, which also works inside a worktree:
 
