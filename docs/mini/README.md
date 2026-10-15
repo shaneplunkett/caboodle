@@ -72,9 +72,12 @@ it's off, which makes the mini a LAN server like the LXCs, whose firewalls
 open each service's port to the whole LAN anyway. That's what lets
 Prometheus scrape it.
 
-Prometheus's memory alert reads `node_memory_MemAvailable_bytes`, which
-macOS's node exporter doesn't publish, so it never fires for the mini. The
-disk, CPU and HostDown alerts work as on the LXCs.
+macOS's node exporter has no `MemAvailable`, so the memory alert and the
+host dashboard work it out the way Activity Monitor does: total memory less
+app memory, wired and compressed. `modules/services/prometheus/memory.nix`
+holds both versions. Free memory alone means nothing on a Mac, because macOS
+fills spare memory with file cache on purpose. The disk, CPU and HostDown
+alerts work as on the LXCs.
 
 ## Tuned for agents
 

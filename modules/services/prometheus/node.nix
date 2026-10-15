@@ -40,15 +40,18 @@ in
                   percent,
                   matcher,
                 }:
+                let
+                  memory = import ./memory.nix matcher;
+                in
                 {
                   alert = "HostMemoryLow";
-                  expr = "node_memory_MemAvailable_bytes{${matcher}} / node_memory_MemTotal_bytes < ${toString value}";
+                  expr = "${memory.available} / ${memory.total} < ${toString value}";
                   for = "10m";
                   labels.severity = "warning";
                   annotations = {
                     summary = "{{ $labels.host }} has only {{ $value | humanizePercentage }} memory free";
                     condition = "Free memory under ${percent} for 10m";
-                    check = "ssh root@{{ $labels.host }} ps aux --sort=-rss | head";
+                    check = "ssh {{ $labels.host }} 'ps -eo rss,comm | sort -rn | head'";
                     dashboard = links.hostHealth "{{ $labels.host }}";
                   };
                 }

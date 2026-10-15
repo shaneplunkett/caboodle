@@ -25,9 +25,13 @@ let
     ''100 * (1 - avg by (host) (rate(node_cpu_seconds_total{${selector},mode="idle"}[${window}])))'';
   guestCpuUsed =
     selector: "100 * pve_cpu_usage_ratio * on (id) group_left (name) pve_guest_info{${selector}}";
+  memory = import ../../prometheus/memory.nix;
   memoryUsed =
     selector:
-    "100 * (1 - node_memory_MemAvailable_bytes{${selector}} / node_memory_MemTotal_bytes{${selector}})";
+    let
+      inherit (memory selector) available total;
+    in
+    "100 * (1 - ${available} / ${total})";
   rootUsed =
     selector:
     ''100 * (1 - node_filesystem_avail_bytes{${selector},mountpoint="/"} / node_filesystem_size_bytes{${selector},mountpoint="/"})'';
@@ -56,6 +60,7 @@ let
     };
 
   host = ''host="$host"'';
+  hostMemory = memory host;
   lxc = ''type="lxc"'';
   guest = ''name="$host"'';
 in
@@ -130,8 +135,8 @@ dashboard {
       stacked = true;
       defaults.unit = "bytes";
       targets = [
-        (query "Used" "node_memory_MemTotal_bytes{${host}} - node_memory_MemAvailable_bytes{${host}}")
-        (query "Available" "node_memory_MemAvailable_bytes{${host}}")
+        (query "Used" "${hostMemory.total} - ${hostMemory.available}")
+        (query "Available" hostMemory.available)
       ];
     })
     (usageNow "Filesystems" (at 0 46 12 9) "{{mountpoint}}"
