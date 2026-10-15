@@ -7,12 +7,15 @@ them. Each has its own doc too: [desktop](../desktop/README.md),
 
 ## Switching by hand
 
-Switch from the checkout at `~/Projects/personal/caboodle`, which Home
-Manager sets as `NH_FLAKE`, so `nrs` and nh need a clone there. Flakes only
-see tracked files, so `git add` new ones first. `nrs` switches whichever
-machine it runs on with nh, then refreshes every open fish shell. On a Mac
-it finds the node by matching the hostname against each darwin node's
-`networking.hostName`.
+`nrs` switches whichever machine it runs on to the forge's `main`, then
+refreshes every open fish shell. It passes `--refresh`, because nix
+otherwise reuses a fetch for up to an hour and switches to a stale `main`.
+On a Mac it finds the node by matching the hostname against each darwin
+node's `networking.hostName`.
+
+`nrs --local` switches from the checkout at `~/Projects/personal/caboodle`
+instead, which Home Manager sets as `NH_FLAKE`. Flakes only see tracked
+files, so `git add` new ones first.
 
 `nrs`'s list of Macs is generated from the hive, so adding a Mac changes
 every workstation's home-manager generation.
