@@ -31,7 +31,7 @@
   system = {
     defaults.loginwindow.autoLoginUser = "shane";
     activationScripts.postActivation.text = ''
-      /usr/bin/mdutil -a -i off >/dev/null
+      /usr/bin/mdutil -a -i off >/dev/null || echo "warning: could not turn Spotlight off" >&2
     '';
     stateVersion = 6;
   };
