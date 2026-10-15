@@ -27,6 +27,7 @@ let
       runtimeInputs = [
         pkgs.git
         pkgs.gnugrep
+        pkgs.gnused
       ];
     }
     {

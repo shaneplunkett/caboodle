@@ -26,15 +26,25 @@ command=$(
 
 [ -n "$command" ] || exit 0
 
-flat_command="$(printf '%s' "$command" | tr '\n' ' ')"
+# A newline ends a command unless it's escaped, so a heredoc body or the next
+# line is never read as part of the commit.
+command="${command//$'\\\n'/ }"
+flat_command="${command//$'\n'/;}"
 
-if ! grep -Eq '(^|[;&|[:space:]])git([[:space:]][^;&|]*)?[[:space:]]commit([[:space:]]|$)' <<<"$flat_command"; then
-  exit 0
-fi
+commits="$(grep -Eo '(^|[;&|[:space:]])git([[:space:]][^;&|]*)?[[:space:]]commit([[:space:]][^;&|]*)?' <<<"$flat_command" || true)"
+[ -n "$commits" ] || exit 0
+
+# Flags only count after `commit` and outside quotes, so `jq -n` elsewhere in
+# the command, or a message mentioning `-n`, doesn't read as `git commit -n`.
+commit_args=""
+while IFS= read -r commit; do
+  commit_args+=" ${commit#*[[:space:]]commit}"
+done <<<"$commits"
+commit_args="$(sed -E "s/'[^']*'//g; s/\"[^\"]*\"//g" <<<"$commit_args")"
 
 reason=""
 
-if grep -Eq '(^|[[:space:]])--no-verify([[:space:]]|$)|(^|[[:space:]])-[^-[:space:]]*n[^[:space:]]*([[:space:]]|$)' <<<"$flat_command"; then
+if grep -Eq '(^|[[:space:]])--no-veri[a-z]*([[:space:]]|$)|(^|[[:space:]])-[^-[:space:]]*n[^[:space:]]*([[:space:]]|$)' <<<"$commit_args"; then
   reason="Blocked git commit hook bypass: do not use --no-verify/-n. Fix the hook findings, or ask Shane explicitly before bypassing repo validations."
 fi
 
@@ -42,8 +52,8 @@ if [ -z "$reason" ] && grep -Eq '(^|[[:space:];])(SKIP=|HUSKY=0|HUSKY_SKIP_HOOKS
   reason="Blocked git commit hook bypass: hook-disabling environment variables are not allowed for agent commits. Let the repo hooks run and fix what they report."
 fi
 
-if [ -z "$reason" ] && grep -Eq 'core\.hooksPath[[:space:]]*=[[:space:]]*($|/dev/null|NUL|none)' <<<"$flat_command"; then
-  reason="Blocked git commit hook bypass: core.hooksPath cannot be disabled for agent commits. Let the repo hooks run and fix what they report."
+if [ -z "$reason" ] && grep -Eiq 'core\.hookspath([[:space:]]*=|[[:space:]]+[^-;&|[:space:]])' <<<"$flat_command"; then
+  reason="Blocked git commit hook bypass: core.hooksPath cannot be overridden for agent commits. Let the repo hooks run and fix what they report."
 fi
 
 if [ -z "$reason" ]; then
