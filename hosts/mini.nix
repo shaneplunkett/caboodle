@@ -25,8 +25,16 @@
   power = {
     sleep.computer = "never";
     restartAfterPowerFailure = true;
+    restartAfterFreeze = true;
   };
-  system.defaults.loginwindow.autoLoginUser = "shane";
+
+  system = {
+    defaults.loginwindow.autoLoginUser = "shane";
+    activationScripts.postActivation.text = ''
+      /usr/bin/mdutil -a -i off >/dev/null
+    '';
+    stateVersion = 6;
+  };
 
   home-manager.users.shane = {
     imports = [ ../home/shane/homemacserver.nix ];
@@ -37,6 +45,4 @@
     enable = true;
     user = "shane";
   };
-
-  system.stateVersion = 6;
 }

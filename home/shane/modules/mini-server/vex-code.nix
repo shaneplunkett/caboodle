@@ -1,6 +1,6 @@
 # Runs the vex-code backend headless on mini-server, in place of the desktop
 # app. It's a login agent rather than a boot daemon because agents need the
-# login keychain and rbw; auto-login (hosts/darwin/mini) brings the session
+# login keychain and rbw; auto-login (hosts/mini.nix) brings the session
 # back after a reboot. Tailscale Serve already forwards the tailnet's :3773 to
 # 127.0.0.1:3773, and pairings carry over because the base dir is unchanged.
 {
@@ -39,6 +39,7 @@ in
         "/usr/sbin"
         "/sbin"
       ];
+      ProcessType = "Interactive";
       RunAtLoad = true;
       KeepAlive = true;
       StandardOutPath = log;

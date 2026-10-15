@@ -76,6 +76,34 @@ Prometheus's memory alert reads `node_memory_MemAvailable_bytes`, which
 macOS's node exporter doesn't publish, so it never fires for the mini. The
 disk, CPU and HostDown alerts work as on the LXCs.
 
+## Tuned for agents
+
+The mini is the only T3 Code backend, so it's tuned for agents spawning lots
+of short processes over lots of small files, not for someone sitting at it.
+
+- **The server runs `Interactive`.** A launchd job with no `ProcessType`
+  gets light CPU and I/O throttling, and everything it spawns inherits it, so
+  every agent's shells, git and test runs were clamped. `Interactive` lifts
+  that. The nix-daemon stays `Standard` on purpose, so agents win over darwin
+  builds from CI.
+- **Spotlight is off on every volume.** Nothing here searches, and every
+  install, checkout and worktree cleanup made `mds` index the churn.
+  Spotlight's privacy list can't be declared, so it's all off rather than
+  some folders excluded. Activation turns it back off on each deploy, since
+  a macOS update can turn it on again.
+- **git keeps an untracked cache.** `git status` skips rescanning directories
+  that haven't changed, which matters when agents call it constantly.
+
+### The first-run scan
+
+macOS scans every new executable the first time it runs, about a quarter of
+a second each. Every Nix rebuild, native npm package or freshly compiled test
+binary pays it once. Apps in Privacy & Security › Developer Tools, and
+everything they spawn, skip the scan. That grant lives in TCC, which only the
+UI or an MDM profile can change, and it's keyed to a path or a signature that
+moves into a new store path with each vex-code bump. So it isn't declared
+here.
+
 ## Deploying
 
 Merging deploys it: the builder reaches it as `shane` and runs `sudo`
