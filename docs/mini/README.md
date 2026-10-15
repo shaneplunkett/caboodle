@@ -15,7 +15,7 @@ sync runs from boot with nobody logged in.
 BlueBubbles Server is how Shane uses iMessage from NixOS. Homebrew disabled
 its cask because it fails Gatekeeper, so `pkgs/bluebubbles-server` packages
 the upstream DMG instead, and `home/shane/modules/mini-server/bluebubbles.nix`
-runs it as a login agent. `pkgs/bluebubbles` is the Linux client, a
+runs it as a login agent. `pkgs/bluebubbles-themed` is the Linux client, a
 different thing.
 
 The app is signed with the developer's Developer ID but not notarized, which
