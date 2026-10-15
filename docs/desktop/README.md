@@ -19,13 +19,13 @@ resolver, and its mDNS is off because Avahi already has port 5353.
 ## Switching
 
 Wait for the PR's `build (desktop)` check to go green first, so the switch
-downloads what the builder made instead of compiling it here. Then, from
-the caboodle checkout on the desktop, `git add` any new files and run
-either of:
+downloads what the builder made instead of compiling it here. Then run
+`nrs`, which switches to the forge's `main`. To switch to unmerged work,
+`git add` any new files in the caboodle checkout and run either of:
 
 ```sh
 colmena apply-local --sudo
-nrs
+nrs --local
 ```
 
 - Colmena can't deploy the desktop over SSH. Root has no keys there and

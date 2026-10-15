@@ -19,7 +19,7 @@ since a sleeping laptop would trip HostDown all day.
 
 Use the recipe in
 [docs/workstation](../workstation/README.md#switching-a-mac) with
-`-H macbook`, or `nrs` from the checkout. The hostname stays
+`-H macbook`, or `nrs`. The hostname stays
 `Shanes-MacBook-Pro` so the tailnet name doesn't change.
 
 ## Gotchas

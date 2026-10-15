@@ -170,14 +170,21 @@ in
           end
         '';
         nrs = ''
+          argparse --ignore-unknown local -- $argv; or return 1
+
+          set -l flake git+ssh://forgejo@forge/shane/caboodle --refresh
+          if set -q _flag_local
+            set flake $NH_FLAKE
+          end
+
           set -l switch_status
 
           if test (uname) = Darwin
             set -l host (__nrs_darwin_host); or return 1
-            nh darwin switch $argv -H $host
+            nh darwin switch $flake $argv -H $host
             set switch_status $status
           else
-            nh os switch $argv -H (hostname)
+            nh os switch $flake $argv -H (hostname)
             set switch_status $status
           end
 
