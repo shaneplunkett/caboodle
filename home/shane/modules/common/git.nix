@@ -31,6 +31,7 @@ _: {
       };
       core = {
         editor = "nvim";
+        untrackedCache = true;
       };
     };
     ignores = [
