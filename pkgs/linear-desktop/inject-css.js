@@ -4,8 +4,8 @@
 // CSP, so Linear's remote UI cannot block it.
 void (() => {
   const { app } = require("electron");
-  const fs = require("fs");
-  const path = require("path");
+  const fs = require("node:fs");
+  const path = require("node:path");
   const css = fs.readFileSync(path.join(__dirname, "custom.css"), "utf8");
   app.on("web-contents-created", (_event, contents) => {
     contents.on("dom-ready", () => {

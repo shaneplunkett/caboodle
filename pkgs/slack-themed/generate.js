@@ -34,7 +34,7 @@ const rgb2hsl = (r, g, b) => {
   if (mx === mn) return [0, 0, l];
   const d = mx - mn,
     s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
-  let h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  const h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
   return [h * 60, s, l];
 };
 const hsl2rgb = (h, s, l) => {

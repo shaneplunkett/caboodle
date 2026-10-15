@@ -14,7 +14,7 @@ deadnix --fail .
 ruff format --check .
 ruff check .
 
-biome ci --colors=off .
+biome ci --colors=off --error-on-warnings .
 
 terraform fmt -check -recursive terraform
 if ! init="$(terraform -chdir=terraform init -backend=false -input=false -no-color 2>&1)"; then
