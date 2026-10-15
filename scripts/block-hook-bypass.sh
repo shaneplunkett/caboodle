@@ -4,19 +4,37 @@
 # commit: --no-verify (and git's abbreviations of it), commit's -n, SKIP=
 # for pre-commit, pointing core.hooksPath elsewhere, and removing the hooks.
 #
-# It greps the raw hook JSON, so it stays fast and needs nothing on PATH.
-# The cost is that it can't tell a flag from the same text inside a quoted
-# message. That's rare, and the error says what to do.
+# It reads the command out of the hook JSON with sed rather than jq, so it
+# stays fast and needs nothing beyond a POSIX shell. A flag only counts as
+# commit's -n when it follows `commit` in the same command and isn't quoted,
+# so `jq -n` on the next line or a message mentioning -n gets through. Other
+# text can still match, like a quoted --no-verify. That's rare, and the error
+# says what to do.
 
 input="$(cat)"
 
+command="$(printf '%s' "$input" | sed -nE 's/.*"(command|cmd)" *: *"(([^"\\]|\\.)*)".*/\2/p')"
+[ -n "$command" ] || command="$input"
+
+# Undo the JSON escapes the checks care about. An escaped line continuation
+# joins its lines, and any other newline ends a command, as it does in the
+# shell.
+command="$(printf '%s' "$command" | sed -E 's/\\\\\\n/ /g; s/\\\\/%/g; s/\\n/;/g; s/\\t/ /g; s/\\"/"/g')"
+
+commit_args="$(
+  printf '%s\n' "$command" |
+    grep -Eo '(^|[;&|[:space:](])git([[:space:]][^;&|]*)?[[:space:]]commit([[:space:]][^;&|]*)?' |
+    while IFS= read -r commit; do printf ' %s' "${commit#*[[:space:]]commit}"; done |
+    sed -E "s/'[^']*'//g; s/\"[^\"]*\"//g"
+)"
+
 matches() {
-  printf '%s' "$input" | grep -Eq "$@"
+  printf '%s' "$command" | grep -Eq "$@"
 }
 
 if matches -e '--no-veri' ||
-  matches -e 'git[^|;&]* commit[^|;&]* -[a-zA-Z]*n[a-zA-Z]*([^a-zA-Z]|$)' ||
-  matches -i -e 'core\.hookspath' ||
+  printf '%s' "$commit_args" | grep -Eq '(^|[[:space:]])-[a-zA-Z]*n[a-zA-Z]*([[:space:]]|$)' ||
+  matches -i -e 'core\.hookspath([[:space:]]*=|[[:space:]]+[^-;&|[:space:]])' ||
   matches -e '(^|[^A-Za-z0-9_])SKIP=' ||
   matches -e 'pre-commit +uninstall' ||
   matches -e '\.git/hooks'; then
