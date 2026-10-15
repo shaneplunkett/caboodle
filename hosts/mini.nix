@@ -13,6 +13,7 @@
 
   homelab = {
     lanAddress = config.homelab.devices.mini.ip;
+    routes.bubbles = 1234;
     tailscale.enable = false;
   };
 

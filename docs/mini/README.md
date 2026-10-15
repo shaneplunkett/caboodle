@@ -32,12 +32,21 @@ non-zero exit, not on a clean one. The app takes a single-instance lock and
 exits cleanly when another copy is running, so a second launch stays down
 rather than looping.
 
+Clients reach it at `https://bubbles.shaneplunkett.com`, through ingress
+like any hive route. There's no oauth2-proxy gate in front: it's an API that
+the client apps call with the server password, and they can't do a browser
+sign-in.
+
 Its settings live in its own database under `~/Library/Application
-Support/bluebubbles-server`, so two of them can't be declared and have to be
-set in the app:
+Support/bluebubbles-server`, so these can't be declared and have to be set
+in the app:
 
 - **Auto Start Method** must be "Do Not Auto Start". Its login item or its
-  own LaunchAgent would race the declared one.
+  own LaunchAgent would race the declared one. Switching away from "Launch
+  Agent" boots out the job the app is running under, so it quits on the
+  spot; start the declared agent afterwards.
+- **Server Address** is `https://bubbles.shaneplunkett.com`, the address
+  its pairing QR code gives clients.
 - **Check for Updates** should be off. The store is read-only, so its
   updater can't install anything. Updates come from bumping the package.
 

@@ -42,8 +42,10 @@ Read `README.md` for how the repo fits together.
   (build check, flake update, checkout), pinned to a tag. Change CI behaviour
   there, following its `AGENTS.md`, and Renovate moves the pins here. Steps
   check out with `https://git.shaneplunkett.com/shane/workflows/checkout@<tag>`.
-- **Sign-in:** every web app a change adds signs in through Pocket ID,
-  with its own OIDC login or, if it has none, behind the oauth2-proxy gate.
+- **Sign-in:** every web app with a frontend that a change adds signs in
+  through Pocket ID, with its own OIDC login or, if it has none, behind the
+  oauth2-proxy gate. A backend whose clients bring their own credentials,
+  like BlueBubbles, stays ungated, since its clients can't sign in.
   `docs/pve/auth.md` covers both. An OIDC client is declared with
   `homelab.oidcClients` in the app's module, and merging creates it in
   Pocket ID. Adding Shane to the app's group is the one step left in Pocket
