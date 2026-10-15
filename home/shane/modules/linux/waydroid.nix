@@ -195,7 +195,6 @@ let
         record_args+=(--record "$record_file")
       fi
 
-      # Invoked through the trap below.
       # shellcheck disable=SC2329
       cleanup() {
         if [[ -n "$native_address" ]]; then

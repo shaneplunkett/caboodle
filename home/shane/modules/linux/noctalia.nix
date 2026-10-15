@@ -1,5 +1,4 @@
-# Noctalia v5 shell. Clean slate: v5 defaults plus the handful of things
-# that matter. Runtime tweaks from the Settings GUI land in
+# Runtime tweaks from the Settings GUI land in
 # ~/.local/state/noctalia/settings.toml and override this file.
 {
   config,
@@ -26,7 +25,7 @@ in
     systemd.enable = true;
 
     # The loader rejects a palette without a terminal block, despite the docs
-    # showing it as optional. Catppuccin Mocha's standard ANSI mapping.
+    # showing it as optional.
     customPalettes.vex.dark =
       lib.mapAttrs' (role: colour: lib.nameValuePair (paletteKey role) colour) palette.noctaliaRoles
       // {

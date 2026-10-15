@@ -1,10 +1,3 @@
-# Catppuccin Mocha palette — the single source of truth for every module the
-# catppuccin flake module doesn't theme. Delivered to home-manager modules via
-# extraSpecialArgs and to system modules via specialArgs as `palette`;
-# packages take it as an explicit callPackage argument.
-#
-# `hex` values carry no leading '#'; the formatted sets cover the common
-# consumer shapes so callers never re-implement string glue.
 let
   hex = {
     rosewater = "f5e0dc";
@@ -40,7 +33,6 @@ in
   withHash = builtins.mapAttrs (_: v: "#${v}") hex;
   hyprRgba = builtins.mapAttrs (_: v: "rgba(${v}ff)") hex;
 
-  # Noctalia's 16 colour roles, shared by the shell palette and the greeter.
   # Noctalia's built-in Catppuccin uses mauve as primary; this keeps lavender.
   noctaliaRoles = builtins.mapAttrs (_: name: "#${hex.${name}}") {
     primary = "lavender";

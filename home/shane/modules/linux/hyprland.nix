@@ -18,7 +18,6 @@ let
     left = 70;
   };
 
-  # hl.bind(keys, dispatcher [, opts]); the dispatcher is a raw Lua expression.
   bind = keys: dispatcher: {
     _args = [
       keys
@@ -34,59 +33,57 @@ let
   };
   exec = cmd: ''hl.dsp.exec_cmd("${cmd}")'';
 
-  # Phonetic workspaces: key mnemonics for what lives there.
   workspaceKeys = [
     {
       key = "1";
       ws = 1;
-    } # scratch
+    }
     {
       key = "2";
       ws = 2;
-    } # other scratch
+    }
     {
       key = "A";
       ws = 3;
-    } # AI
+    }
     {
       key = "B";
       ws = 4;
-    } # browser
+    }
     {
       key = "T";
       ws = 5;
-    } # terminal
+    }
     {
       key = "I";
       ws = 6;
-    } # issues/ticketing
+    }
     {
       key = "S";
       ws = 7;
-    } # socials
+    }
     {
       key = "M";
       ws = 8;
-    } # media
+    }
     {
       key = "9";
       ws = 9;
-    } # second monitor
+    }
     {
       key = "O";
       ws = 10;
-    } # obsidian/notes
+    }
     {
       key = "G";
       ws = 11;
-    } # gaming
+    }
     {
       key = "E";
       ws = 12;
-    } # email
+    }
   ];
 
-  # App home workspaces; focus follows the app when it opens.
   workspaceApps = {
     "3" = [
       "^t3code$"

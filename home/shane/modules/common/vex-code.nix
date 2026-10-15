@@ -167,9 +167,6 @@ in
           };
         };
 
-        # Vanilla instance: own CODEX_HOME with none of the personal context,
-        # skills, hooks, or MCP servers, but auth.json is symlinked to ~/.codex
-        # so both use the same account.
         codexBare = {
           driver = "codex";
           displayName = "Codex Bare";

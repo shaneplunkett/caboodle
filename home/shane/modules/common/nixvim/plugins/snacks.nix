@@ -68,7 +68,6 @@ _: {
   };
 
   keymaps = [
-    # --- Top Pickers & Navigation ---
     {
       mode = "n";
       key = "<leader><space>";
@@ -90,7 +89,6 @@ _: {
       options.desc = "Buffers";
     }
 
-    # --- Search ---
     {
       mode = "n";
       key = "<leader>sg";
@@ -102,7 +100,6 @@ _: {
       options.desc = "Search Grep";
     }
 
-    # --- LSP Integration (Kickstart.nvim style) ---
     {
       mode = "n";
       key = "<leader>cd";
@@ -204,7 +201,6 @@ _: {
       options.desc = "Buffer Diagnostics (Snacks)";
     }
 
-    # --- Git Integration ---
     {
       mode = [
         "n"
@@ -229,7 +225,6 @@ _: {
       options.desc = "Lazygit";
     }
 
-    # --- UI & Utilities ---
     {
       mode = "n";
       key = "<leader>uh";
@@ -281,7 +276,6 @@ _: {
       options.desc = "Delete Buffer";
     }
 
-    # --- Scratch Buffers ---
     {
       mode = "n";
       key = "<leader>.";
@@ -303,7 +297,6 @@ _: {
       options.desc = "Select Scratch Buffer";
     }
 
-    # --- Terminal ---
     {
       mode = "n";
       key = "<c-/>";

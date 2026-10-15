@@ -1,7 +1,5 @@
 # Not a module: nixd evaluates this at runtime against whichever flake the
-# open file belongs to (see lsp.nix). It picks the configuration matching
-# this machine's hostname, or the first one on this platform, and returns the
-# package set and option sets nixd should complete from.
+# open file belongs to (see lsp.nix).
 { root, hostname }:
 let
   flake = builtins.getFlake root;

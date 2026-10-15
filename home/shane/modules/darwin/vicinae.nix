@@ -1,4 +1,3 @@
-# Raycast-style launcher on Command+Space, replacing Spotlight.
 # home-manager's programs.vicinae is Linux-only, so this installs the
 # package and runs the server from launchd instead.
 {

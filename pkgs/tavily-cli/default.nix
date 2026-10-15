@@ -5,7 +5,6 @@
 }:
 let
   # tavily-python SDK is a runtime dep of tavily-cli but isn't in nixpkgs yet.
-  # Vendor the build here so the CLI derivation stays self-contained.
   tavily-python = python3Packages.buildPythonPackage rec {
     pname = "tavily-python";
     version = "0.7.26";

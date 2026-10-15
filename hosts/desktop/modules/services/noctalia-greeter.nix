@@ -1,5 +1,4 @@
-# greetd login screen matching the Noctalia shell. The greeter ships its own
-# compositor, so no cage wrapper; [output] pins it to DP-2 instead.
+# The greeter ships its own compositor, so no cage wrapper.
 {
   inputs,
   palette,

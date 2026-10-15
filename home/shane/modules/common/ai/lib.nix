@@ -1,12 +1,9 @@
-# Shared helpers for the AI harness modules (cc, codex, mcp, linear).
-# Exposed to those modules as the `aiHelpers` module argument by ./default.nix.
 {
   pkgs,
   lib,
   inputs,
 }:
 {
-  # Every managed skill, keyed by name, and ready-made context documents.
   skills = inputs.ai-skills.lib.skills.${pkgs.stdenv.hostPlatform.system};
   inherit (inputs.ai-skills.lib) prompts;
 
@@ -21,10 +18,8 @@
     fi
   '';
 
-  # Hooks declared once for every harness; see ./hooks.
   inherit (import ./hooks { inherit pkgs lib; }) hooksFor;
 
-  # Install a skill profile as store symlinks under a harness config dir.
   mkSkillTree =
     {
       dir,
