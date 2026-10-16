@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   osConfig,
@@ -9,7 +10,10 @@ let
 in
 {
   home.packages = [
-    (import ./fj.nix { inherit lib pkgs; })
+    (import ./fj.nix {
+      inherit lib pkgs;
+      forgeSshHost = config.programs.ssh.settings.forge.data.HostName;
+    })
     (import ./tea.nix { inherit lib pkgs; })
 
     (mkRbwWrapper {

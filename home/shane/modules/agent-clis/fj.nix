@@ -1,4 +1,8 @@
-{ pkgs, lib }:
+{
+  pkgs,
+  lib,
+  forgeSshHost,
+}:
 
 # fj signs in as the vex bot account, kept apart from Shane's own forge login
 # (tea). Vex Code reads fj's keys.json from the default location itself and
@@ -51,7 +55,7 @@ let
       tmp="$(mktemp "$keys_dir/keys.json.XXXXXX")"
       jq -n --arg token "$token" '{
         hosts: { "${forge}": { type: "Application", token: $token } },
-        aliases: { forge: "${forge}" },
+        aliases: { forge: "${forge}", "${forgeSshHost}": "${forge}" },
         default_ssh: ["${forge}"]
       }' >"$tmp"
       mv -f "$tmp" "$keys_dir/keys.json"
