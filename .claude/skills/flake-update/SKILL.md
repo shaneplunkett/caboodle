@@ -15,7 +15,7 @@ bump into a short **impact list** for Shane.
 The weekly update pull request (`update/flake-lock`, opened by
 forge-bot) already carries the raw material: new evaluation warnings per
 host, package changes per host, and a Changelogs section produced by
-`scripts/flake-update-notes.sh`. Read its body with `fj pr view`.
+`scripts/flake-update-notes.sh`. Read its body with `tea pr <index>`.
 
 For a bump made locally, produce the same material yourself:
 

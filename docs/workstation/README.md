@@ -69,9 +69,6 @@ Tailscale is the Homebrew app rather than the hive's daemon, so
   `package.json` pins an exact Electron version, so the overlay rewrites it
   to the one it's given. On darwin it links its Rust outputs with lld, because
   Apple's ld from cctools 1010.6 traps on the stubs for `desktop_napi`.
-- `fj` prints its first-run keys-file notice to stdout, nixpkgs captures it
-  into the generated completions, and fish then runs `Could` as a command.
-  The overlay deletes that line until upstream sends it to stderr.
 - `sesh` builds with Go 1.26. Its build runs mockery, and mockery 3.8.0
   can't read Go 1.27's export data.
 - The download tuning in `nix-settings.nix` keeps a full flake update from

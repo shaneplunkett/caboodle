@@ -52,14 +52,6 @@ in
             ''
             + old.preBuild;
           });
-      forgejo-cli = prev.forgejo-cli.overrideAttrs (old: {
-        postInstall = old.postInstall + ''
-          sed -i '/^Could not find keys file/d' \
-            $out/share/bash-completion/completions/fj.bash \
-            $out/share/fish/vendor_completions.d/fj.fish \
-            $out/share/zsh/site-functions/_fj
-        '';
-      });
       sesh = prev.sesh.override { buildGo127Module = final.buildGo126Module; };
     }
   )

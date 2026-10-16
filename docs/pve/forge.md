@@ -30,10 +30,9 @@ write where, and repos that other repos depend on. Everything else, including
 most repos, stays in the UI. Forgejo has no settings file inside a repo, so a
 per-repo exception goes in Terraform next to the default it overrides.
 
-- **`bots`** gives `forge-bot` and `vex` write access to every repo.
-  Renovate runs as `forge-bot`, so it opens an onboarding pull request on
-  every new repo. Closing it without merging tells Renovate to leave that
-  repo alone.
+- **`bots`** gives `forge-bot` write access to every repo. Renovate runs
+  as `forge-bot`, so it opens an onboarding pull request on every new repo.
+  Closing it without merging tells Renovate to leave that repo alone.
 - **`workflows`** holds the workflows other repos call. Forgejo only expands
   a workflow from another repo when its owner is public, so the `shane` org
   is public. That's set by hand, because the provider can't import an org

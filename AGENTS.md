@@ -11,7 +11,7 @@ for how it fits together.
   with no comments.
 - **Pull request:** land every change through a pull request on the forge
   (`origin`; GitHub is a mirror of it). Commit on a branch and file it with
-  the `pr` skill, which opens it as Vex and asks Shane to review. Done is a
+  the `pr` skill, which opens it and assigns it to Shane for review. Done is a
   green build check, plus a Terraform plan comment showing what you expect
   when `terraform/` changed.
 - **Merge:** Shane merges. Merging applies Terraform and deploys every host

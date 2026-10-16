@@ -27,7 +27,7 @@ resource "forgejo_team" "bots" {
 }
 
 resource "forgejo_team_member" "bots" {
-  for_each = toset(["forge-bot", "vex"])
+  for_each = toset(["forge-bot"])
   team_id  = forgejo_team.bots.id
   user     = each.key
 }
