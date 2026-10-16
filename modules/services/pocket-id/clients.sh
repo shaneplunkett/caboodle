@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 mode=$1
 clients=$2
 key=$(<"$CREDENTIALS_DIRECTORY/api-key")

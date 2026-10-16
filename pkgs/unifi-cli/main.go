@@ -210,18 +210,18 @@ func statusCmd(ctx context.Context, cmd *cli.Command) error {
 
 	summary := map[string]any{
 		"wan": map[string]any{
-			"status":                   firstNonNil(wan, "status"),
-			"isp_name":                 firstNonNil(wan, "isp_name"),
-			"isp_organization":         firstNonNil(wan, "isp_organization"),
-			"wan_ip":                   firstNonNil(wan, "wan_ip"),
-			"gw_mac":                   firstNonNil(wan, "gw_mac"),
-			"latency_ms":               firstNonNil(wan, "latency"),
-			"uptime_seconds":           firstNonNil(wan, "uptime"),
-			"drops":                    firstNonNil(wan, "drops"),
-			"speedtest_rundate":        firstNonNil(wan, "speedtest_rundate"),
-			"speedtest_ping_ms":        firstNonNil(wan, "speedtest_ping"),
-			"speedtest_download_mbps":  firstNonNil(wan, "xput_down"),
-			"speedtest_upload_mbps":    firstNonNil(wan, "xput_up"),
+			"status":                  firstNonNil(wan, "status"),
+			"isp_name":                firstNonNil(wan, "isp_name"),
+			"isp_organization":        firstNonNil(wan, "isp_organization"),
+			"wan_ip":                  firstNonNil(wan, "wan_ip"),
+			"gw_mac":                  firstNonNil(wan, "gw_mac"),
+			"latency_ms":              firstNonNil(wan, "latency"),
+			"uptime_seconds":          firstNonNil(wan, "uptime"),
+			"drops":                   firstNonNil(wan, "drops"),
+			"speedtest_rundate":       firstNonNil(wan, "speedtest_rundate"),
+			"speedtest_ping_ms":       firstNonNil(wan, "speedtest_ping"),
+			"speedtest_download_mbps": firstNonNil(wan, "xput_down"),
+			"speedtest_upload_mbps":   firstNonNil(wan, "xput_up"),
 		},
 		"internet": map[string]any{
 			"status":     firstNonNil(www, "status"),
@@ -371,7 +371,7 @@ func eventsCmd(ctx context.Context, cmd *cli.Command) error {
 
 	cutoffMs := int64(0)
 	if minutes > 0 {
-		cutoffMs = time.Now().Add(-time.Duration(minutes)*time.Minute).UnixMilli()
+		cutoffMs = time.Now().Add(-time.Duration(minutes) * time.Minute).UnixMilli()
 	}
 
 	rows := []map[string]any{}

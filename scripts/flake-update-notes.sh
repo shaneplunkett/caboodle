@@ -16,11 +16,11 @@ new_lock="$(cat "$2")"
 max_lines=400
 
 rev() {
-  jq -r --arg i "$2" '.nodes.root.inputs[$i] as $node | if $node then .nodes[$node].locked.rev else empty end' <<< "$1"
+  jq -r --arg i "$2" '.nodes.root.inputs[$i] as $node | if $node then .nodes[$node].locked.rev else empty end' <<<"$1"
 }
 
 source_of() {
-  jq -r --arg i "$1" '.nodes[.nodes.root.inputs[$i]].locked | "\(.owner)/\(.repo)"' <<< "$new_lock"
+  jq -r --arg i "$1" '.nodes[.nodes.root.inputs[$i]].locked | "\(.owner)/\(.repo)"' <<<"$new_lock"
 }
 
 fetch() {
@@ -42,13 +42,13 @@ section() {
     return
   fi
   printf '<details>\n<summary><b>%s</b> (%s lines)</summary>\n\n~~~~%s\n%s\n~~~~\n\n</details>\n\n' \
-    "$title" "$(wc -l <<< "$body")" "$fence" "$(capped <<< "$body")"
+    "$title" "$(wc -l <<<"$body")" "$fence" "$(capped <<<"$body")"
 }
 
 home_manager_news() {
   local old="$1" new="$2" file condition
-  git diff --no-index --name-only --diff-filter=A "$old/modules/misc/news" "$new/modules/misc/news" 2> /dev/null \
-    | { grep '\.nix$' || true; } | sort | while read -r file; do
+  git diff --no-index --name-only --diff-filter=A "$old/modules/misc/news" "$new/modules/misc/news" 2>/dev/null |
+    { grep '\.nix$' || true; } | sort | while read -r file; do
     condition="$(sed -n 's/^ *condition = \(.*\);$/\1/p' "$file")"
     printf '## %s' "${file#"$new/modules/misc/news/"}"
     if [ -n "$condition" ] && [ "$condition" != true ]; then printf ' (only when %s)' "$condition"; fi
@@ -86,7 +86,7 @@ for input in nixpkgs home-manager nix-darwin omniwm; do
     omniwm)
       section "omniwm diff, to audit" "$(
         for path in nix scripts settings-defaults.toml; do
-          git diff --no-index "$old/$path" "$new/$path" 2> /dev/null | sed "s|$old/||g; s|$new/||g" || true
+          git diff --no-index "$old/$path" "$new/$path" 2>/dev/null | sed "s|$old/||g; s|$new/||g" || true
         done
       )" diff
       ;;

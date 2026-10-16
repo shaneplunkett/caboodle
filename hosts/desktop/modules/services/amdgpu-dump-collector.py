@@ -13,7 +13,7 @@ import time
 from pathlib import Path
 
 
-def sync_directory(path):
+def sync_directory(path: Path) -> None:
     fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
     try:
         os.fsync(fd)
@@ -21,7 +21,7 @@ def sync_directory(path):
         os.close(fd)
 
 
-def capture(device, destination):
+def capture(device: Path, destination: Path) -> Path | None:
     """Return the saved directory, or None for a non-AMDGPU device."""
     if not re.fullmatch(r"devcd[0-9]+", device.name):
         raise ValueError(f"Invalid devcoredump name: {device.name}")
@@ -66,7 +66,7 @@ def capture(device, destination):
     return saved
 
 
-def capture_journal(saved, delay):
+def capture_journal(saved: Path, delay: float) -> None:
     # The dump is already durable. Allow time for reset/compositor fallout.
     time.sleep(delay)
     with (saved / "kernel.log").open("xb") as target:
@@ -99,7 +99,7 @@ def capture_journal(saved, delay):
     sync_directory(saved)
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("device", type=Path)
     parser.add_argument("destination", type=Path)

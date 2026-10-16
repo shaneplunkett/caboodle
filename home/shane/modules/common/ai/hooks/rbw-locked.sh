@@ -11,7 +11,8 @@ cat >/dev/null
 
 # Agents can start without XDG_RUNTIME_DIR, which rbw needs to find its agent.
 if [ -z "${XDG_RUNTIME_DIR:-}" ] && [ -d "/run/user/$(id -u)" ]; then
-  export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+  XDG_RUNTIME_DIR="/run/user/$(id -u)"
+  export XDG_RUNTIME_DIR
 fi
 
 rbw unlocked >/dev/null 2>&1 && exit 0

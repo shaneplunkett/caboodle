@@ -149,7 +149,7 @@ kill_workspace() {
   printf 'Kill %s? [y/N] ' "$name"
   read -r confirm
   case "$confirm" in
-    y|Y|yes|YES) tmux kill-session -t "$name" ;;
+    y | Y | yes | YES) tmux kill-session -t "$name" ;;
   esac
 }
 

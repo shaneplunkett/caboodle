@@ -1,10 +1,22 @@
-## Working in this repo
+# caboodle
 
-Read `README.md` for how the repo fits together.
+Every machine Shane runs, in one repo: the Proxmox cluster, Hetzner and
+Cloudflare, plus the desktop, the MacBook and the Mac mini. Read `README.md`
+for how it fits together.
 
-- **Nix:** check changes with `colmena build --on <host>` and `git add` new
-  files first (flakes ignore untracked files). Don't add comments to Nix code;
-  it should read for itself.
+## Making a change
+
+- **Build:** check changes with `colmena build --on <host>`. Flakes ignore
+  untracked files, so `git add` new files first. Nix code reads for itself,
+  with no comments.
+- **Pull request:** land every change through a pull request on the forge
+  (`origin`; GitHub is a mirror of it). Commit on a branch and file it with
+  the `pr` skill, which opens it as Vex and asks Shane to review. Done is a
+  green build check, plus a Terraform plan comment showing what you expect
+  when `terraform/` changed.
+- **Merge:** Shane merges. Merging applies Terraform and deploys every host
+  but the desktop and the MacBook. CI builds those two, and Shane switches
+  each by hand per its doc under `docs/`.
 - **Derivation diff:** every pull request names which hive nodes change and
   why. Fetch and rebase onto `origin/main` first: other agents' fetches move
   it under you, and a stale base counts their changes as yours. Then compare
@@ -20,30 +32,26 @@ Read `README.md` for how the repo fits together.
   folder, its README included. For one node,
   `nix path-info --derivation .#hydraJobs.<node>` hits the eval cache on a
   repeat run, and `nix eval` never does.
-- **Checks:** `scripts/check.sh` is the one gate: nixfmt, statix and deadnix
-  for Nix; `terraform fmt`, `validate` and tflint for Terraform; ruff's
-  formatter and linter for Python; Biome for JavaScript and TypeScript. Hooks
-  run it for you in Claude Code and Codex. Each edit is formatted and linted
-  straight after, the Stop hook runs the whole check before you finish, and
-  pre-commit runs it on every commit (`pre-commit install` once per clone).
-  Fix what it reports, without suppression comments. If a rule is wrong for
-  the case, say so and propose a change to `statix.toml`, `ruff.toml`,
-  `biome.json` or `terraform/.tflint.hcl`.
-- **Secrets:** pipe values from rbw straight into `agenix -e`, and never print
-  a secret or token. Only show names, lengths or recipient counts.
-- **Monitoring:** the Grafana MCP is read-only. Use it to investigate
-  (Prometheus and Loki), then report. Never remediate on its findings alone.
-- **Changes:** land every change through a pull request on the forge
-  (`origin`; GitHub is a mirror of it). Commit on a branch and file it with
-  the `file-pr` skill, which opens it as Vex and asks Shane to review. Done is
-  a green build check, plus a Terraform plan comment showing what you expect
-  when `terraform/` changed. Shane merges: merging applies Terraform and
-  deploys every host but the desktop and the MacBook. CI builds those two,
-  and Shane switches each by hand per its doc under `docs/`.
 - **CI:** the files in `.forgejo/workflows/` are callers of `shane/workflows`
-  (build check, flake update, checkout), pinned to a tag. Change CI behaviour
+  (build, check, flake update, checkout), pinned to a tag. Change CI behaviour
   there, following its `AGENTS.md`, and Renovate moves the pins here. Steps
   check out with `https://git.shaneplunkett.com/shane/workflows/checkout@<tag>`.
+
+## Checks
+
+`scripts/check.sh` is the gate: pre-commit, CI and the agents' Stop hook all
+run it. An edit hook also formats and lints each Nix, Terraform, Python, JS
+or TS file straight after you change it. Fix what the gate reports, without
+suppression comments. If a rule is wrong for the case, say so and propose a
+change to its config.
+
+## Secrets
+
+Pipe values from rbw straight into `agenix -e`. Show a secret or token only
+by its name, length or recipient count.
+
+## Services
+
 - **Sign-in:** every web app with a frontend that a change adds signs in
   through Pocket ID, with its own OIDC login or, if it has none, behind the
   oauth2-proxy gate. A backend whose clients bring their own credentials,
@@ -52,28 +60,19 @@ Read `README.md` for how the repo fits together.
   `homelab.oidcClients` in the app's module, and merging creates it in
   Pocket ID. Adding Shane to the app's group is the one step left in Pocket
   ID's UI. The app is done when her passkey gets her in.
-- **Docs:** keep state out of them (IPs, versions, sizes, what's deployed
-  where). If the code explains it, it doesn't need a doc. Docs hold the how,
-  the why, and the gotchas.
+- **Monitoring:** the Grafana MCP is read-only. Use it to investigate
+  (Prometheus and Loki), then report. Remediation goes through a pull
+  request, never on the MCP's findings alone.
+- **Cloudflare:** reach for the `cloudflare` MCP server first, then `cf` from
+  the dev shell. Wrangler is only for Workers and Pages. See
+  `docs/cloudflare/README.md`.
 
-## Agent skills
+## Docs
 
-### Issue tracker
+Docs hold the how, the why and the gotchas. State (IPs, versions, sizes,
+what's deployed where) lives in the code, and if the code explains it, it
+doesn't need a doc.
 
-Issues and PRDs live in Linear (workspace `metrokitten`, team `SHA`), managed via the Linear MCP.
-See `docs/agents/issue-tracker.md`.
+## Tickets
 
-### Triage labels
-
-Use the default triage vocabulary.
-See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-This is a single-context repo.
-See `docs/agents/domain.md`.
-
-## Cloudflare
-
-Use the `cloudflare` MCP server first, then `cf` from the dev shell. Wrangler is only for Workers and Pages.
-See `docs/cloudflare/README.md`.
+Linear project `caboodle`, in the Engineering team.

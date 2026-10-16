@@ -118,15 +118,23 @@
         pkgs.writeShellApplication {
           name = "format";
           runtimeInputs = [
+            pkgs.git
             pkgs.nixfmt
             pkgs.terraform
-            pkgs.git
+            pkgs.ruff
+            pkgs.biome
+            pkgs.shfmt
+            pkgs.go
           ];
           text = ''
             cd "$(git rev-parse --show-toplevel)"
             git ls-files --cached --others --exclude-standard -z '*.nix' \
               | xargs -0 -r nixfmt
             terraform fmt -recursive terraform
+            ruff format .
+            biome format --write .
+            git ls-files --cached --others --exclude-standard -z '*.sh' | xargs -0 -r shfmt -w
+            git ls-files --cached --others --exclude-standard -z '*.go' | xargs -0 -r gofmt -w
           '';
         }
       );
@@ -161,9 +169,22 @@
               pkgs.biome
               pkgs.python3
               pkgs.ruff
+              pkgs.mypy
               pkgs.uv
+              pkgs.shellcheck
+              pkgs.shfmt
+              pkgs.go
+              pkgs.bun
+              pkgs.git
               pkgs.pre-commit
             ];
+
+            shellHook = ''
+              if hook="$(git rev-parse --git-path hooks/pre-commit 2>/dev/null)" && [ ! -e "$hook" ]; then
+                pre-commit install >/dev/null || true
+              fi
+              unset hook
+            '';
           };
         }
       );

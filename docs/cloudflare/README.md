@@ -17,7 +17,7 @@ Access commands.
 
 The ingress host's ACME renewals use a third token, scoped to DNS edit on the personal zones only, kept in agenix as `cloudflare-dns`. Terraform manages its permissions.
 
-The `.envrc` is gitignored and reads both tokens from rbw when direnv loads it. The MCP server reads the user token through `tools/cloudflare/mcp-headers.sh`, so it never sits in a config file.
+The `.envrc` reads both tokens from rbw when direnv loads it. The MCP server reads the user token through `tools/cloudflare/mcp-headers.sh`, so it never sits in a config file.
 
 Don't add client IP filtering to the user token, since the MCP server rejects IP-filtered tokens.
 

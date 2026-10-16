@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 recording=$1
 encoded="$recording.hevc"
 trap 'rm -f "$encoded"' EXIT

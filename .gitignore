@@ -2,7 +2,6 @@
 .env
 .env.*
 *.env
-.envrc
 secrets/
 *.secret
 
@@ -34,3 +33,10 @@ generated.tf
 # Nix / direnv
 .direnv/
 result
+result-*
+
+# Python
+__pycache__/
+.venv/
+.ruff_cache/
+.mypy_cache/

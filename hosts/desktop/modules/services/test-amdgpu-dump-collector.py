@@ -8,17 +8,20 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import BinaryIO, NoReturn
 from unittest.mock import patch
 
 source, executable = sys.argv[1:3]
 spec = importlib.util.spec_from_file_location("collector", source)
+if spec is None or spec.loader is None:
+    raise ImportError(f"Can't load the collector from {source}")
 collector = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(collector)
 sys.argv = sys.argv[:1]
 
 
 class CaptureTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
@@ -34,7 +37,7 @@ class CaptureTests(unittest.TestCase):
         (self.device / "data").write_bytes(self.payload)
         self.output = self.root / "saved"
 
-    def test_packaged_cli_preserves_bytes_and_permissions(self):
+    def test_packaged_cli_preserves_bytes_and_permissions(self) -> None:
         result = subprocess.run(
             [executable, str(self.device), str(self.output), "--journal-delay", "0"],
             capture_output=True,
@@ -52,7 +55,7 @@ class CaptureTests(unittest.TestCase):
         )
         self.assertIn("Saved GPU dump:", result.stdout)
 
-    def test_other_driver_ignored(self):
+    def test_other_driver_ignored(self) -> None:
         link = self.device / "failing_device" / "driver"
         link.unlink()
         other = self.root / "iwlwifi"
@@ -61,7 +64,7 @@ class CaptureTests(unittest.TestCase):
         self.assertIsNone(collector.capture(self.device, self.output))
         self.assertFalse(self.output.exists())
 
-    def test_empty_dump_is_not_marked_complete(self):
+    def test_empty_dump_is_not_marked_complete(self) -> None:
         (self.device / "data").write_bytes(b"")
         with self.assertRaisesRegex(OSError, "Empty device dump"):
             collector.capture(self.device, self.output)
@@ -69,8 +72,8 @@ class CaptureTests(unittest.TestCase):
         self.assertTrue((saved / "amdgpu-devcoredump.partial").exists())
         self.assertFalse((saved / "amdgpu-devcoredump.data").exists())
 
-    def test_failed_read_retains_partial(self):
-        def broken_copy(source, target, **kwargs):
+    def test_failed_read_retains_partial(self) -> None:
+        def broken_copy(source: BinaryIO, target: BinaryIO, **kwargs: object) -> NoReturn:
             target.write(b"partial evidence")
             raise OSError("device expired")
 
@@ -83,13 +86,13 @@ class CaptureTests(unittest.TestCase):
         self.assertEqual((saved / "amdgpu-devcoredump.partial").read_bytes(), b"partial evidence")
         self.assertFalse((saved / "amdgpu-devcoredump.data").exists())
 
-    def test_repeat_capture_never_overwrites(self):
+    def test_repeat_capture_never_overwrites(self) -> None:
         first = collector.capture(self.device, self.output)
         second = collector.capture(self.device, self.output)
         self.assertNotEqual(first, second)
         self.assertEqual((first / "amdgpu-devcoredump.data").read_bytes(), self.payload)
 
-    def test_journal_timeout_keeps_completed_dump(self):
+    def test_journal_timeout_keeps_completed_dump(self) -> None:
         saved = collector.capture(self.device, self.output)
         with patch.object(
             collector.subprocess, "run", side_effect=subprocess.TimeoutExpired("journalctl", 15)
@@ -97,7 +100,7 @@ class CaptureTests(unittest.TestCase):
             collector.capture_journal(saved, 0)
         self.assertEqual((saved / "amdgpu-devcoredump.data").read_bytes(), self.payload)
 
-    def test_invalid_device_name_rejected(self):
+    def test_invalid_device_name_rejected(self) -> None:
         with self.assertRaises(ValueError):
             collector.capture(self.root / "not-a-device", self.output)
         self.assertFalse(self.output.exists())

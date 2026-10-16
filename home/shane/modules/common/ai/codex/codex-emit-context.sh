@@ -28,7 +28,7 @@ event="$1"
 file="$2"
 
 case "$event" in
-  SessionStart|PreToolUse|PostToolUse|UserPromptSubmit) ;;
+  SessionStart | PreToolUse | PostToolUse | UserPromptSubmit) ;;
   *)
     echo "codex-emit-context: $event does not support additionalContext" >&2
     exit 64
@@ -36,9 +36,12 @@ case "$event" in
 esac
 
 # Drain stdin — codex sends the event payload, we don't read it for this helper.
-cat > /dev/null
+cat >/dev/null
 
-[ -f "$file" ] || { echo "codex-emit-context: file not found: $file" >&2; exit 1; }
+[ -f "$file" ] || {
+  echo "codex-emit-context: file not found: $file" >&2
+  exit 1
+}
 
 content=$(cat "$file")
 

@@ -18,6 +18,7 @@ import sys
 import tempfile
 import urllib.request
 from pathlib import Path
+from typing import Any
 
 from yt_dlp.cookies import extract_cookies_from_browser
 
@@ -59,7 +60,7 @@ def rbw(*args: str) -> str:
     ).stdout.strip()
 
 
-def post(path: str, body: dict, token: str | None = None):
+def post(path: str, body: dict[str, Any], token: str | None = None) -> Any:
     request = urllib.request.Request(
         MUSIC_ASSISTANT + path,
         json.dumps(body).encode(),
@@ -71,7 +72,7 @@ def post(path: str, body: dict, token: str | None = None):
         return json.load(response)
 
 
-def command(token: str, name: str, **args):
+def command(token: str, name: str, **args: Any) -> Any:
     return post("/api", {"message_id": name, "command": name, "args": args}, token)
 
 

@@ -160,6 +160,7 @@ let
 
   androidPhone = pkgs.writeShellApplication {
     name = "android-phone";
+    excludeShellChecks = [ "SC2329" ];
     runtimeInputs = [
       pkgs.android-tools
       pkgs.coreutils
@@ -195,7 +196,6 @@ let
         record_args+=(--record "$record_file")
       fi
 
-      # shellcheck disable=SC2329
       cleanup() {
         if [[ -n "$native_address" ]]; then
           hyprctl dispatch closewindow "address:$native_address" >/dev/null 2>&1 || true

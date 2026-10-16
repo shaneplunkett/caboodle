@@ -6,7 +6,8 @@
  * crust->text ladder by lightness, hued colours onto the closest Mocha
  * accent keeping the source lightness and alpha so light/dark roles and
  * translucency survive. */
-:root, body {
+:root,
+body {
   --dt_color-brand-core-aubergine: #2d0858 !important;
   --dt_color-brand-core-horchatta: #fde8db !important;
   --dt_color-brand-core-black: #1e1e2e !important;
@@ -717,7 +718,8 @@
  * Classic Catppuccin layering instead: content on base, sidebar/rail on
  * mantle (the translucent crust sidebar surface composites over it).
  * Later rules win over the generated block at equal specificity. */
-:root, body {
+:root,
+body {
   --sk_primary_background: 30, 30, 46 !important; /* base */
 }
 .p-theme_background {

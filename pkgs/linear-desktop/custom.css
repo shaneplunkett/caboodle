@@ -82,34 +82,109 @@ pre * {
  * stock value is present, so speculative entries cost nothing. */
 
 /* Indigo (Linear brand / in-progress) -> mauve */
-svg [fill="#5e6ad2" i], svg[fill="#5e6ad2" i] { fill: #cba6f7 !important; }
-svg [stroke="#5e6ad2" i], svg[stroke="#5e6ad2" i] { stroke: #cba6f7 !important; }
-[style*="#5e6ad2" i] { color: #cba6f7 !important; }
+svg [fill="#5e6ad2" i],
+svg[fill="#5e6ad2" i] {
+  fill: #cba6f7 !important;
+}
+svg [stroke="#5e6ad2" i],
+svg[stroke="#5e6ad2" i] {
+  stroke: #cba6f7 !important;
+}
+[style*="#5e6ad2" i] {
+  color: #cba6f7 !important;
+}
 
 /* Greens -> green */
-svg [fill="#26a544" i], svg[fill="#26a544" i], svg [fill="#4cb782" i], svg[fill="#4cb782" i] { fill: #a6e3a1 !important; }
-svg [stroke="#26a544" i], svg[stroke="#26a544" i], svg [stroke="#4cb782" i], svg[stroke="#4cb782" i] { stroke: #a6e3a1 !important; }
-[style*="#26a544" i], [style*="#4cb782" i] { color: #a6e3a1 !important; }
+svg [fill="#26a544" i],
+svg[fill="#26a544" i],
+svg [fill="#4cb782" i],
+svg[fill="#4cb782" i] {
+  fill: #a6e3a1 !important;
+}
+svg [stroke="#26a544" i],
+svg[stroke="#26a544" i],
+svg [stroke="#4cb782" i],
+svg[stroke="#4cb782" i] {
+  stroke: #a6e3a1 !important;
+}
+[style*="#26a544" i],
+[style*="#4cb782" i] {
+  color: #a6e3a1 !important;
+}
 
 /* Yellows -> yellow */
-svg [fill="#f0bf00" i], svg[fill="#f0bf00" i], svg [fill="#f2c94c" i], svg[fill="#f2c94c" i] { fill: #f9e2af !important; }
-svg [stroke="#f0bf00" i], svg[stroke="#f0bf00" i], svg [stroke="#f2c94c" i], svg[stroke="#f2c94c" i] { stroke: #f9e2af !important; }
-[style*="#f0bf00" i], [style*="#f2c94c" i] { color: #f9e2af !important; }
+svg [fill="#f0bf00" i],
+svg[fill="#f0bf00" i],
+svg [fill="#f2c94c" i],
+svg[fill="#f2c94c" i] {
+  fill: #f9e2af !important;
+}
+svg [stroke="#f0bf00" i],
+svg[stroke="#f0bf00" i],
+svg [stroke="#f2c94c" i],
+svg[stroke="#f2c94c" i] {
+  stroke: #f9e2af !important;
+}
+[style*="#f0bf00" i],
+[style*="#f2c94c" i] {
+  color: #f9e2af !important;
+}
 
 /* Oranges (urgent / at-risk) -> peach */
-svg [fill="#fc7840" i], svg[fill="#fc7840" i], svg [fill="#f2994a" i], svg[fill="#f2994a" i] { fill: #fab387 !important; }
-svg [stroke="#fc7840" i], svg[stroke="#fc7840" i], svg [stroke="#f2994a" i], svg[stroke="#f2994a" i] { stroke: #fab387 !important; }
-[style*="#fc7840" i], [style*="#f2994a" i] { color: #fab387 !important; }
+svg [fill="#fc7840" i],
+svg[fill="#fc7840" i],
+svg [fill="#f2994a" i],
+svg[fill="#f2994a" i] {
+  fill: #fab387 !important;
+}
+svg [stroke="#fc7840" i],
+svg[stroke="#fc7840" i],
+svg [stroke="#f2994a" i],
+svg[stroke="#f2994a" i] {
+  stroke: #fab387 !important;
+}
+[style*="#fc7840" i],
+[style*="#f2994a" i] {
+  color: #fab387 !important;
+}
 
 /* Reds -> red */
-svg [fill="red" i], svg[fill="red" i], svg [fill="#eb5757" i], svg[fill="#eb5757" i], svg [fill="#f2453d" i], svg[fill="#f2453d" i] { fill: #f38ba8 !important; }
-svg [stroke="red" i], svg[stroke="red" i], svg [stroke="#eb5757" i], svg[stroke="#eb5757" i], svg [stroke="#f2453d" i], svg[stroke="#f2453d" i] { stroke: #f38ba8 !important; }
-[style*="#eb5757" i], [style*="#f2453d" i] { color: #f38ba8 !important; }
+svg [fill="red" i],
+svg[fill="red" i],
+svg [fill="#eb5757" i],
+svg[fill="#eb5757" i],
+svg [fill="#f2453d" i],
+svg[fill="#f2453d" i] {
+  fill: #f38ba8 !important;
+}
+svg [stroke="red" i],
+svg[stroke="red" i],
+svg [stroke="#eb5757" i],
+svg[stroke="#eb5757" i],
+svg [stroke="#f2453d" i],
+svg[stroke="#f2453d" i] {
+  stroke: #f38ba8 !important;
+}
+[style*="#eb5757" i],
+[style*="#f2453d" i] {
+  color: #f38ba8 !important;
+}
 
 /* Blues -> blue */
-svg [fill="#4ea7fc" i], svg[fill="#4ea7fc" i] { fill: #89b4fa !important; }
-svg [stroke="#4ea7fc" i], svg[stroke="#4ea7fc" i] { stroke: #89b4fa !important; }
-[style*="#4ea7fc" i] { color: #89b4fa !important; }
+svg [fill="#4ea7fc" i],
+svg[fill="#4ea7fc" i] {
+  fill: #89b4fa !important;
+}
+svg [stroke="#4ea7fc" i],
+svg[stroke="#4ea7fc" i] {
+  stroke: #89b4fa !important;
+}
+[style*="#4ea7fc" i] {
+  color: #89b4fa !important;
+}
 
 /* Grey status rings -> surface2 */
-svg [stroke="#e2e2e2" i], svg[stroke="#e2e2e2" i] { stroke: #585b70 !important; }
+svg [stroke="#e2e2e2" i],
+svg[stroke="#e2e2e2" i] {
+  stroke: #585b70 !important;
+}

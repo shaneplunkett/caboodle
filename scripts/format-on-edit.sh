@@ -27,7 +27,10 @@ printf '%s' "$input" | jq -r '
   case "$file" in
     *.nix)
       nixfmt "$file" >/dev/null 2>&1
-      out="$( { statix check "$file"; deadnix "$file"; } 2>&1)"
+      out="$({
+        statix check "$file"
+        deadnix "$file"
+      } 2>&1)"
       ;;
     *.tf | *.tfvars)
       terraform fmt "$file" >/dev/null 2>&1
