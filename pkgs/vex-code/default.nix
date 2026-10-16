@@ -3,6 +3,7 @@
   codex,
   fetchPnpmDeps,
   fetchurl,
+  fish,
   lib,
   libsecret,
   lsof,
@@ -171,7 +172,8 @@ let
             --prefix PATH : ${lib.makeBinPath [ lsof ]}
           wrapProgram "$out/bin/t3code-desktop" \
             --prefix PATH : ${lib.makeBinPath [ lsof ]} \
-            --set T3CODE_DISABLE_AUTO_UPDATE 1
+            --set T3CODE_DISABLE_AUTO_UPDATE 1 \
+            --set SHELL ${lib.getExe fish}
         ''
         + lib.optionalString stdenv.hostPlatform.isDarwin ''
           old_app="$out/Applications/T3 Code (Alpha).app"

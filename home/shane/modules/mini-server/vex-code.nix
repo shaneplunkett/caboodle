@@ -30,15 +30,18 @@ in
         "${homeDirectory}/.t3"
       ];
       WorkingDirectory = homeDirectory;
-      EnvironmentVariables.PATH = lib.concatStringsSep ":" [
-        "${config.home.profileDirectory}/bin"
-        "/run/current-system/sw/bin"
-        "/nix/var/nix/profiles/default/bin"
-        "/usr/bin"
-        "/bin"
-        "/usr/sbin"
-        "/sbin"
-      ];
+      EnvironmentVariables = {
+        PATH = lib.concatStringsSep ":" [
+          "${config.home.profileDirectory}/bin"
+          "/run/current-system/sw/bin"
+          "/nix/var/nix/profiles/default/bin"
+          "/usr/bin"
+          "/bin"
+          "/usr/sbin"
+          "/sbin"
+        ];
+        SHELL = lib.getExe config.programs.fish.package;
+      };
       ProcessType = "Interactive";
       RunAtLoad = true;
       KeepAlive = true;
