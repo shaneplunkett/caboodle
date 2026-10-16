@@ -19,7 +19,7 @@ modules/           anything more than one host can import
   darwin/          every Mac: Nix settings, the deploy user, node exporter
   agenix/          secrets, their recipients, and the homelab.secrets option
   services/<name>/ one folder per service
-  workstation/     every machine Shane sits at: home-manager, fish, fonts, and a folder per class
+  workstation/     every workstation: home-manager, fish, fonts, and a folder per class
 home/              Shane's home-manager configs, one per machine, and their modules
 pkgs/              packages the flake builds itself, and the overlays that add them for workstations
 terraform/         Proxmox LXCs/VMs, Hetzner, Cloudflare
@@ -36,7 +36,7 @@ they have to evaluate on both systems.
 
 A service that runs on both kinds of host keeps its options in an
 `options.nix` next to its `default.nix`, so the hive can read them from any
-node, and the NixOS half and the darwin half each read the same facts.
+host, and the NixOS half and the darwin half each read the same facts.
 
 The mini is a server, deployed on merge like the LXCs; see
 [docs/mini](docs/mini/README.md). The MacBook and the desktop are built by
@@ -72,11 +72,11 @@ Flakes only see tracked files, so `git add` new files before building.
 
 1. Build the template if it's changed:
    `nix build .#nixosConfigurations.base.config.system.build.tarball`, and
-   upload it to each node's `local:vztmpl` under the name
+   upload it to each Proxmox node's `local:vztmpl` under the name
    `terraform/modules/nixos-lxc` expects.
-2. Add `hosts/<host>.nix` and a node in the hive pointing at it,
+2. Add `hosts/<host>.nix` and an entry in the hive pointing at it,
    `<host> = lxc "<host>" { homelab.lanAddress = "..."; };`.
-3. Add a `terraform/<node>-<host>.tf` using `modules/nixos-lxc` and apply it.
+3. Add a `terraform/<proxmox-node>-<host>.tf` using `modules/nixos-lxc` and apply it.
    Terraform reserves the host's address in UniFi before the container first
    boots, and a host that isn't in the hive fails the plan. Leave
    `mac_address` out and Terraform makes one. Never copy one from another

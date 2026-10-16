@@ -4,14 +4,14 @@ Config that lives on the Proxmox hosts themselves, where Nix can't reach.
 
 ## TUN for containers
 
-`90-homelab-tun.conf` gives every container on a node `/dev/net/tun`, so
+`90-homelab-tun.conf` gives every container on a Proxmox node `/dev/net/tun`, so
 Tailscale can run in kernel mode. Every container includes
 `common.conf.d` through `common.conf`, so there's nothing per-container.
 
 Install it on each node, and again after rebuilding one:
 
 ```sh
-scp proxmox/90-homelab-tun.conf root@<node>:/usr/share/lxc/config/common.conf.d/
+scp proxmox/90-homelab-tun.conf root@<proxmox-node>:/usr/share/lxc/config/common.conf.d/
 ```
 
 Running containers only pick it up when they restart.
@@ -60,7 +60,7 @@ sudo pvesh create /nodes/cube/disks/lvmthin --device "$dev" --name nvme --add_st
 Proxmox sends its notifications, like the daily "packages available" and
 backup results, to the homelab alerts channel through a webhook target named
 `discord`, and the `to-discord` matcher routes everything to it. They're
-cluster-wide, so they cover both nodes. The webhook's ID and token are a
+cluster-wide, so they cover both Proxmox nodes. The webhook's ID and token are a
 Proxmox secret, and the body only carries the title and severity, because a
 full package list goes past Discord's message limit.
 

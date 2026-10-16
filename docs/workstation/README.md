@@ -10,8 +10,8 @@ them. Each has its own doc too: [desktop](../desktop/README.md),
 `nrs` switches whichever machine it runs on to the forge's `main`, then
 refreshes every open fish shell. It passes `--refresh`, because nix
 otherwise reuses a fetch for up to an hour and switches to a stale `main`.
-On a Mac it finds the node by matching the hostname against each darwin
-node's `networking.hostName`.
+On a Mac it finds the host by matching the hostname against each darwin
+host's `networking.hostName`.
 
 `nrs --local` switches from the checkout at `~/Projects/personal/caboodle`
 instead, which Home Manager sets as `NH_FLAKE`. Flakes only see tracked
@@ -28,13 +28,13 @@ so `sudo darwin-rebuild switch` stalls on a password for `forgejo@forge`
 when it fetches the private inputs.
 
 ```sh
-nh darwin switch git+ssh://forgejo@forge/shane/caboodle -H <node>
+nh darwin switch git+ssh://forgejo@forge/shane/caboodle -H <host>
 ```
 
 or, without nh:
 
 ```sh
-nix build --out-link /tmp/system git+ssh://forgejo@forge/shane/caboodle#darwinConfigurations.<node>.system
+nix build --out-link /tmp/system git+ssh://forgejo@forge/shane/caboodle#darwinConfigurations.<host>.system
 sudo nix build --no-link --profile /nix/var/nix/profiles/system /tmp/system
 sudo /tmp/system/sw/bin/darwin-rebuild activate
 ```

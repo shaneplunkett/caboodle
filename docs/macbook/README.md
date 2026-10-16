@@ -1,6 +1,6 @@
 # The MacBook
 
-The MacBook is a node in the hive, evaluated with nix-darwin like the mini.
+The MacBook is a host in the hive, evaluated with nix-darwin like the mini.
 Every pull request builds it on the mini, but nothing deploys it. Shane
 switches it by hand on the laptop.
 [docs/workstation](../workstation/README.md) covers what it shares with the

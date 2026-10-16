@@ -17,7 +17,7 @@ for how it fits together.
 - **Merge:** Shane merges. Merging applies Terraform and deploys every host
   but the desktop and the MacBook. CI builds those two, and Shane switches
   each by hand per its doc under `docs/`.
-- **Derivation diff:** every pull request names which hive nodes change and
+- **Derivation diff:** every pull request names which hosts change and
   why. Fetch and rebase onto `origin/main` first: other agents' fetches move
   it under you, and a stale base counts their changes as yours. Then compare
   `hydraJobs`' derivation paths between `origin/main` and your branch,
@@ -29,8 +29,8 @@ for how it fits together.
   ```
 
   A package built from `lib.cleanSource ./.` changes with any file in its
-  folder, its README included. For one node,
-  `nix path-info --derivation .#hydraJobs.<node>` hits the eval cache on a
+  folder, its README included. For one host,
+  `nix path-info --derivation .#hydraJobs.<host>` hits the eval cache on a
   repeat run, and `nix eval` never does.
 - **CI:** the files in `.forgejo/workflows/` are callers of `shane/workflows`
   (build, check, flake update, checkout), pinned to a tag. Change CI behaviour

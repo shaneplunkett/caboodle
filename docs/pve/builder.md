@@ -207,7 +207,7 @@ ssh root@builder ssh-keygen -y -f /run/agenix/builder-ssh-key
   restarts the container after a memory change, though Proxmox could apply
   it live. For the builder that means rebooting in the middle of its own
   apply. Resize it by hand first with `pct set <vmid> --memory <MiB>` on the
-  node, so the plan has no memory change left to apply.
+  Proxmox node, so the plan has no memory change left to apply.
 - **`rbw add` and `rbw edit` read from stdin** when it isn't a terminal, and
   only the first line becomes the password. A multi-line value like an SSH
   key can't live in Bitwarden that way, so `builder-ssh-key` exists only in

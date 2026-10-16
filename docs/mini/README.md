@@ -123,7 +123,7 @@ Tailscale Serve for vex-code, don't change.
 ## Gotchas
 
 - `deployment` attributes in `hosts/mini.nix` must be plain values. Colmena
-  reads `deployment.systemType` before it evaluates the node, with the NixOS
+  reads `deployment.systemType` before it evaluates the host, with the NixOS
   module path, and a value that depends on the rest of the config fails there.
 - Root's `PATH` on macOS has no Nix, so colmena runs Nix from
   `/run/current-system/sw/bin`. That needs nix-darwin to manage Nix, which

@@ -1,6 +1,6 @@
 # Auth
 
-NixOS LXC on PVE running Pocket ID, the homelab's single sign-on. It's an
+NixOS LXC on PVE running Pocket ID, Shane's single sign-on. It's an
 OIDC provider that only does passkeys, so there are no passwords anywhere.
 The container is `module "auth"` in `terraform/pve-auth.tf`, and the service
 is `modules/services/pocket-id`.
@@ -93,9 +93,9 @@ The secret goes in on stdin so it stays out of sudo's log.
   group.
 - **Don't add `openid` to the scopes.** Proxmox adds it itself.
 - **The callback is the bare origin,** `https://proxmox.shaneplunkett.com`.
-  Signing in at a node's own address needs that origin added to the client.
-- **The nodes need to resolve `auth.shaneplunkett.com`.** Proxmox fetches
-  tokens itself, and the router doesn't know the homelab's names. Each node's
+  Signing in at a Proxmox node's own address needs that origin added to the client.
+- **The Proxmox nodes need to resolve `auth.shaneplunkett.com`.** Proxmox fetches
+  tokens itself, and the router doesn't know the servers' names. Each Proxmox node's
   DNS is in `terraform/proxmox-dns.tf`: Blocky on dns1 and dns2 first, the
   router last as a fallback.
 - `shane@pam` is the way in when Pocket ID is down.

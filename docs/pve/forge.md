@@ -1,6 +1,6 @@
 # Forge
 
-NixOS LXC on PVE running Forgejo, the homelab's git forge. The container is
+NixOS LXC on PVE running Forgejo, Shane's git forge. The container is
 `module "forge"` in `terraform/pve-forge.tf`, and the service is
 `modules/services/forgejo`.
 

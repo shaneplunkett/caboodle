@@ -1,6 +1,6 @@
 # Cloudflare
 
-Cloudflare is the registrar and DNS for the personal domains, and also runs Pages sites, Access and tunnels for the homelab.
+Cloudflare is the registrar and DNS for the personal domains, and also runs Pages sites, Access and tunnels for Shane's services.
 
 ## Tooling
 
