@@ -18,6 +18,7 @@ in
       verify_ssl = false;
       save_events = true;
       save_alarms = true;
+      save_dpi = true;
     };
     influxdb.disable = true;
     loki.url = "http://localhost:3100";
