@@ -2,4 +2,4 @@ module github.com/shane/unifi-cli
 
 go 1.26
 
-require github.com/urfave/cli/v3 v3.4.1
+require github.com/urfave/cli/v3 v3.14.0
