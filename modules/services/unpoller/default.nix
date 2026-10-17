@@ -19,6 +19,7 @@ in
       save_events = true;
       save_alarms = true;
     };
+    influxdb.disable = true;
     loki.url = "http://localhost:3100";
     prometheus.http_listen = "127.0.0.1:9130";
   };
