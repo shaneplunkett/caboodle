@@ -14,6 +14,7 @@ let
     };
     dns = import ./dashboards/dns.nix { inherit lib nodes; };
     logs = import ./dashboards/logs.nix { inherit lib; };
+    internet = import ./dashboards/internet.nix { inherit lib; };
   };
 in
 {
