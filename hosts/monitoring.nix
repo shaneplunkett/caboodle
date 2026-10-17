@@ -11,6 +11,7 @@
     ../modules/services/blocky/monitoring.nix
     ../modules/services/unbound/monitoring.nix
     ../modules/services/blackbox
+    ../modules/services/unpoller
     ../modules/services/tailscale/alerts.nix
     ../modules/services/backup/monitoring.nix
     ../modules/services/vex-brain/alerts.nix

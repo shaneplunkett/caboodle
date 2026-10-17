@@ -43,6 +43,10 @@ in
     monitoring
 
   ];
+  "unpoller-api-key.age".publicKeys = [
+    shane
+    monitoring
+  ];
   "grafana-admin-password.age".publicKeys = [
     shane
     monitoring
