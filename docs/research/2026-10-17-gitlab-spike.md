@@ -1,7 +1,7 @@
 # GitLab spike
 
 - **Question:** Does self-hosted GitLab CE work with Linear, CodeRabbit, T3
-  Code and the runner design in [the plan](../prd/gitlab-and-builder.md), and
+  Code and the runner design in [the plan](../prd/forge-and-builder.md), and
   what has to be reachable from the internet?
 - **Researched:** 2026-10-17, against GitLab CE 19.5.0.
 
