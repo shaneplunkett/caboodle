@@ -23,14 +23,6 @@
         "@wheel"
         "shane"
       ];
-      substituters = [
-        "https://cache.shaneplunkett.com"
-        "https://cache.nixos.org/"
-      ];
-      trusted-public-keys = [
-        "cache.shaneplunkett.com-1:PCAa3NL0WuE581JmS/0zU4FQiAXUsNoKOw6leo5IIaY="
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-      ];
     };
   };
 
