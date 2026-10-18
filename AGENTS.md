@@ -14,9 +14,10 @@ for how it fits together.
   the `pr` skill, which opens it and assigns it to Shane for review. Done is a
   green build check, plus a Terraform plan comment showing what you expect
   when `terraform/` changed.
-- **Merge:** Shane merges. Merging applies Terraform and deploys every host
-  but the desktop and the MacBook. CI builds those two, and Shane switches
-  each by hand per its doc under `docs/`.
+- **Merge:** Shane merges, except the `ai-skills` bumps that merge
+  themselves once every host builds (`docs/pve/builder.md`). Merging applies
+  Terraform and deploys every host but the desktop and the MacBook. CI builds
+  those two, and Shane switches each by hand per its doc under `docs/`.
 - **Derivation diff:** every pull request names which hosts change and
   why. Fetch and rebase onto `origin/main` first: other agents' fetches move
   it under you, and a stale base counts their changes as yours. Then compare

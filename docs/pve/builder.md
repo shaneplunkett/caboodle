@@ -81,6 +81,12 @@ green would skip the news and new evaluation warnings that only the weekly
 pull request shows. A warning doesn't fail a build, so nothing else would
 surface it.
 
+`ai-skills` doesn't wait for Friday. Each push to its `main` dispatches
+`ai-skills.yml` here with forge-bot's token, which runs the same workflow
+with `only: ai-skills` on its own branch and merges once every host builds.
+The review happened in `ai-skills`, so a bad skill is fixed by reverting it
+there, and the next push carries the revert over.
+
 ## Renovate
 
 Renovate runs on the builder every morning as `forge-bot`, for what a flake
