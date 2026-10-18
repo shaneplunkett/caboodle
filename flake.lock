@@ -632,11 +632,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791974905,
-        "narHash": "sha256-GeGsYPpMJXhIQsPpxjL45N34QmeZLJphpRGtECWApGw=",
+        "lastModified": 1792329022,
+        "narHash": "sha256-FnR8H5OqQw1gk2OdqHaRDpzejbOiE8iWcB4zt7hHdAk=",
         "ref": "refs/heads/main",
-        "rev": "7cc7d7e6f20e99b17c34ef560776c83346df80d7",
-        "revCount": 156,
+        "rev": "cbb3bf506c53600525630665dd95aae69d3103b7",
+        "revCount": 167,
         "type": "git",
         "url": "ssh://forgejo@forge/shane/vex-brain"
       },
