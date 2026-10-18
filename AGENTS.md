@@ -75,4 +75,4 @@ doesn't need a doc.
 
 ## Tickets
 
-Linear project `caboodle`, in the Engineering team.
+Linear label `repo:caboodle`, in the Engineering team.
