@@ -3,9 +3,9 @@
 There are three Codex homes, all signed in to the same account.
 
 - `~/.codex` is Vex's: the managed context, skills, hooks and shared MCP
-  servers, plus Vex's session context on `SessionStart`.
+  servers, plus `vex boot` on `SessionStart`.
 - `~/.codex-code` is Code Girly's. She has her own writable home and session
-  history, and the shared hooks without Vex's session context.
+  history, and the shared hooks without `vex boot`.
 - `~/.codex-bare` is stock Codex, with none of the managed context, skills,
   hooks or MCP servers. It's for pull request reviews through the Codex
   plugin for Claude Code (`CODEX_HOME`) and the Codex Bare provider. It pins a

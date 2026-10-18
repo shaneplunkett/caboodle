@@ -21,7 +21,7 @@
           repo = "openai/codex-plugin-cc";
         };
         enabledPlugins."codex@openai-codex" = true;
-        hooks = aiHelpers.hooksFor "claude";
+        hooks = aiHelpers.vexHooksFor "claude";
       };
     };
 

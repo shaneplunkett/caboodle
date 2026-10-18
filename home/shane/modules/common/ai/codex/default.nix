@@ -10,28 +10,6 @@ let
 
   tomlFormat = pkgs.formats.toml { };
 
-  mkBashHook =
-    {
-      name,
-      runtimeInputs ? [ ],
-      script,
-    }:
-    pkgs.writeShellApplication {
-      inherit name;
-      runtimeInputs = [
-        pkgs.bash
-        pkgs.coreutils
-      ]
-      ++ runtimeInputs;
-      text = ''exec bash ${script} "$@"'';
-    };
-
-  codex-emit-context = mkBashHook {
-    name = "codex-emit-context";
-    runtimeInputs = [ pkgs.jq ];
-    script = ./codex-emit-context.sh;
-  };
-
   codexPackage = pkgs.codex;
   codexConfigDir = ".codex";
   codexCodeConfigDir = ".codex-code";
@@ -80,19 +58,7 @@ let
 
   sharedCodexHooks = aiHelpers.hooksFor "codex";
 
-  codexHooks = sharedCodexHooks // {
-    SessionStart = (sharedCodexHooks.SessionStart or [ ]) ++ [
-      {
-        hooks = [
-          {
-            type = "command";
-            command = "${codex-emit-context}/bin/codex-emit-context SessionStart ${aiHelpers.prompts.vexSessionStartFile}";
-            timeout = 10;
-          }
-        ];
-      }
-    ];
-  };
+  codexHooks = aiHelpers.vexHooksFor "codex";
 
   codexSettings = {
     model = "gpt-5.6-sol";

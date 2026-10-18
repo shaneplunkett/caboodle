@@ -60,6 +60,15 @@ let
     }
   ];
 
+  vexHooks = [
+    {
+      name = "vex-boot";
+      event = "SessionStart";
+      script = ./vex-boot.sh;
+      timeout = 15;
+    }
+  ];
+
   mkHook =
     harness:
     {
@@ -94,11 +103,14 @@ let
         ];
       };
     };
+
+  hooksIn =
+    harness: hooks:
+    lib.mapAttrs (_: map (hook: hook.entry)) (
+      lib.groupBy (hook: hook.event) (map (mkHook harness) hooks)
+    );
 in
 {
-  hooksFor =
-    harness:
-    lib.mapAttrs (_: map (hook: hook.entry)) (
-      lib.groupBy (hook: hook.event) (map (mkHook harness) sharedHooks)
-    );
+  hooksFor = harness: hooksIn harness sharedHooks;
+  vexHooksFor = harness: hooksIn harness (sharedHooks ++ vexHooks);
 }
