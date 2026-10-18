@@ -35,6 +35,8 @@ in
     volumes = [
       "${dataDir}:/config"
       "${./dyson-fan-card.js}:/config/www/dyson-fan-card.js:ro"
+      "${./bambu-printer-card/bambu-printer-card.js}:/config/www/bambu-printer-card/bambu-printer-card.js:ro"
+      "${./bambu-printer-card/printer-x1.png}:/config/www/bambu-printer-card/printer-x1.png:ro"
     ];
     environment.TZ = "Australia/Melbourne";
     extraOptions = [
