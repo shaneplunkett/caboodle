@@ -1,0 +1,16 @@
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ai-skills-update
+  cancel-in-progress: true
+
+jobs:
+  update:
+    uses: shane/workflows/.forgejo/workflows/flake-update.yml@v1.5.0
+    with:
+      title: "flake.lock: update ai-skills"
+      only: ai-skills
+      branch: update/ai-skills
+      reviewer: ""
+      automerge: true
