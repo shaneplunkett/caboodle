@@ -33,6 +33,7 @@ in
     typography = import ../home/typography.nix;
   };
   slack-themed = pkgs.callPackage ./slack-themed { };
+  bambu-studio-bin = pkgs.callPackage ./bambu-studio-bin { };
   orca-studio = pkgs.callPackage ./orca-studio { };
   shadps4-cache-fixed = pkgs.callPackage ./shadps4-cache-fixed { };
   waydroid-houdini = pkgs.callPackage ./waydroid-houdini { };
