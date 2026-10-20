@@ -53,6 +53,12 @@ On `main`, Terraform applies before any host deploys, because a container
 change like its memory can restart it and drop colmena's SSH mid-deploy. If
 the apply fails, nothing deploys.
 
+Everything is one state on purpose. `backup_hosts` makes a Storage Box
+subaccount and an R2 bucket, and the hive's addresses feed both the
+containers and their UniFi reservations, so split states would pass
+outputs between each other. If an outage keeps blocking applies, split
+Cloudflare out first, since it shares the least.
+
 State is in Terraform Cloud. The tokens are agenix secrets the runner loads
 as credentials. Three have other names in Bitwarden: `homelab_tfc_token`,
 `homelab_pve_token` and `homelab_hcloud_token`. Setting a container's devices
