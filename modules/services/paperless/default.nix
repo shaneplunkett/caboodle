@@ -61,6 +61,7 @@ in
     settings = {
       PAPERLESS_TIME_ZONE = "Australia/Melbourne";
       PAPERLESS_OCR_LANGUAGE = "eng";
+      PAPERLESS_CONSUMER_DELETE_DUPLICATES = true;
       PAPERLESS_TRUSTED_PROXIES = nodes.ingress.config.homelab.lanAddress;
 
       PAPERLESS_APPS = "allauth.socialaccount.providers.openid_connect";

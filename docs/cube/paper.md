@@ -53,6 +53,13 @@ both.
 - **Haiku, not Sonnet or Opus.** Suggestions force a tool call, which Sonnet
   5.5 and Opus 5.5 reject.
 
+## Duplicates
+
+Paperless 3 keeps duplicate uploads by default. Here it rejects them, so
+the iCloud backlog can go in without tracking what's already there. A
+duplicate means the same file byte for byte, so two scans of one letter
+both get in.
+
 ## Backups
 
 The nightly backup runs Paperless's exporter first and backs up its output,
