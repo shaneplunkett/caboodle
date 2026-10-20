@@ -4,6 +4,7 @@
   imports = [
     ./gaming.nix
     ./hardware-custom.nix
+    ./lighting.nix
     ./multimedia.nix
     ./networking.nix
     ./packages.nix
