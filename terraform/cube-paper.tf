@@ -5,7 +5,7 @@ module "paper" {
   ip            = "dhcp"
   lan_addresses = local.lan_addresses
   datastore     = proxmox_storage_lvmthin.cube_nvme.id
-  memory        = 4096
+  memory        = 8192
   swap          = 1024
   disk_size     = 32
 }
