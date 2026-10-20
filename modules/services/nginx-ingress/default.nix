@@ -28,6 +28,7 @@ let
     rss = [ "/api/" ];
     zigbee = [ ];
     music = [ ];
+    papergpt = [ ];
   };
 
   externalRoutes = {

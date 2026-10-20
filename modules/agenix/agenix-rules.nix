@@ -200,6 +200,10 @@ in
     shane
     paper
   ];
+  "paperless-gpt-env.age".publicKeys = [
+    shane
+    paper
+  ];
   "zigbee2mqtt-secret.age".publicKeys = [
     shane
     home
