@@ -18,7 +18,10 @@ Phone apps sign in with an API token from My Profile in the web UI.
 ## Secrets
 
 `paperless-env` is an env file with Paperless's OIDC config, which holds the
-client secret, and both API keys. The OIDC JSON goes in single quotes so
+client secret, both API keys, and Shane's date of birth for
+`PAPERLESS_IGNORE_DATES`. That date is on most medical and government
+letters, and Paperless otherwise files them under it. It's in the secret
+because the repo is mirrored to GitHub. The OIDC JSON goes in single quotes so
 systemd and bash read it the same way. From `modules/agenix`:
 
 ```sh
@@ -31,6 +34,7 @@ providers=$(jq -cn --arg secret "$(rbw get paperless-oidc-client-secret)" '{open
   printf "PAPERLESS_SOCIALACCOUNT_PROVIDERS='%s'\n" "$providers"
   printf 'PAPERLESS_AI_LLM_API_KEY=%s\n' "$(rbw get paperless-anthropic-api-key)"
   printf 'PAPERLESS_AI_LLM_EMBEDDING_API_KEY=%s\n' "$(rbw get paperless-openai-api-key)"
+  printf 'PAPERLESS_IGNORE_DATES=%s\n' "$(rbw get paperless-ignore-dates)"
 } | agenix -e paperless-env.age
 unset providers
 ```

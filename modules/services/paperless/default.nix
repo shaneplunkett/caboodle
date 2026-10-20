@@ -1,7 +1,13 @@
-{ config, nodes, ... }:
+{
+  config,
+  lib,
+  nodes,
+  ...
+}:
 let
   cfg = config.services.paperless;
   secrets = config.age.secrets;
+  envHash = builtins.hashFile "sha256" secrets.paperless-env.file;
 in
 {
   homelab = {
@@ -77,6 +83,18 @@ in
       PAPERLESS_AI_LLM_EMBEDDING_MODEL = "text-embedding-3-small";
     };
   };
+
+  systemd.services =
+    lib.genAttrs
+      [
+        "paperless-web"
+        "paperless-consumer"
+        "paperless-scheduler"
+        "paperless-task-queue"
+      ]
+      (_: {
+        restartTriggers = [ envHash ];
+      });
 
   networking.firewall.allowedTCPPorts = [ cfg.port ];
 }
