@@ -59,6 +59,10 @@ let
       title = "Paperless";
       icon = "di:paperless-ngx";
     };
+    papergpt = {
+      title = "paperless-gpt";
+      icon = "di:paperless-gpt";
+    };
     rss = {
       title = "FreshRSS";
       icon = "di:freshrss";

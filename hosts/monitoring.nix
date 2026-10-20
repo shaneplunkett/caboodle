@@ -19,5 +19,6 @@
     ../modules/services/freshrss/alerts.nix
     ../modules/services/immich/alerts.nix
     ../modules/services/paperless/alerts.nix
+    ../modules/services/paperless-gpt/alerts.nix
   ];
 }
