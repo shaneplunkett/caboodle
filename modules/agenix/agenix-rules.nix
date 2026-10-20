@@ -17,6 +17,7 @@ let
     rss
     home
     photos
+    paper
     ;
 in
 {
@@ -124,6 +125,7 @@ in
     rss
     home
     photos
+    paper
   ];
   "backup-brain.age".publicKeys = [
     shane
@@ -184,6 +186,19 @@ in
   "immich-oidc-client-secret.age".publicKeys = [
     shane
     photos
+  ];
+  "backup-paper.age".publicKeys = [
+    shane
+    paper
+  ];
+  "paperless-oidc-client-secret.age".publicKeys = [
+    shane
+    paper
+    auth
+  ];
+  "paperless-env.age".publicKeys = [
+    shane
+    paper
   ];
   "zigbee2mqtt-secret.age".publicKeys = [
     shane
@@ -289,6 +304,10 @@ in
   "backup-r2-photos.age".publicKeys = [
     shane
     photos
+  ];
+  "backup-r2-paper.age".publicKeys = [
+    shane
+    paper
   ];
   "cloudflare-r2-usage.age".publicKeys = [
     shane

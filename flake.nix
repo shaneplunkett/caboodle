@@ -321,11 +321,7 @@
 
         photos = lxc "photos" { homelab.lanAddress = "192.168.1.154"; };
 
-        paper = lxc "paper" {
-          homelab.lanAddress = "192.168.1.155";
-          homelab.monitoring.enable = false;
-          deployment.tags = [ ];
-        };
+        paper = lxc "paper" { homelab.lanAddress = "192.168.1.155"; };
 
         home = lxc "home" { homelab.lanAddress = "192.168.1.117"; };
 

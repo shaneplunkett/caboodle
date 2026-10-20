@@ -55,6 +55,10 @@ let
       title = "Music Assistant";
       icon = "di:music-assistant";
     };
+    paper = {
+      title = "Paperless";
+      icon = "di:paperless-ngx";
+    };
     rss = {
       title = "FreshRSS";
       icon = "di:freshrss";

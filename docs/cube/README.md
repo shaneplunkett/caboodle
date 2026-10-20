@@ -10,6 +10,7 @@ Per-service docs:
 - [arr.md](arr.md)
 - [plex.md](plex.md)
 - [photos.md](photos.md)
+- [paper.md](paper.md)
 
 ## Unraid storage
 
