@@ -75,7 +75,10 @@ Flakes only see tracked files, so `git add` new files before building.
    upload it to each Proxmox node's `local:vztmpl` under the name
    `terraform/modules/nixos-lxc` expects.
 2. Add `hosts/<host>.nix` and an entry in the hive pointing at it,
-   `<host> = lxc "<host>" { homelab.lanAddress = "..."; };`.
+   `<host> = lxc "<host>" { homelab.lanAddress = "..."; };`. The host has
+   no key until its container boots, so until step 4 lands, keep it out of
+   merge deploys and monitoring with `deployment.tags = [ ];` and
+   `homelab.monitoring.enable = false;`.
 3. Add a `terraform/<proxmox-node>-<host>.tf` using `modules/nixos-lxc` and apply it.
    Terraform reserves the host's address in UniFi before the container first
    boots, and a host that isn't in the hive fails the plan. Leave

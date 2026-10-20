@@ -16,5 +16,5 @@ locals {
     name = "cube"
   }
 
-  backup_hosts = toset(["dashboard", "plex", "arr", "brain", "auth", "forge", "gym", "rss", "home", "photos"])
+  backup_hosts = toset(["dashboard", "plex", "arr", "brain", "auth", "forge", "gym", "rss", "home", "photos", "paper"])
 }

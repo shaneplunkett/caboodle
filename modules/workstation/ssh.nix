@@ -37,7 +37,7 @@ in
       "${host.hostName}.${tailnet}"
     ];
     publicKey = hostKeys.${name};
-  }) hosts;
+  }) (lib.intersectAttrs hostKeys hosts);
 
   home-manager.users.shane.programs.ssh.settings =
     lib.mapAttrs (name: host: {
