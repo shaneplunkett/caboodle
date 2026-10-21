@@ -31,7 +31,8 @@ the builder reaches each one by its LAN address from the hive.
 The builder deploys first, on its own. Its SSH config and known hosts come
 from the hive, so a host added in the same push can't be reached until the
 builder has switched. Deployed alongside the rest, it lost that race and the
-new host failed its first deploy.
+new host failed its first deploy. It isn't tagged `deploy-on-merge`, so it
+switches once per deploy.
 
 dns2 deploys in a later job, once dns1 answers. Deploying both at once
 restarted Blocky on both and left the network without DNS, so a bad DNS
@@ -43,6 +44,14 @@ restart waits on the deploy job, and the job waits on the switch. So a change
 reloads the runner instead, and the reload schedules a graceful restart a few
 seconds later, which lets running jobs finish first. A job that ends in
 `RUN signal: terminated` outlasted the stop timeout.
+
+That graceful restart is also why the builder can't switch twice in one
+deploy. Every switch restarts `sysinit-reactivation.target`, and while the
+runner is stopping, that restart waits for the stop, which waits for the
+deploy job, which waits for the switch. New units queue behind it too, so SSH
+stops answering, and only restarting the container clears it. A second switch
+looked free while the config was unchanged, until a systemd bump made the
+first switch reload the runner.
 
 ## Terraform
 

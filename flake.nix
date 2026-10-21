@@ -331,7 +331,10 @@
 
         forge = lxc "forge" { homelab.lanAddress = "192.168.1.115"; };
 
-        builder = lxc "builder" { homelab.lanAddress = "192.168.1.224"; };
+        builder = lxc "builder" {
+          homelab.lanAddress = "192.168.1.224";
+          deployment.tags = [ ];
+        };
 
         nas = {
           imports = [
