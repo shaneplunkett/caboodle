@@ -19,6 +19,7 @@
     ./vicinae.nix
     ./taildrop.nix
     ./screen-share.nix
+    ./opendeck.nix
   ]
 
   ++ lib.optionals (shell == "noctalia") [

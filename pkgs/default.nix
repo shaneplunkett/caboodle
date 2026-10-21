@@ -32,6 +32,7 @@ in
   linear-desktop = pkgs.callPackage ./linear-desktop {
     typography = import ../home/typography.nix;
   };
+  opendeck = pkgs.callPackage ./opendeck { };
   slack-themed = pkgs.callPackage ./slack-themed { };
   bambu-studio-bin = pkgs.callPackage ./bambu-studio-bin { };
   orca-studio = pkgs.callPackage ./orca-studio { };
