@@ -37,31 +37,31 @@
               "id": "p-dkpjfj",
               "kind": "rj45",
               "face": "rear",
-              "label": ""
+              "label": "Port 1"
             },
             {
               "id": "p-7kzxzt",
               "kind": "rj45",
               "face": "rear",
-              "label": ""
+              "label": "Port 2"
             },
             {
               "id": "p-ji0i5l",
               "kind": "rj45",
               "face": "rear",
-              "label": ""
+              "label": "Port 3"
             },
             {
               "id": "p-htio1x",
               "kind": "rj45",
               "face": "rear",
-              "label": ""
+              "label": "Port 4 · Flex 2.5G 8"
             },
             {
               "id": "p-xd33z9",
               "kind": "rj45",
               "face": "rear",
-              "label": ""
+              "label": "Port 5 · WAN"
             },
             {
               "id": "p-sh5hv4",
@@ -173,31 +173,31 @@
               "id": "p-c84g8u",
               "kind": "rj45",
               "face": "front",
-              "label": ""
+              "label": "Port 1 · U7 Lite"
             },
             {
               "id": "p-ilfaej",
               "kind": "rj45",
               "face": "front",
-              "label": ""
+              "label": "Port 2 · SLZB"
             },
             {
               "id": "p-merxeb",
               "kind": "rj45",
               "face": "front",
-              "label": ""
+              "label": "Port 3 · Flex 2.5G 5"
             },
             {
               "id": "p-oedv3d",
               "kind": "rj45",
               "face": "front",
-              "label": ""
+              "label": "Port 4 · Bose soundbar"
             },
             {
               "id": "p-mqefoj",
               "kind": "rj45",
               "face": "front",
-              "label": ""
+              "label": "Port 5 · JetKVM"
             },
             {
               "id": "p-8leyhp",
@@ -209,13 +209,13 @@
               "id": "p-l24pvc",
               "kind": "rj45",
               "face": "front",
-              "label": ""
+              "label": "Port 7 · HD Homerun"
             },
             {
               "id": "p-alycmp",
               "kind": "rj45",
               "face": "front",
-              "label": ""
+              "label": "Port 8 · Apple TV"
             },
             {
               "id": "p-4zvtw6",
