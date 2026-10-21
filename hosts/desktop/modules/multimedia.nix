@@ -4,7 +4,14 @@
   # which the Facecam already takes alongside video0.
   boot = {
     extraModulePackages = [
-      config.boot.kernelPackages.v4l2loopback
+      # TODO: drop this override once https://github.com/NixOS/nixpkgs/pull/575861
+      # reaches nixos-unstable; v4l2loopback ships its own modules.* index files,
+      # which collide with the kernel's when NixOS merges the module packages.
+      (config.boot.kernelPackages.v4l2loopback.overrideAttrs (old: {
+        postInstall = (old.postInstall or "") + ''
+          rm -f $out/lib/modules/*/modules.*
+        '';
+      }))
     ];
     kernelModules = [ "v4l2loopback" ];
     extraModprobeConfig = ''
