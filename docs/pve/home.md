@@ -124,6 +124,11 @@ bridge-vids 2-4094
   files Nix leaves alone.
 - The coordinator backup Zigbee2MQTT keeps is what moves the network to a
   new coordinator.
+- **Availability is on,** so a device that stops answering shows as
+  unavailable instead of keeping its last state. Without it, one deaf light
+  holds its group "on", and a toggle keeps sending "off". Zigbee2MQTT pings
+  mains devices every 10 minutes and marks them available again as soon as
+  they answer. Until then Home Assistant skips them.
 
 ## Thread
 

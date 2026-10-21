@@ -18,6 +18,7 @@ in
     settings = {
       version = 5;
       homeassistant.enabled = true;
+      availability.enabled = true;
       mqtt.server = "mqtt://127.0.0.1:1883";
       serial = {
         port = "tcp://${config.homelab.devices.slzb.ip}:6638";
