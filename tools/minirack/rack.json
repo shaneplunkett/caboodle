@@ -584,6 +584,74 @@
             }
           ],
           "notes": ""
+        },
+        {
+          "id": "item-ok5pwe",
+          "template": "usw-lite-8",
+          "name": "USW Flex 2.5G 8",
+          "color": "#eef0f4",
+          "heightU": 1,
+          "width": "full",
+          "side": null,
+          "u": 1,
+          "parked": true,
+          "ports": [
+            {
+              "id": "p-nf5cyw",
+              "kind": "rj45",
+              "face": "front",
+              "label": "Port 1 · Gateway"
+            },
+            {
+              "id": "p-rqfej1",
+              "kind": "rj45",
+              "face": "front",
+              "label": "Port 2 · Flex 2.5G 5"
+            },
+            {
+              "id": "p-wb7h9h",
+              "kind": "rj45",
+              "face": "front",
+              "label": "Port 3 · Beast"
+            },
+            {
+              "id": "p-pqhrc2",
+              "kind": "rj45",
+              "face": "front",
+              "label": "Port 4 · Nix-Desktop"
+            },
+            {
+              "id": "p-76b4a6",
+              "kind": "rj45",
+              "face": "front",
+              "label": ""
+            },
+            {
+              "id": "p-renz9o",
+              "kind": "rj45",
+              "face": "front",
+              "label": ""
+            },
+            {
+              "id": "p-jm7kt8",
+              "kind": "rj45",
+              "face": "front",
+              "label": "Port 7 · Cube"
+            },
+            {
+              "id": "p-idmcao",
+              "kind": "rj45",
+              "face": "front",
+              "label": "Port 8 · Mini"
+            },
+            {
+              "id": "p-rg7on7",
+              "kind": "power",
+              "face": "rear",
+              "label": ""
+            }
+          ],
+          "notes": ""
         }
       ],
       "cables": [
