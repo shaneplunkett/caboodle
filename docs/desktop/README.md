@@ -74,6 +74,29 @@ The kernel's dump expires after about five minutes and doesn't survive a
 reboot, and a hard lockup can stop the capture altogether. The tests use
 fixtures, so the first real crash is the only end-to-end test.
 
+## Lighting
+
+The OpenRGB server holds the RAM, motherboard, GPU and monitor lights, and
+Home Assistant drives them through its OpenRGB integration, so they can join
+the desk scenes. Only the Home Assistant host can reach the server's port,
+because the SDK has no authentication. The integration lives in Home
+Assistant's UI: add OpenRGB with the desktop's LAN address and port 6742.
+
+`lights-off` turns everything dark whenever the server starts and after
+every sleep, since a reboot or suspend puts the RAM back on its rainbow. A
+switch that restarts the server turns the lights off too. Home Assistant
+turns them back on.
+
+- The Kingston RAM has no Off mode, so off is Direct and black.
+- The ASRock board ignores colours but obeys off.
+- The monitor only listens with Aura Sync turned on in its own menu, and
+  its USB goes through the KVM. When the KVM is on another machine the
+  server can't see the monitor, so `lights-off` skips it without failing.
+- The cooler's white light isn't on any controller, so nothing here
+  switches it.
+- The OpenRGB GUI runs as Shane and talks to the same server, so changes
+  there don't fight Home Assistant's.
+
 ## Gotchas
 
 - nh's weekly clean deletes old generations, so the boot menu can only roll

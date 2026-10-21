@@ -1,47 +1,88 @@
-{ lib, pkgs, ... }:
+{
+  config,
+  lib,
+  nodes,
+  ...
+}:
 let
+  cfg = config.services.hardware.openrgb;
+  openrgb = lib.getExe cfg.package;
   sleepTargets = [
     "suspend.target"
     "hibernate.target"
     "hybrid-sleep.target"
     "suspend-then-hibernate.target"
   ];
+  sendToServer =
+    args:
+    lib.escapeShellArgs (
+      [
+        openrgb
+        "--nodetect"
+      ]
+      ++ args
+    );
 in
 {
-  boot.kernelModules = [
-    "i2c-dev"
-    "i2c-piix4"
-  ];
+  services.hardware.openrgb = {
+    enable = true;
+    motherboard = "amd";
+  };
 
-  services.udev.packages = [ pkgs.openrgb ];
-  environment.systemPackages = [ pkgs.openrgb ];
+  systemd.services.openrgb = {
+    after = [ "usb-hub-reset.service" ];
+    serviceConfig.ExecStart = lib.mkForce (
+      lib.escapeShellArgs [
+        openrgb
+        "--server"
+        "--server-host"
+        "0.0.0.0"
+        "--server-port"
+        cfg.server.port
+      ]
+    );
+  };
+
+  networking.firewall.extraInputRules = ''
+    ip saddr ${nodes.home.config.homelab.lanAddress} tcp dport ${toString cfg.server.port} accept
+  '';
 
   systemd.services.lights-off = {
-    description = "Switch off the RAM, motherboard and GPU lighting";
-    after = [ "multi-user.target" ] ++ sleepTargets;
-    wantedBy = [ "multi-user.target" ] ++ sleepTargets;
+    description = "Switch off the desktop's lighting through the OpenRGB server";
+    bindsTo = [ "openrgb.service" ];
+    after = [ "openrgb.service" ] ++ sleepTargets;
+    wantedBy = [ "openrgb.service" ] ++ sleepTargets;
     serviceConfig = {
       Type = "oneshot";
-      StateDirectory = "lights-off";
-      ExecStart = lib.escapeShellArgs [
-        (lib.getExe pkgs.openrgb)
-        "--config"
-        "/var/lib/lights-off"
-        "--noautoconnect"
-        "--device"
-        "Kingston"
-        "--mode"
-        "direct"
-        "--color"
-        "000000"
-        "--device"
-        "ASRock"
-        "--mode"
-        "off"
-        "--device"
-        "Sapphire"
-        "--mode"
-        "off"
+      Restart = "on-failure";
+      RestartSec = 5;
+      ExecStart = [
+        (sendToServer [
+          "--device"
+          "Kingston"
+          "--mode"
+          "direct"
+          "--color"
+          "000000"
+          "--device"
+          "ASRock"
+          "--mode"
+          "off"
+          "--device"
+          "Sapphire"
+          "--mode"
+          "off"
+        ])
+        "-${
+          sendToServer [
+            "--device"
+            "PG32UCDM"
+            "--mode"
+            "direct"
+            "--color"
+            "000000"
+          ]
+        }"
       ];
     };
   };
