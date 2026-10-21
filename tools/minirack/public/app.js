@@ -170,6 +170,7 @@ const TEMPLATE_GROUPS = [
         width: "full",
         color: "#b6d8f5",
         style: "plain",
+        fullDepth: true,
         ports: [port("front", "usba", 2), port("rear", "rj45", 2), port("rear", "power")],
       },
       {
@@ -179,6 +180,7 @@ const TEMPLATE_GROUPS = [
         width: "full",
         color: "#4a4458",
         style: "circuit",
+        fullDepth: true,
         ports: [
           port("rear", "rj45", 1, { label: "LAN" }),
           port("rear", "usba", 4),
@@ -217,6 +219,7 @@ const TEMPLATE_GROUPS = [
         width: "full",
         color: "#4a4458",
         style: "mac-kvm",
+        fullDepth: true,
         align: "center",
         bays: ["kvm", "mac-mini"],
         ports: [
@@ -295,7 +298,16 @@ const TEMPLATE_GROUPS = [
     items: [
       { key: "brush", name: "Brush panel", heightU: 1, width: "full", color: "#4a4458", style: "brush", ports: [] },
       { key: "rings", name: "Cable ring bar", heightU: 1, width: "full", color: "#f6b8d0", style: "rings", ports: [] },
-      { key: "shelf", name: "Shelf", heightU: 2, width: "full", color: "#eef0f4", style: "shelf", ports: [] },
+      {
+        key: "shelf",
+        name: "Shelf",
+        heightU: 2,
+        width: "full",
+        color: "#eef0f4",
+        style: "shelf",
+        fullDepth: true,
+        ports: [],
+      },
       { key: "vent", name: "Vent panel", heightU: 1, width: "full", color: "#f6b8d0", style: "vent", ports: [] },
       { key: "blank", name: "Blank", heightU: 1, width: "full", color: "#f6b8d0", style: "blank", ports: [] },
     ],
@@ -431,8 +443,22 @@ function seedState() {
   return { version: 1, layouts: [L] };
 }
 
+// Gear hangs off the front rails or the back ones. Things on opposite rails can
+// share a U, unless one of them fills the rack front to back.
+const mountOf = (item) => item.mount ?? "front";
+const fullDepth = (item) => item.fullDepth ?? !!templateOf(item).fullDepth;
+const showBackRails = (L) => !!L.backRails || L.items.some((i) => !i.parked && mountOf(i) === "rear");
+
+function setMount(item, mount) {
+  if (mount === "rear") item.mount = "rear";
+  else delete item.mount;
+}
+
 const overlaps = (a, b) =>
-  a.u < b.u + b.heightU && b.u < a.u + a.heightU && (a.width === "full" || b.width === "full" || a.side === b.side);
+  a.u < b.u + b.heightU &&
+  b.u < a.u + a.heightU &&
+  (a.width === "full" || b.width === "full" || a.side === b.side) &&
+  (mountOf(a) === mountOf(b) || fullDepth(a) || fullDepth(b));
 
 function fits(L, spot, ignoreId) {
   if (spot.u < 1 || spot.u + spot.heightU - 1 > L.rackUnits) return false;
@@ -443,7 +469,7 @@ function firstFreeSpot(L, item) {
   const sides = item.width === "half" ? ["left", "right"] : [null];
   for (let u = 1; u <= L.rackUnits - item.heightU + 1; u++) {
     for (const side of sides) {
-      const spot = { u, side, heightU: item.heightU, width: item.width };
+      const spot = { ...item, u, side };
       if (fits(L, spot, item.id)) return spot;
     }
   }
@@ -493,16 +519,20 @@ function portName(item, port) {
   return `${PORT_KINDS[port.kind].label} ${n}`;
 }
 
+// On the back rails, the front of a keystone faces into the rack and its rear faces out.
+const faceName = (item, face) => (mountOf(item) === "rear" ? { front: "inside", rear: "outside" }[face] : face);
+
 function endName(L, end) {
   const item = findItem(L, end.item);
   const port = item?.ports.find((p) => p.id === end.port);
   if (!item || !port) return "somewhere mysterious";
-  return `${item.name} · ${portName(item, port)}${port.face === "both" ? ` (${end.face})` : ""}`;
+  return `${item.name} · ${portName(item, port)}${port.face === "both" ? ` (${faceName(item, end.face)})` : ""}`;
 }
 
 function usedUnits(L) {
   const used = new Set();
-  for (const i of L.items) if (!i.parked) for (let u = i.u; u < i.u + i.heightU; u++) used.add(u);
+  for (const i of L.items)
+    if (!i.parked && (mountOf(i) === "front" || fullDepth(i))) for (let u = i.u; u < i.u + i.heightU; u++) used.add(u);
   return used.size;
 }
 
@@ -833,14 +863,34 @@ function renderPalette() {
   );
 }
 
+// Which way the face you're looking at points. The back rails are drawn beside
+// the rack, lined up with it: the front view shows their outside and the rear
+// view their inside, so each view holds both ends of a cable through the rack.
+const facing = (item) => (mountOf(item) === "front" ? ui.view : ui.view === "front" ? "rear" : "front");
+
 // From behind, the rack is mirrored: a left-half item shows up on the right.
 const shownSide = (side) => (ui.view === "rear" ? (side === "left" ? "right" : "left") : side);
 const slotLeft = (item, bayW) => (item.width === "half" && shownSide(item.side) === "right" ? bayW / 2 : 0);
 
 function visiblePorts(item) {
-  if (ui.view === "front") return item.ports.filter((p) => onFace(p, "front"));
-  // Pass-through ports are seen mirrored from behind, so keystone 1 ends up on the right.
-  return [...item.ports.filter((p) => p.face === "rear"), ...item.ports.filter((p) => p.face === "both").reverse()];
+  // Ports are listed as seen from the front, except rear-only ones, which are listed as seen from behind.
+  const mirrored = ui.view === "rear";
+  const asSeen = (ports, fromBehind) => (fromBehind === mirrored ? ports : [...ports].reverse());
+  if (facing(item) === "front")
+    return asSeen(
+      item.ports.filter((p) => onFace(p, "front")),
+      false,
+    );
+  return [
+    ...asSeen(
+      item.ports.filter((p) => p.face === "rear"),
+      true,
+    ),
+    ...asSeen(
+      item.ports.filter((p) => p.face === "both"),
+      false,
+    ),
+  ];
 }
 
 function geometry() {
@@ -850,22 +900,8 @@ function geometry() {
 
 function renderStage() {
   const L = layout();
-  const { U, bayW, railW } = geometry();
+  const { U, bayW } = geometry();
   const scroll = { left: els.stage.scrollLeft, top: els.stage.scrollTop };
-  const units = Array.from({ length: L.rackUnits }, (_, i) => i + 1);
-
-  const bay = h(
-    "div",
-    { class: "bay", style: { width: `${bayW}px`, height: `${U * L.rackUnits}px` } },
-    units.map((u) => h("div", { class: "slot", style: { top: `${(u - 1) * U}px`, height: `${U}px` } })),
-    L.items.filter((i) => !i.parked).map((i) => itemEl(i, { U, bayW })),
-  );
-  const rail = (side) =>
-    h(
-      "div",
-      { class: `rail ${side}`, style: { width: `${railW}px` } },
-      units.map(() => h("div", { class: "rail-u", style: { height: `${U}px` } }, h("i"), h("i"), h("i"))),
-    );
 
   const parked = L.items.filter((i) => i.parked);
   const inner = h(
@@ -882,37 +918,8 @@ function renderStage() {
         render();
       },
     },
-    h(
-      "div",
-      { class: "rack-column" },
-      h(
-        "div",
-        { class: "rack-title" },
-        h(
-          "div",
-          null,
-          L.name,
-          h("span", { class: `view-chip ${ui.view}` }, ui.view === "rear" ? "↻ rear view" : "front view"),
-        ),
-        h("span", null, `${usedUnits(L)}/${L.rackUnits}U used`),
-      ),
-      h(
-        "div",
-        { class: "rack-wrap" },
-        h(
-          "div",
-          { class: "u-labels" },
-          units.map((u) => h("div", { style: { height: `${U}px` } }, u)),
-        ),
-        h(
-          "div",
-          { class: "rack", style: { "--filament": L.filament } },
-          h("div", { class: "rack-cap" }),
-          h("div", { class: "rack-body" }, rail("left"), bay, rail("right")),
-          h("div", { class: "rack-cap bottom" }, h("i"), h("i")),
-        ),
-      ),
-    ),
+    rackColumn(L, "front"),
+    showBackRails(L) ? rackColumn(L, "rear") : null,
     h(
       "div",
       { class: "parking", style: { width: `${bayW + 36}px` } },
@@ -934,6 +941,89 @@ function renderStage() {
   els.stage.scrollTop = scroll.top;
   inner.querySelectorAll(".sticky textarea").forEach(autosize);
   drawCables();
+}
+
+function rackColumn(L, mount) {
+  const { U, bayW, railW } = geometry();
+  const units = Array.from({ length: L.rackUnits }, (_, i) => i + 1);
+  const placed = L.items.filter((i) => !i.parked);
+
+  // Gear on the other rails that fills the rack front to back still takes up room here.
+  const blocked = placed
+    .filter((i) => mountOf(i) !== mount && fullDepth(i))
+    .map((i) =>
+      h(
+        "div",
+        {
+          class: "depth-block",
+          title: `${i.name} fills the rack front to back`,
+          style: {
+            top: `${(i.u - 1) * U}px`,
+            left: `${slotLeft(i, bayW)}px`,
+            width: `${i.width === "half" ? bayW / 2 : bayW}px`,
+            height: `${i.heightU * U}px`,
+          },
+        },
+        h("span", null, `↔ ${i.name}`),
+      ),
+    );
+
+  const bay = h(
+    "div",
+    { class: "bay", "data-mount": mount, style: { width: `${bayW}px`, height: `${U * L.rackUnits}px` } },
+    units.map((u) => h("div", { class: "slot", style: { top: `${(u - 1) * U}px`, height: `${U}px` } })),
+    blocked,
+    placed.filter((i) => mountOf(i) === mount).map((i) => itemEl(i, { U, bayW })),
+  );
+  const rail = (side) =>
+    h(
+      "div",
+      { class: `rail ${side}`, style: { width: `${railW}px` } },
+      units.map(() => h("div", { class: "rail-u", style: { height: `${U}px` } }, h("i"), h("i"), h("i"))),
+    );
+
+  const title =
+    mount === "front"
+      ? [
+          h(
+            "div",
+            null,
+            L.name,
+            h("span", { class: `view-chip ${ui.view}` }, ui.view === "rear" ? "↻ rear view" : "front view"),
+          ),
+          h("span", null, `${usedUnits(L)}/${L.rackUnits}U used`),
+        ]
+      : [
+          h(
+            "div",
+            null,
+            "back rails",
+            h("span", { class: `view-chip ${ui.view}` }, ui.view === "front" ? "outside" : "↻ inside"),
+          ),
+          h("span", null, ui.view === "front" ? "where the wall lines plug in" : "facing into the rack"),
+        ];
+
+  return h(
+    "div",
+    { class: `rack-column ${mount === "rear" ? "back-rails" : ""}` },
+    h("div", { class: "rack-title" }, title),
+    h(
+      "div",
+      { class: "rack-wrap" },
+      h(
+        "div",
+        { class: "u-labels" },
+        units.map((u) => h("div", { style: { height: `${U}px` } }, u)),
+      ),
+      h(
+        "div",
+        { class: "rack", style: { "--filament": L.filament } },
+        h("div", { class: "rack-cap" }),
+        h("div", { class: "rack-body" }, rail("left"), bay, rail("right")),
+        h("div", { class: "rack-cap bottom" }, h("i"), h("i")),
+      ),
+    ),
+  );
 }
 
 function itemEl(item, { U, bayW, parked = false, ghost = false }) {
@@ -1046,7 +1136,7 @@ function decorEl({ style, screens = 0 }) {
 }
 
 function portEl(L, item, port, number) {
-  const face = ui.view;
+  const face = facing(item);
   const cable = cableAt(L, item.id, port.id, face);
   const wiringHere = ui.wiring && sameEnd(ui.wiring, item.id, port.id, face);
   return h("button", {
@@ -1109,7 +1199,8 @@ function cablePath(a, b) {
 }
 
 function portCenter(inner, end) {
-  if (end.face !== ui.view) return null;
+  const item = findItem(layout(), end.item);
+  if (!item || end.face !== facing(item)) return null;
   const el = inner.querySelector(`.port[data-item="${end.item}"][data-port="${end.port}"]`);
   if (!el) return null;
   const r = el.getBoundingClientRect();
@@ -1203,7 +1294,7 @@ function drawCables() {
 
 function onPortClick(item, port) {
   const L = layout();
-  const face = ui.view;
+  const face = facing(item);
   const existing = cableAt(L, item.id, port.id, face);
   if (!ui.wiring) {
     if (existing) return select("cable", existing.id);
@@ -1316,17 +1407,22 @@ function computeDrop(L, ev, proto, grab, { U, w, hgt }) {
   ) {
     return { type: "park" };
   }
-  const bay = els.stage.querySelector(".bay").getBoundingClientRect();
   const left = ev.clientX - grab.x;
   const top = ev.clientY - grab.y;
   const cx = left + w / 2;
   const margin = U * 1.2;
-  if (cx < bay.left - margin || cx > bay.right + margin || top + hgt < bay.top - margin || top > bay.bottom + margin)
-    return null;
-  if (proto.heightU > L.rackUnits) return { type: "rack", valid: false, u: 1, side: null };
+  // With the back rails showing there are two bays, so drop into whichever is nearest.
+  const near = [...els.stage.querySelectorAll(".bay")]
+    .map((el) => ({ mount: el.dataset.mount, bay: el.getBoundingClientRect() }))
+    .filter(({ bay }) => cx >= bay.left - margin && cx <= bay.right + margin)
+    .filter(({ bay }) => top + hgt >= bay.top - margin && top <= bay.bottom + margin)
+    .sort((a, b) => Math.abs(cx - (a.bay.left + a.bay.right) / 2) - Math.abs(cx - (b.bay.left + b.bay.right) / 2));
+  if (!near.length) return null;
+  const { mount, bay } = near[0];
+  if (proto.heightU > L.rackUnits) return { type: "rack", valid: false, u: 1, side: null, mount };
   const u = clamp(Math.round((top - bay.top) / U) + 1, 1, L.rackUnits - proto.heightU + 1);
   const side = proto.width === "half" ? shownSide(cx < bay.left + bay.width / 2 ? "left" : "right") : null;
-  return { type: "rack", u, side, valid: fits(L, { u, side, heightU: proto.heightU, width: proto.width }, proto.id) };
+  return { type: "rack", u, side, mount, valid: fits(L, { ...proto, u, side, mount }, proto.id) };
 }
 
 function showDropPreview(drop, proto, geo) {
@@ -1334,7 +1430,7 @@ function showDropPreview(drop, proto, geo) {
   els.stage.querySelector(".parking")?.classList.toggle("drop-target", drop?.type === "park");
   if (drop?.type !== "rack") return;
   const left = slotLeft({ width: proto.width, side: drop.side }, geo.bayW);
-  els.stage.querySelector(".bay").append(
+  els.stage.querySelector(`.bay[data-mount="${drop.mount}"]`).append(
     h("div", {
       class: `drop-preview ${drop.valid ? "ok" : "nope"}`,
       style: { top: `${(drop.u - 1) * geo.U}px`, left: `${left}px`, width: `${geo.w}px`, height: `${geo.hgt}px` },
@@ -1348,7 +1444,10 @@ function applyDrop(drop, proto, isNew) {
   mutate((L) => {
     const item = isNew ? proto : findItem(L, proto.id);
     if (drop.type === "park") item.parked = true;
-    else Object.assign(item, { parked: false, u: drop.u, side: drop.side });
+    else {
+      Object.assign(item, { parked: false, u: drop.u, side: drop.side });
+      setMount(item, drop.mount);
+    }
     if (isNew) L.items.push(item);
     ui.selection = { type: "item", id: item.id };
   });
@@ -1533,7 +1632,43 @@ function itemInspector(L, item) {
     edit((it) => Object.assign(it, patch, { side: next.width === "half" ? next.side : null }));
   };
 
-  const addPort = (kind) => edit((it) => it.ports.push({ id: uid("p"), kind, face: ui.view, label: "" }));
+  const remount = (mount) => {
+    if (!item.parked && !fits(L, { ...item, mount }, id))
+      return toast(`something's already on the ${mount === "rear" ? "back" : "front"} rails there`);
+    edit((it, L) => {
+      setMount(it, mount);
+      if (mount === "rear") L.backRails = true;
+    });
+  };
+
+  const setDepth = (full) => {
+    if (!item.parked && !fits(L, { ...item, fullDepth: full }, id))
+      return toast("it'd bump into whatever's on the other rails there");
+    edit((it) => {
+      it.fullDepth = full;
+    });
+  };
+
+  const seg = (options, current, onPick) =>
+    h(
+      "div",
+      { class: "seg" },
+      options.map(([value, label]) =>
+        h(
+          "button",
+          {
+            class: current === value ? "on" : "",
+            onclick: (e) => {
+              e.preventDefault();
+              onPick(value);
+            },
+          },
+          label,
+        ),
+      ),
+    );
+
+  const addPort = (kind) => edit((it) => it.ports.push({ id: uid("p"), kind, face: facing(it), label: "" }));
   const removePort = (portId) =>
     edit((it, L) => {
       it.ports = it.ports.filter((p) => p.id !== portId);
@@ -1600,6 +1735,32 @@ function itemInspector(L, item) {
         ),
       ),
     ),
+    h(
+      "div",
+      { class: "row" },
+      field(
+        "Rails",
+        seg(
+          [
+            ["front", "front"],
+            ["rear", "back"],
+          ],
+          mountOf(item),
+          remount,
+        ),
+      ),
+      field(
+        "Depth",
+        seg(
+          [
+            [false, "part"],
+            [true, "full"],
+          ],
+          fullDepth(item),
+          setDepth,
+        ),
+      ),
+    ),
     field(
       "Notes",
       textInput(
@@ -1654,7 +1815,7 @@ function itemInspector(L, item) {
                 h(
                   "button",
                   { class: "linked-to", style: { "--cable": c.color }, onclick: () => select("cable", c.id) },
-                  p.face === "both" ? `${(sameEnd(c.from, id, p.id) ? c.from : c.to).face} ` : "",
+                  p.face === "both" ? `${faceName(item, (sameEnd(c.from, id, p.id) ? c.from : c.to).face)} ` : "",
                   "→ ",
                   endName(L, otherEnd(c, id, p.id)),
                 ),
@@ -1671,7 +1832,11 @@ function itemInspector(L, item) {
           h("button", { class: "btn ghost sm", onclick: () => addPort(kind) }, `+ ${k.short}`),
         ),
       ),
-      h("div", { class: "hint" }, `new ports go on the ${ui.view}, and the little side chip moves them`),
+      h(
+        "div",
+        { class: "hint" },
+        `new ports go on the ${faceName(item, facing(item))}, and the little side chip moves them`,
+      ),
     ),
     h(
       "div",
@@ -1827,6 +1992,15 @@ function stickyInspector(sticky) {
 
 function layoutInspector(L) {
   const id = L.id;
+  const toggleBackRails = (on) =>
+    mutate((L) => {
+      L.backRails = on;
+      if (on) return;
+      const evicted = L.items.filter((i) => !i.parked && mountOf(i) === "rear");
+      for (const i of evicted) i.parked = true;
+      if (evicted.length)
+        toast(`moved ${evicted.length} thing${evicted.length > 1 ? "s" : ""} off the back rails to parking`);
+    });
   const resizeRack = (n) =>
     mutate((L) => {
       L.rackUnits = n;
@@ -1862,6 +2036,29 @@ function layoutInspector(L) {
         h("br"),
         h("b", null, L.cables.length),
         " cables",
+      ),
+    ),
+    field(
+      "Back rails",
+      h(
+        "div",
+        { class: "seg" },
+        [
+          [false, "off"],
+          [true, "on"],
+        ].map(([on, label]) =>
+          h(
+            "button",
+            {
+              class: showBackRails(L) === on ? "on" : "",
+              onclick: (e) => {
+                e.preventDefault();
+                toggleBackRails(on);
+              },
+            },
+            label,
+          ),
+        ),
       ),
     ),
     field(
@@ -1935,6 +2132,11 @@ function layoutInspector(L) {
           "li",
           null,
           "flip to the rear view to cable up the back, and a ↻ shows a cable that goes round the other side",
+        ),
+        h(
+          "li",
+          null,
+          "turn on back rails to mount a patch panel on the back: the front view shows its outside, the rear view its inside",
         ),
         h("li", null, "click (or right-click) anything to rename it, recolour it, or jot notes"),
         h("li", null, "duplicate a layout to plan the tidy version next to the current mess"),
