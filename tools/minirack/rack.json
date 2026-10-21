@@ -4,7 +4,7 @@
     {
       "id": "layout-4ymffz",
       "name": "My minirack",
-      "rackUnits": 12,
+      "rackUnits": 14,
       "filament": "#cdb8f2",
       "notes": "",
       "items": [
@@ -16,7 +16,7 @@
           "heightU": 1,
           "width": "full",
           "side": null,
-          "u": 1,
+          "u": 2,
           "parked": false,
           "ports": [
             {
@@ -80,7 +80,7 @@
           "heightU": 1,
           "width": "full",
           "side": null,
-          "u": 5,
+          "u": 3,
           "parked": false,
           "ports": [
             {
@@ -166,7 +166,7 @@
           "heightU": 1,
           "width": "full",
           "side": null,
-          "u": 4,
+          "u": 7,
           "parked": false,
           "ports": [
             {
@@ -234,7 +234,7 @@
           "heightU": 1,
           "width": "full",
           "side": null,
-          "u": 3,
+          "u": 5,
           "parked": false,
           "ports": [
             {
@@ -278,7 +278,7 @@
           "heightU": 1,
           "width": "full",
           "side": null,
-          "u": 2,
+          "u": 1,
           "parked": false,
           "ports": [
             {
@@ -364,7 +364,7 @@
           "heightU": 1,
           "width": "full",
           "side": null,
-          "u": 6,
+          "u": 8,
           "parked": false,
           "ports": [
             {
@@ -434,7 +434,7 @@
           "heightU": 4,
           "width": "full",
           "side": null,
-          "u": 9,
+          "u": 11,
           "parked": false,
           "ports": [
             {
@@ -502,7 +502,7 @@
           "heightU": 2,
           "width": "full",
           "side": null,
-          "u": 7,
+          "u": 9,
           "parked": false,
           "ports": [
             {
@@ -593,8 +593,8 @@
           "heightU": 1,
           "width": "full",
           "side": null,
-          "u": 1,
-          "parked": true,
+          "u": 4,
+          "parked": false,
           "ports": [
             {
               "id": "p-nf5cyw",
@@ -652,20 +652,241 @@
             }
           ],
           "notes": ""
+        },
+        {
+          "id": "item-qq6011",
+          "template": "patch-12",
+          "name": "Patch panel · 12",
+          "color": "#b6d8f5",
+          "heightU": 1,
+          "width": "full",
+          "side": null,
+          "u": 1,
+          "parked": false,
+          "ports": [
+            {
+              "id": "p-lhgybj",
+              "kind": "rj45",
+              "face": "both",
+              "label": "WAN"
+            },
+            {
+              "id": "p-ui4ot5",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-v3m2nc",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-zp71ag",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-16ah0k",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-m7e8k5",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-lecdyb",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-nlw1xy",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-wil8xk",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-x2gonn",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-q14y08",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-mvgwo0",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            }
+          ],
+          "notes": "",
+          "mount": "rear"
+        },
+        {
+          "id": "item-82tvsy",
+          "template": "patch-12",
+          "name": "Patch panel · 12",
+          "color": "#cdb8f2",
+          "heightU": 1,
+          "width": "full",
+          "side": null,
+          "u": 6,
+          "parked": false,
+          "ports": [
+            {
+              "id": "p-epo53d",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-q1bq81",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-hhbler",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-7y0r76",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-63i4bn",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-j1phzq",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-y5rlgv",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-1c74yr",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-h6x0au",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-vktpiw",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-c9ssrn",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            },
+            {
+              "id": "p-f3u7cc",
+              "kind": "rj45",
+              "face": "both",
+              "label": ""
+            }
+          ],
+          "notes": ""
         }
       ],
       "cables": [
         {
-          "id": "cable-3ankai",
+          "id": "cable-d2u2l9",
           "from": {
             "item": "item-58hlsu",
+            "port": "p-xd33z9",
+            "face": "rear"
+          },
+          "to": {
+            "item": "item-58hlsu",
             "port": "p-fa73l8",
+            "face": "rear"
+          },
+          "color": "#4fc794",
+          "label": "",
+          "notes": ""
+        },
+        {
+          "id": "cable-6wpj2y",
+          "from": {
+            "item": "item-qq6011",
+            "port": "p-lhgybj",
             "face": "front"
           },
           "to": {
             "item": "item-cae5p5",
             "port": "p-muvnkb",
+            "face": "rear"
+          },
+          "color": "#4fc794",
+          "label": "",
+          "notes": ""
+        },
+        {
+          "id": "cable-sphqvt",
+          "from": {
+            "item": "item-cae5p5",
+            "port": "p-muvnkb",
             "face": "front"
+          },
+          "to": {
+            "item": "item-58hlsu",
+            "port": "p-fa73l8",
+            "face": "front"
+          },
+          "color": "#4fc794",
+          "label": "",
+          "notes": ""
+        },
+        {
+          "id": "cable-r017p9",
+          "from": {
+            "item": "item-82tvsy",
+            "port": "p-c9ssrn",
+            "face": "rear"
+          },
+          "to": {
+            "item": "item-82tvsy",
+            "port": "p-f3u7cc",
+            "face": "rear"
           },
           "color": "#ff8fb8",
           "label": "",
@@ -675,12 +896,13 @@
       "stickies": [
         {
           "id": "note-ezo439",
-          "x": 793.1639404296875,
-          "y": 226.45245361328125,
+          "x": 1317.5264892578125,
+          "y": 263.9899597167969,
           "color": "#fff1a8",
           "text": "drag your gear into the rack ✿\n\nclick a port, then another port, to plug in a cable"
         }
-      ]
+      ],
+      "backRails": true
     },
     {
       "id": "layout-8caq1a",
