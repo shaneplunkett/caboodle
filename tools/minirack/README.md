@@ -27,8 +27,9 @@ front view shows their outside and the rear view their inside, so a cable
 through the rack draws as a line in the rear view.
 
 Each cable's card gives a length to buy, and the layout card adds them up into
-a shopping list. A cable runs square to the rack, plus 4 cm at each end for the
-plug, rounded up to a stock length. Set the layout's depth to the gap between
+a shopping list. A length is both plugs plus the straight gap between the ends
+of their boots, with a centimetre more when the cable loops back on itself,
+like a jumper between two front ports, rounded up to a stock length. Set the layout's depth to the gap between
 the front and back rails. The planner doesn't know how deep each device is, so
 a cable to a device's back port assumes the jack sits near the rails, which
 errs long.

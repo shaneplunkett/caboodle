@@ -1196,9 +1196,11 @@ function autosize(textarea) {
 // ---------- cable lengths ----------
 
 const DEPTH_CM = 16; // between the front and back rails
-const PLUG_MM = 40; // a plug and its boot stick straight out before the cable can bend
+const PLUG_MM = 40; // tip to boot: in the jack, then stiff until the cable can bend
+const BOOT_MM = 25; // how far that stiff part sticks out of the jack
+const LOOP_MM = 10; // the extra a cable needs to turn back on itself
 const KEYSTONE_MM = 30; // how far a jack's back sits inside the rails
-const STOCK_CM = [15, 25, 30, 50, 100, 150, 200, 300];
+const STOCK_CM = [15, 20, 25, 30, 50, 100, 150, 200, 300];
 
 let measurer = null;
 
@@ -1227,19 +1229,30 @@ function portSpot(L, end) {
   const depth = (L.depthCm ?? DEPTH_CM) * 10;
   const front = mountOf(item) === "front";
   const z = front ? (end.face === "front" ? 0 : KEYSTONE_MM) : end.face === "front" ? depth - KEYSTONE_MM : depth;
-  return { x: (x * U_MM) / U, y: (y * U_MM) / U, z, outside: z === 0 || z === depth };
+  return {
+    x: (x * U_MM) / U,
+    y: (y * U_MM) / U,
+    z,
+    out: end.face === "front" ? -1 : 1, // which way a plug sticks out, along the depth
+    outside: z === 0 || z === depth,
+  };
 }
 
-// Cables run square to the rack rather than in a straight line, plus a plug's
-// worth at each end, rounded up to a length you can buy.
+// Both plugs, plus the gap between the ends of their boots, which the cable
+// crosses in a straight line, with a little extra if it has to loop back on
+// itself, like a jumper between two ports on the front. Rounded up to a length
+// you can buy.
 function cableLength(L, c) {
   const a = portSpot(L, c.from);
   const b = portSpot(L, c.to);
   if (!a || !b) return null;
+  const za = a.z + a.out * BOOT_MM;
+  const zb = b.z + b.out * BOOT_MM;
   // Nothing passes through a faceplate, so from the outside of one to anywhere else goes round the side.
   const around = (a.outside || b.outside) && a.z !== b.z;
-  const dx = around ? Math.min(a.x + b.x, 2 * BAY_MM - a.x - b.x) : Math.abs(a.x - b.x);
-  const mm = dx + Math.abs(a.y - b.y) + Math.abs(a.z - b.z) + 2 * PLUG_MM;
+  const across = around ? Math.min(a.x + b.x, 2 * BAY_MM - a.x - b.x) : Math.abs(a.x - b.x);
+  const gap = around ? across + Math.hypot(a.y - b.y, za - zb) : Math.hypot(across, a.y - b.y, za - zb);
+  const mm = 2 * PLUG_MM + gap + (a.out === b.out ? LOOP_MM : 0);
   return { mm, buyCm: STOCK_CM.find((cm) => cm * 10 >= mm) ?? null };
 }
 
