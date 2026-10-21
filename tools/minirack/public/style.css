@@ -1811,3 +1811,41 @@ svg.cables.hidden .cable {
 .cable.stub .cable-line {
   stroke-dasharray: none;
 }
+
+/* ---------- cable lengths ---------- */
+
+/* off-screen spot for drawing an item from its other side, to see where a port lands */
+.measurer {
+  position: absolute;
+  left: -10000px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.measurer .item {
+  position: relative;
+}
+
+.cable-length {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cable-length b {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.cable-length span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.shopping {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+}

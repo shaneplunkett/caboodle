@@ -4,8 +4,10 @@
 
 // ---------- constants ----------
 
-const BAY_RATIO = 222 / 44.45; // 10" rack opening (222mm) vs 1U (44.45mm)
-const RAIL_RATIO = 16 / 44.45;
+const U_MM = 44.45;
+const BAY_MM = 222; // a 10" rack's opening
+const BAY_RATIO = BAY_MM / U_MM;
+const RAIL_RATIO = 16 / U_MM;
 const SVGNS = "http://www.w3.org/2000/svg";
 const SVG_TAGS = new Set(["svg", "path", "g", "circle", "rect", "text", "title"]);
 
@@ -1188,6 +1190,84 @@ function autosize(textarea) {
   textarea.style.height = `${textarea.scrollHeight}px`;
 }
 
+// ---------- cable lengths ----------
+
+const DEPTH_CM = 16; // between the front and back rails
+const PLUG_MM = 40; // a plug and its boot stick straight out before the cable can bend
+const KEYSTONE_MM = 30; // how far a jack's back sits inside the rails
+const STOCK_CM = [15, 25, 30, 50, 100, 150, 200, 300];
+
+let measurer = null;
+
+// Where a port sits in the rack, in mm: x across from the left as seen from the
+// front, y down from the top, z back from the front rails. The x comes from
+// drawing the item as it looks from that side, so it matches what's on screen.
+function portSpot(L, end) {
+  const item = findItem(L, end.item);
+  if (!item || item.parked) return null;
+  const { U, bayW } = geometry();
+  const view = mountOf(item) === "front" ? end.face : end.face === "front" ? "rear" : "front";
+  const shown = ui.view;
+  ui.view = view;
+  const el = itemEl(item, { U, bayW, parked: true });
+  ui.view = shown;
+  measurer ??= document.body.appendChild(h("div", { class: "measurer" }));
+  measurer.replaceChildren(el);
+  const port = el.querySelector(`.port[data-port="${end.port}"]`);
+  if (!port) return null;
+  const ir = el.getBoundingClientRect();
+  const pr = port.getBoundingClientRect();
+  const across = pr.left + pr.width / 2 - ir.left;
+  const x =
+    (item.width === "half" && item.side === "right" ? bayW / 2 : 0) + (view === "rear" ? ir.width - across : across);
+  const y = (item.u - 1) * U + pr.top + pr.height / 2 - ir.top;
+  const depth = (L.depthCm ?? DEPTH_CM) * 10;
+  const front = mountOf(item) === "front";
+  const z = front ? (end.face === "front" ? 0 : KEYSTONE_MM) : end.face === "front" ? depth - KEYSTONE_MM : depth;
+  return { x: (x * U_MM) / U, y: (y * U_MM) / U, z, outside: z === 0 || z === depth };
+}
+
+// Cables run square to the rack rather than in a straight line, plus a plug's
+// worth at each end, rounded up to a length you can buy.
+function cableLength(L, c) {
+  const a = portSpot(L, c.from);
+  const b = portSpot(L, c.to);
+  if (!a || !b) return null;
+  // Nothing passes through a faceplate, so from the outside of one to anywhere else goes round the side.
+  const around = (a.outside || b.outside) && a.z !== b.z;
+  const dx = around ? Math.min(a.x + b.x, 2 * BAY_MM - a.x - b.x) : Math.abs(a.x - b.x);
+  const mm = dx + Math.abs(a.y - b.y) + Math.abs(a.z - b.z) + 2 * PLUG_MM;
+  return { mm, buyCm: STOCK_CM.find((cm) => cm * 10 >= mm) ?? null };
+}
+
+const cmText = (cm) => (cm == null ? "over 3 m" : cm < 100 ? `${cm} cm` : `${cm / 100} m`);
+
+function cableKind(L, c) {
+  const kind = findItem(L, c.from.item)?.ports.find((p) => p.id === c.from.port)?.kind;
+  return kind === "rj45" ? "patch lead" : `${PORT_KINDS[kind]?.short ?? "mystery"} cable`;
+}
+
+function shoppingList(L) {
+  const counts = new Map();
+  let unmeasured = 0;
+  for (const c of L.cables) {
+    const len = cableLength(L, c);
+    if (!len) {
+      unmeasured++;
+      continue;
+    }
+    const key = `${cableKind(L, c)}|${len.buyCm ?? Infinity}`;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const lines = [...counts]
+    .map(([key, n]) => {
+      const [kind, cm] = key.split("|");
+      return { kind, cm: Number(cm), n };
+    })
+    .sort((a, b) => a.kind.localeCompare(b.kind) || a.cm - b.cm);
+  return { lines, unmeasured };
+}
+
 // ---------- cables ----------
 
 function cablePath(a, b) {
@@ -1932,6 +2012,7 @@ function cableInspector(L, cable) {
       h("div", { class: "cable-squiggle" }, "〰"),
       h("div", null, endName(L, cable.to)),
     ),
+    field("Length", cableLengthEl(L, cable)),
     field(
       "Label",
       textInput(
@@ -1963,6 +2044,17 @@ function cableInspector(L, cable) {
       ),
     ),
     h("div", { class: "actions" }, h("button", { class: "btn danger", onclick: deleteSelection }, "unplug")),
+  );
+}
+
+function cableLengthEl(L, cable) {
+  const len = cableLength(L, cable);
+  if (!len) return h("div", { class: "hint" }, "put both ends in the rack to measure it");
+  return h(
+    "div",
+    { class: "cable-length" },
+    h("b", null, `${cmText(len.buyCm)} ${cableKind(L, cable)}`),
+    h("span", null, `about ${Math.round(len.mm / 10)} cm, plugs and all`),
   );
 }
 
@@ -2038,25 +2130,42 @@ function layoutInspector(L) {
         " cables",
       ),
     ),
-    field(
-      "Back rails",
-      h(
-        "div",
-        { class: "seg" },
-        [
-          [false, "off"],
-          [true, "on"],
-        ].map(([on, label]) =>
-          h(
-            "button",
-            {
-              class: showBackRails(L) === on ? "on" : "",
-              onclick: (e) => {
-                e.preventDefault();
-                toggleBackRails(on);
+    h(
+      "div",
+      { class: "row" },
+      field(
+        "Depth",
+        stepper(
+          L.depthCm ?? DEPTH_CM,
+          5,
+          60,
+          (n) =>
+            mutate((L) => {
+              L.depthCm = n;
+            }),
+          " cm",
+        ),
+      ),
+      field(
+        "Back rails",
+        h(
+          "div",
+          { class: "seg" },
+          [
+            [false, "off"],
+            [true, "on"],
+          ].map(([on, label]) =>
+            h(
+              "button",
+              {
+                class: showBackRails(L) === on ? "on" : "",
+                onclick: (e) => {
+                  e.preventDefault();
+                  toggleBackRails(on);
+                },
               },
-            },
-            label,
+              label,
+            ),
           ),
         ),
       ),
@@ -2069,6 +2178,7 @@ function layoutInspector(L) {
         }),
       ),
     ),
+    shoppingEl(L),
     field(
       "Layout notes",
       textInput(
@@ -2154,6 +2264,25 @@ function layoutInspector(L) {
         ),
       ),
     ),
+  );
+}
+
+function shoppingEl(L) {
+  const { lines, unmeasured } = shoppingList(L);
+  return field(
+    "Cable shopping list",
+    lines.length
+      ? h(
+          "ul",
+          { class: "shopping" },
+          lines.map(({ kind, cm, n }) =>
+            h("li", null, h("b", null, `${n} ×`), ` ${cmText(Number.isFinite(cm) ? cm : null)} ${kind}`),
+          ),
+        )
+      : h("div", { class: "hint" }, "plug in some cables and their lengths add up here"),
+    unmeasured
+      ? h("div", { class: "hint" }, `plus ${unmeasured} with an end in the parking bay, so no length yet`)
+      : null,
   );
 }
 
