@@ -229,7 +229,7 @@
         {
           "id": "item-2rlw9l",
           "template": "flex-mini",
-          "name": "USW Flex Mini",
+          "name": "USW Flex 2.5G 5",
           "color": "#eef0f4",
           "heightU": 1,
           "width": "full",
@@ -240,7 +240,7 @@
             {
               "id": "p-mp5fop",
               "kind": "rj45",
-              "label": "",
+              "label": "Port 1 · Flex 2.5G 8",
               "face": "front"
             },
             {
@@ -264,7 +264,7 @@
             {
               "id": "p-nmlpjk",
               "kind": "rj45",
-              "label": "",
+              "label": "Port 5 · Lite 8 PoE",
               "face": "front"
             }
           ],
