@@ -336,7 +336,7 @@ const ui = {
   showLayout: false, // the floating layout-settings card, when nothing is selected
   palette: (localStorage.getItem("minirack.palette") ?? (window.innerWidth >= 1100 ? "open" : "closed")) === "open",
   cableColor: localStorage.getItem("minirack.cableColor") ?? COLORS.cable[0],
-  showCables: true,
+  cables: "on", // "on", "quiet" (runs through the rack fade back) or "off"
   zoom: Number(localStorage.getItem("minirack.zoom")) || 64,
 };
 const history = { past: [], future: [], lastKey: null, lastAt: 0 };
@@ -745,13 +745,16 @@ function buildToolbar() {
       },
     }),
   );
+  // On narrower windows the toolbar drops to icons; .lbl text is what gets hidden.
+  const lbl = (text) => h("span", { class: "lbl" }, text);
+  toolbar.cablesLabel = lbl("");
   toolbar.cables = h(
     "button",
     {
       class: "btn ghost",
-      title: "Show or hide cables",
+      title: "Show all cables, fade the ones through the rack, or hide them",
       onclick: () => {
-        ui.showCables = !ui.showCables;
+        ui.cables = { on: "quiet", quiet: "off", off: "on" }[ui.cables];
         render({ inspector: false });
       },
     },
@@ -759,8 +762,6 @@ function buildToolbar() {
     toolbar.cablesLabel,
   );
   toolbar.views = ["front", "rear"].map((v) => h("button", { onclick: () => setView(v) }, v));
-  // On narrower windows the toolbar drops to icons; .lbl text is what gets hidden.
-  const lbl = (text) => h("span", { class: "lbl" }, text);
   toolbar.gear = h(
     "button",
     { class: "btn ghost", title: "Gear drawer", onclick: () => togglePalette() },
@@ -773,7 +774,6 @@ function buildToolbar() {
     "⚙",
     lbl(" layout"),
   );
-  toolbar.cablesLabel = lbl("");
   toolbar.undo = h("button", { class: "btn ghost icon", title: "Undo (Ctrl+Z)", onclick: undo }, "↶");
   toolbar.redo = h("button", { class: "btn ghost icon", title: "Redo (Ctrl+Shift+Z)", onclick: redo }, "↷");
   els.toolbar.replaceChildren(
@@ -815,8 +815,8 @@ function updateToolbar() {
   for (const el of toolbar.views) el.classList.toggle("on", el.textContent === ui.view);
   toolbar.gear.classList.toggle("on", ui.palette);
   toolbar.layout.classList.toggle("on", ui.showLayout);
-  toolbar.cablesLabel.textContent = ui.showCables ? " cables on" : " cables off";
-  toolbar.cables.classList.toggle("off", !ui.showCables);
+  toolbar.cablesLabel.textContent = { on: " cables on", quiet: " back quiet", off: " cables off" }[ui.cables];
+  toolbar.cables.classList.toggle("off", ui.cables === "off");
   toolbar.undo.disabled = !history.past.length;
   toolbar.redo.disabled = !history.future.length;
   setStatus(sync.status);
@@ -901,6 +901,7 @@ function geometry() {
 }
 
 function renderStage() {
+  hovered = null;
   const L = layout();
   const { U, bayW } = geometry();
   const scroll = { left: els.stage.scrollLeft, top: els.stage.scrollTop };
@@ -935,7 +936,7 @@ function renderStage() {
       ),
     ),
     L.stickies.map(stickyEl),
-    h("svg", { class: `cables ${ui.showCables ? "" : "hidden"}` }),
+    h("svg", { class: `cables ${ui.cables}` }),
   );
 
   els.stage.replaceChildren(inner);
@@ -1149,6 +1150,8 @@ function portEl(L, item, port, number) {
     "data-n": number,
     style: cable ? { "--cable": cable.color } : null,
     onpointerdown: (e) => e.stopPropagation(),
+    onpointerenter: () => hoverTrace(L.cables.find((c) => touchesPort(c, item.id, port.id)) ?? null),
+    onpointerleave: () => hoverTrace(null),
     onclick: (e) => {
       e.stopPropagation();
       onPortClick(item, port);
@@ -1315,7 +1318,9 @@ function drawCables() {
       e.stopPropagation();
       select("cable", c.id);
     };
-    const cls = `cable ${isSelected("cable", c.id) ? "selected" : ""}`;
+    const through = [c.from, c.to].some((end) => mountOf(findItem(L, end.item) ?? {}) === "rear");
+    const cls = `cable ${isSelected("cable", c.id) ? "selected" : ""} ${through ? "through" : ""}`;
+    const hover = { onpointerenter: () => hoverTrace(c), onpointerleave: () => hoverTrace(null) };
     let a = portCenter(inner, c.from);
     const b = portCenter(inner, c.to);
     if (!a && !b) return null;
@@ -1330,6 +1335,7 @@ function drawCables() {
           "data-id": c.id,
           style: { "--cable": c.color },
           oncontextmenu: contextSelect("cable", c.id),
+          ...hover,
         },
         h("title", null, `${c.label ? `${c.label}: ` : ""}round the ${away.face} to ${endName(L, away)}`),
         h("path", { class: "cable-shadow", d: stub.d }),
@@ -1347,7 +1353,13 @@ function drawCables() {
     const { d, mid } = cablePath(a, b);
     return h(
       "g",
-      { class: cls, "data-id": c.id, style: { "--cable": c.color }, oncontextmenu: contextSelect("cable", c.id) },
+      {
+        class: cls,
+        "data-id": c.id,
+        style: { "--cable": c.color },
+        oncontextmenu: contextSelect("cable", c.id),
+        ...hover,
+      },
       h("path", { class: "cable-shadow", d }),
       h("path", { class: "cable-line", d }),
       h("path", { class: "cable-hit", d, onpointerdown: (e) => e.stopPropagation(), onclick: pick }),
@@ -1370,6 +1382,69 @@ function drawCables() {
     );
   });
   svg.replaceChildren(...groups.filter(Boolean), h("path", { class: "wire-preview" }));
+  applyTrace();
+}
+
+// ---------- tracing ----------
+
+// A keystone passes straight through, so a run carries on out its other side.
+function throughSide(L, end) {
+  const port = findItem(L, end.item)?.ports.find((p) => p.id === end.port);
+  return port?.face === "both" ? { ...end, face: end.face === "front" ? "rear" : "front" } : null;
+}
+
+// The whole run a cable is part of, from the wall to the device, as stops with a cable between each.
+function traceRun(L, cable) {
+  const seen = new Set([cable.id]);
+  const extend = (end) => {
+    const cables = [];
+    const stops = [];
+    for (let at = end; ; ) {
+      const through = throughSide(L, at);
+      const next =
+        through && L.cables.find((c) => !seen.has(c.id) && touchesPort(c, through.item, through.port, through.face));
+      if (!next) return { cables, stops };
+      seen.add(next.id);
+      at = otherEnd(next, through.item, through.port, through.face);
+      cables.push(next);
+      stops.push(at);
+    }
+  };
+  const before = extend(cable.from);
+  const after = extend(cable.to);
+  const run = {
+    stops: [...before.stops.reverse(), cable.from, cable.to, ...after.stops],
+    cables: [...before.cables.reverse(), cable, ...after.cables],
+  };
+  // Read it from the open keystone a wall line plugs into, through to the device.
+  const open = (end) => !!throughSide(L, end);
+  if (open(run.stops.at(-1)) && !open(run.stops[0])) {
+    run.stops.reverse();
+    run.cables.reverse();
+  }
+  return run;
+}
+
+let hovered = null;
+
+function hoverTrace(cable) {
+  hovered = cable;
+  applyTrace();
+}
+
+// Light up the run under the pointer, or the selected cable's, and fade everything else.
+function applyTrace() {
+  const L = layout();
+  const selected = ui.selection?.type === "cable" && L.cables.find((c) => c.id === ui.selection.id);
+  const live = hovered && L.cables.includes(hovered) ? hovered : selected;
+  const run = live ? traceRun(L, live) : null;
+  const cables = new Set(run?.cables.map((c) => c.id));
+  const ports = new Set(run?.cables.flatMap((c) => [c.from, c.to]).map((e) => `${e.item}:${e.port}`));
+  document.body.classList.toggle("tracing", !!run);
+  for (const g of els.stage.querySelectorAll("svg.cables .cable"))
+    g.classList.toggle("traced", cables.has(g.dataset.id));
+  for (const el of els.stage.querySelectorAll(".port"))
+    el.classList.toggle("traced", ports.has(`${el.dataset.item}:${el.dataset.port}`));
 }
 
 function onPortClick(item, port) {
@@ -2012,6 +2087,7 @@ function cableInspector(L, cable) {
       h("div", { class: "cable-squiggle" }, "〰"),
       h("div", null, endName(L, cable.to)),
     ),
+    routeEl(L, cable),
     field("Length", cableLengthEl(L, cable)),
     field(
       "Label",
@@ -2044,6 +2120,41 @@ function cableInspector(L, cable) {
       ),
     ),
     h("div", { class: "actions" }, h("button", { class: "btn danger", onclick: deleteSelection }, "unplug")),
+  );
+}
+
+// Every hop of the run this cable is part of, so you can see where it ends up without following lines.
+function routeEl(L, cable) {
+  const run = traceRun(L, cable);
+  if (run.cables.length < 2) return null;
+  const stop = (end) => {
+    const item = findItem(L, end.item);
+    const port = item?.ports.find((p) => p.id === end.port);
+    if (!item || !port) return h("div", { class: "route-stop" }, "somewhere mysterious");
+    const where = mountOf(item) === "rear" ? " (back rails)" : "";
+    return h("div", { class: "route-stop" }, `${item.name}${where} · ${portName(item, port)}`);
+  };
+  const hop = (c) => {
+    const len = cableLength(L, c);
+    return h(
+      "button",
+      {
+        class: `route-hop ${c.id === cable.id ? "here" : ""}`,
+        style: { "--cable": c.color },
+        title: "Select this cable",
+        onclick: () => select("cable", c.id),
+      },
+      len ? cmText(len.buyCm) : "no length yet",
+      c.label ? ` · ${c.label}` : "",
+    );
+  };
+  return field(
+    "Route",
+    h(
+      "div",
+      { class: "route" },
+      run.stops.map((end, i) => [stop(end), run.cables[i] ? hop(run.cables[i]) : null]),
+    ),
   );
 }
 
