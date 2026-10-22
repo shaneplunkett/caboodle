@@ -82,16 +82,19 @@ the desk scenes. Only the Home Assistant host can reach the server's port,
 because the SDK has no authentication. The integration lives in Home
 Assistant's UI: add OpenRGB with the desktop's LAN address and port 6742.
 
-`lights-off` turns everything dark whenever the server starts and after
-every sleep, since a reboot or suspend puts the RAM back on its rainbow. A
-switch that restarts the server turns the lights off too. Home Assistant
-turns them back on.
+Home Assistant owns when the lights are on. A reboot or suspend puts the
+RAM back on its rainbow, and Home Assistant only guesses the lights' state,
+so an automation that sets them when they come back from unavailable is
+what catches it.
 
 - The Kingston RAM has no Off mode, so off is Direct and black.
 - The ASRock board ignores colours but obeys off.
-- The monitor only listens with Aura Sync turned on in its own menu, and
-  its USB goes through the KVM. When the KVM is on another machine the
-  server can't see the monitor, so `lights-off` skips it without failing.
+- The monitor's logo is dim, so check it with the room dark. It only
+  listens with Aura Sync on in its own menu. Powering the monitor off, or
+  the KVM switching away, re-enumerates its USB hub and gives the logo a
+  new hidraw node, so a udev rule restarts the server when it comes back.
+  Detection only reads the RAM, GPU and board, so the restart leaves them
+  as they were.
 - The cooler's white light isn't on any controller, so nothing here
   switches it.
 - The OpenRGB GUI runs as Shane and talks to the same server, so changes
