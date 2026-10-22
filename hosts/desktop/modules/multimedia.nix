@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   # Not programs.obs-studio.enableVirtualCamera: it hardcodes video_nr=1,
   # which the Facecam already takes alongside video0.
@@ -45,5 +50,38 @@
         };
       }
     ];
+  };
+
+  services.pipewire.extraConfig.pipewire."20-channels" = {
+    "context.modules" =
+      map
+        (channel: {
+          name = "libpipewire-module-loopback";
+          args = {
+            "node.description" = channel;
+            "capture.props" = {
+              "node.name" = "channel-${lib.toLower channel}";
+              "media.class" = "Audio/Sink";
+              "audio.position" = [
+                "FL"
+                "FR"
+              ];
+            };
+            "playback.props" = {
+              "node.name" = "channel-${lib.toLower channel}-out";
+              "node.passive" = true;
+              "audio.position" = [
+                "FL"
+                "FR"
+              ];
+            };
+          };
+        })
+        [
+          "Game"
+          "Music"
+          "Browser"
+          "Chat"
+        ];
   };
 }

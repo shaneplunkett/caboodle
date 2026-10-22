@@ -100,6 +100,26 @@ what catches it.
 - The OpenRGB GUI runs as Shane and talks to the same server, so changes
   there don't fight Home Assistant's.
 
+## Stream Deck
+
+OpenDeck drives the Stream Deck +, and its dials turn the volume of
+PipeWire channels: Game, Music, Browser and Chat are virtual outputs that
+play into the default device. There's no System channel, because System is
+the default device itself, so anything not sent to a channel lands there.
+Shane moves an app onto a channel from Noctalia's mixer, and WirePlumber
+remembers that app's channel from then on.
+
+- Never make a channel the default output. Each channel plays into the
+  default, so a channel there would play into itself.
+- Chrome plays every tab and PWA through one stream, so a YouTube PWA and
+  a tab can't go to different channels.
+- OpenDeck owns `~/.config/opendeck`: profiles, plugins and their
+  layouts. Its backup button zips all of it. The touch strip's background
+  and dividers are edits to the PipeWire plugin's `layouts/volume.json`,
+  so a plugin update resets them.
+- systemd's `70-uaccess.rules` gives the deck to the logged-in user, so it
+  needs no udev rule of its own.
+
 ## Gotchas
 
 - nh's weekly clean deletes old generations, so the boot menu can only roll
