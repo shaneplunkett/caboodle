@@ -36,6 +36,10 @@ nrs --local
 - Switching is passwordless. If it prompts for a password, the sudo command
   it ran didn't match a rule in `modules/workstation/nixos/user.nix`, so
   look at that rather than assuming Shane has to type it.
+- A switch doesn't restart PipeWire, WirePlumber or pipewire-pulse, which
+  run as Shane's user services, so audio config changes wait for
+  `systemctl --user restart pipewire pipewire-pulse wireplumber`. Audio
+  drops for a second while they restart.
 
 ## Game streaming
 
@@ -148,3 +152,12 @@ remembers that app's channel from then on.
   unlock fails.
 - `at-spi2-core` is on for T3 SnapShots' "Include app text". Without it
   NixOS sets `NO_AT_BRIDGE=1` and apps publish no text.
+- After a boot or replug, the Wave:3's first mute press reaches the
+  computer and PipeWire mutes `Elgato Wave 3 Mono`, but the unmute press
+  doesn't, so the mic stays muted while its light shows live. Unmuting
+  that source in the mixer fixes it, and from then on the button mutes and
+  unmutes inside the mic until the next replug. Unmuting from the computer
+  before the first press doesn't help, since the mic only hands the button
+  over once the computer answers its mute. Replugging resets the mic, but
+  OBS doesn't reconnect a capture source whose device went away, so OBS
+  needs a restart after it.
