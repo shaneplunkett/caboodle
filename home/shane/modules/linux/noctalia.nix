@@ -74,6 +74,12 @@ in
         launch_apps_as_systemd_services = true;
         # Vicinae owns clipboard history.
         clipboard_enabled = false;
+        screenshot = {
+          annotate = true;
+          skip_annotate_on_copy_save = true;
+          save_to_file = false;
+          freeze_screen = true;
+        };
         panel = {
           transparency_mode = "glass";
           open_near_click_control_center = true;
