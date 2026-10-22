@@ -123,6 +123,9 @@ remembers that app's channel from then on.
   so a plugin update resets them.
 - systemd's `70-uaccess.rules` gives the deck to the logged-in user, so it
   needs no udev rule of its own.
+- Commands from OpenDeck inherit the AppImage's `LD_LIBRARY_PATH`, which
+  points Nix binaries at OpenDeck's bundled libraries, so they fail to
+  start. Run Command keys start with `env -u LD_LIBRARY_PATH`.
 
 ## Gotchas
 
