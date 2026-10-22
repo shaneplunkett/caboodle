@@ -31,11 +31,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792632925,
-        "narHash": "sha256-9ZDM95gQtvpl6+QX8TW/Gkym5mChTh9eCnslmF8e5MI=",
+        "lastModified": 1792649700,
+        "narHash": "sha256-VtN2irUKXAMLxvMu65kSmhTWnET2Ppn8URpmh91/pTw=",
         "ref": "refs/heads/main",
-        "rev": "d34c2807f85f1d8f5ea5934c15b0fdc6bf631ed4",
-        "revCount": 169,
+        "rev": "b159a81a0bfe0ded758cb6d939f50d6b70fba026",
+        "revCount": 170,
         "type": "git",
         "url": "ssh://forgejo@forge/shane/ai-skills"
       },
