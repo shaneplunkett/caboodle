@@ -2,6 +2,7 @@
 {
 
   imports = [
+    ./emulation.nix
     ./gaming.nix
     ./hardware-custom.nix
     ./lighting.nix

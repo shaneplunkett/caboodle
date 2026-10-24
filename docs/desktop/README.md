@@ -124,6 +124,21 @@ remembers that app's channel from then on.
 - systemd's `70-uaccess.rules` gives the deck to the logged-in user, so it
   needs no udev rule of its own.
 
+## Switch
+
+Eden and Ryubing are both installed, since a game that breaks on one often
+runs on the other. Neither ships keys or firmware. Both come from Shane's
+own Switch: Lockpick_RCM writes `prod.keys` and `title.keys` to its SD card,
+and nxdumptool's "dump system update" sends the firmware over USB. Each
+emulator imports them from its own menu.
+
+- The rules in `emulation.nix` hand the logged-in user the Switch in RCM
+  (`0955:7321`) and nxdumptool's USB mode (`057e:3000`), so `fusee-nano`
+  and nxdumptool's `nxdt_host.py` run without sudo.
+- They ship as a udev package named `70-…` instead of `extraRules`, which
+  lands in `99-local.rules`. systemd's `73-seat-late.rules` applies
+  `uaccess` before that, so a tag added there does nothing.
+
 ## Gotchas
 
 - nh's weekly clean deletes old generations, so the boot menu can only roll
