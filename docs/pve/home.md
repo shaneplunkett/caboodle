@@ -118,6 +118,10 @@ The LG TV is on IoT for Home Assistant but never reaches the internet. The
 and on the main LAN, so a wrong port profile can't let it out. It gets no
 firmware updates, which keeps it rootable.
 
+- **UniFi drops `match_mac`** on a client match and goes by the client's IP
+  instead. The reservations pin the TV's IPs, and the WAN has no IPv6, so
+  that holds.
+
 ## Zigbee
 
 - **The channel stays clear of the Wi-Fi,** whose 2.4 GHz crowds Zigbee 20

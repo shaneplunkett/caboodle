@@ -176,7 +176,6 @@ resource "unifi_firewall_policy" "lg_tv_internet" {
     zone_id         = each.value
     matching_target = "CLIENT"
     client_macs     = local.lg_tv_macs
-    match_mac       = true
   }
 
   destination = {
