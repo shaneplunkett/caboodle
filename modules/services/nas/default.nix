@@ -22,10 +22,12 @@ let
     Media = 100;
     appdata = 101;
     Programs = 102;
+    Games = 103;
   };
   moved = [
     "Media"
     "Programs"
+    "Games"
   ];
 
   diskMounts = map (name: "/mnt/${name}") (builtins.attrNames disks);
@@ -123,6 +125,25 @@ in
     systemd.services = {
       nfs-server.unitConfig.RequiresMountsFor = [ "/mnt/user" ];
       samba-smbd.unitConfig.RequiresMountsFor = [ "/mnt/user" ];
+
+      nas-shares = lib.mkIf (!cfg.readOnly) {
+        wantedBy = [
+          "nfs-server.service"
+          "samba-smbd.service"
+        ];
+        before = [
+          "nfs-server.service"
+          "samba-smbd.service"
+        ];
+        unitConfig.RequiresMountsFor = [ "/mnt/user" ];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        script = lib.concatMapStrings (share: ''
+          install -d -o nas -g users -m 0777 /mnt/user/${share}
+        '') (builtins.attrNames shares);
+      };
 
       nas-mover = lib.mkIf (!cfg.readOnly) {
         path = [
