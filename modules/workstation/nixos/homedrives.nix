@@ -26,6 +26,19 @@ _: {
         "nofail"
       ];
     };
+    "home/shane/unraid/games" = {
+      device = "//192.168.1.132/Games";
+      fsType = "cifs";
+      options = [
+        "guest"
+        "uid=1000"
+        "gid=100"
+        "vers=3.0"
+        "x-systemd.automount"
+        "x-systemd.idle-timeout=600"
+        "nofail"
+      ];
+    };
     "home/shane/unraid/appdata" = {
       device = "//192.168.1.132/appdata";
       fsType = "cifs";
