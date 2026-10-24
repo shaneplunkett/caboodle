@@ -154,6 +154,13 @@ border routers (the HomePod and the Apple TV) advertise.
 - **HomeKit devices** pair with HomeKit Controller once removed from Apple
   Home. Sensibo only shares on/off, mode and temperature that way, so the
   Sensibo cloud integration sits beside it for the flap and fan.
+- **Meross energy plugs** only share on/off over HomeKit, so Meross LAN (from
+  HACS, with the key left blank) reads their meter over local HTTP. One paired
+  straight into HomeKit reads 0 V and 0 W, because only the Meross app sets a
+  plug's timezone. Send it `Appliance.System.Time` with the timezone and its
+  `timeRule` DST transitions
+  ([protocol](https://github.com/arandall/meross/blob/main/doc/protocol.md#appliancesystemtime)),
+  then power-cycle it.
 - **The balcony Shelly** runs shelly-homekit firmware, so it pairs the same
   way. Its RPC `Shelly.SetConfig` reboots it without saving, so change
   settings in its web page, which only the home host can reach:
