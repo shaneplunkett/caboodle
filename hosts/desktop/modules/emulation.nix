@@ -3,7 +3,16 @@
   environment.systemPackages = with pkgs; [
     eden
     ryubing
-    fusee-nano
+    (retroarch.withCores (
+      cores: with cores; [
+        gambatte
+        mgba
+      ]
+    ))
+    ppsspp
+    (fusee-nano.overrideAttrs (old: {
+      patches = (old.patches or [ ]) ++ [ ./fusee-nano-discard-delay.patch ];
+    }))
   ];
 
   services.udev.packages = [
