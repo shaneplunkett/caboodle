@@ -1,8 +1,8 @@
 diff --git a/apps/web/src/index.css b/apps/web/src/index.css
-index d1ca0f4cf..485dfd51e 100644
+index 814cfa48..1dc5ac93 100644
 --- a/apps/web/src/index.css
 +++ b/apps/web/src/index.css
-@@ -1823,6 +1823,11 @@ code {
+@@ -1956,6 +1956,11 @@ code {
    text-decoration: none;
  }
  
@@ -11,6 +11,6 @@ index d1ca0f4cf..485dfd51e 100644
 +  color: var(--primary);
 +}
 +
- /* File links are Chips and own their color and focus ring. */
- .chat-markdown a:not(.chat-markdown-file-link) {
+ /* File links and context chips own their color and focus ring. */
+ .chat-markdown a:not(.chat-markdown-file-link, :has([data-slot="context-chip-label"])) {
    color: var(--info-foreground);

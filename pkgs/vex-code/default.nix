@@ -48,6 +48,7 @@ let
     "CC0-1.0" = "sha256-gdRg6RFSHhS1Ky/Y4Gl5Wscx6JhspYpdKUFdzAHqoSU=";
     "ISC" = "sha256-VJTDV7IdtsBt1r1r1J1ldZINPVNDQE5vVFkWPmjn5Yo=";
     "MIT" = "sha256-fuCJ3MxiW/GLCrHoDgxLysVYeIT1viXZATuK1sYd1Dk=";
+    "OFL-1.1" = "sha256-5X753vH8xzgoH9Qz9FsgLhX+07eWh0nTRyCdNky3408=";
     "Unlicense" = "sha256-itR5uQEH/xGJKbe09Fvk/axB/Aq0J6LEIbwwY52X4fs=";
   };
   spdxLicenseCache = lib.concatStrings (
@@ -75,7 +76,7 @@ let
   unwrapped = (t3code.unwrapped.override { pnpm_11 = pnpm; }).overrideAttrs (
     finalAttrs: previousAttrs: {
       pname = "vex-code-unwrapped";
-      version = "0.0.45-vex.1";
+      version = "0.1.2-vex.1";
       src = namedSrc;
 
       patches = (previousAttrs.patches or [ ]) ++ [
@@ -107,10 +108,17 @@ let
           pnpmWorkspaces
           ;
         fetcherVersion = 4;
-        hash = "sha256-oX4tOu20tYO3ci7VvSEL8eFgxAYWp5HlQFSfAWJGJmg=";
+        hash = "sha256-xRmOrOZbBljaF1IJr0JFUFzdhkld6+ehLIlpVOg/J3E=";
       };
 
       postPatch = ''
+        # Upstream's Beta rename changes the app name that safeStorage and
+        # libsecret key saved connections on, which locks existing installs out.
+        substituteInPlace apps/desktop/package.json \
+          --replace-fail '"productName": "T3 Code (Beta)"' '"productName": "T3 Code (Alpha)"'
+        substituteInPlace apps/desktop/src/app/DesktopEnvironment.ts \
+          --replace-fail '? "Nightly" : "Beta";' '? "Nightly" : "Alpha";'
+
         # Keep the nixpkgs package's loopback-only production build patch,
         # adapted to the newer explicit-host source shape.
         substituteInPlace apps/web/vite.config.ts \
@@ -169,10 +177,12 @@ let
         ''
         + ''
           wrapProgram "$out/bin/t3" \
-            --prefix PATH : ${lib.makeBinPath [ lsof ]}
+            --prefix PATH : ${lib.makeBinPath [ lsof ]} \
+            --set T3CODE_TELEMETRY_ENABLED false
           wrapProgram "$out/bin/t3code-desktop" \
             --prefix PATH : ${lib.makeBinPath [ lsof ]} \
             --set T3CODE_DISABLE_AUTO_UPDATE 1 \
+            --set T3CODE_TELEMETRY_ENABLED false \
             --set SHELL ${lib.getExe fish}
         ''
         + lib.optionalString stdenv.hostPlatform.isDarwin ''
