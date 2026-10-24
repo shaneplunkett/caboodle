@@ -148,3 +148,39 @@ resource "unifi_firewall_policy" "slzb" {
     port               = "80"
   }
 }
+
+data "unifi_firewall_zone" "external" {
+  name = "External"
+}
+
+locals {
+  lg_tv_macs = [
+    unifi_client.device["LG TV (Ethernet)"].mac,
+    unifi_client.device["LG TV"].mac,
+  ]
+}
+
+resource "unifi_firewall_policy" "lg_tv_internet" {
+  for_each = {
+    IOT      = unifi_firewall_zone.iot.id
+    Internal = data.unifi_firewall_zone.internal.id
+  }
+
+  name        = "LG TV Internet (${each.key})"
+  description = "Keep the LG TV off the internet, by both its MACs, whichever network it lands on."
+  action      = "BLOCK"
+  protocol    = "all"
+  ip_version  = "BOTH"
+
+  source = {
+    zone_id         = each.value
+    matching_target = "CLIENT"
+    client_macs     = local.lg_tv_macs
+    match_mac       = true
+  }
+
+  destination = {
+    zone_id         = data.unifi_firewall_zone.external.id
+    matching_target = "ANY"
+  }
+}

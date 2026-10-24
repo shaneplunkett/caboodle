@@ -184,6 +184,16 @@ in
         ip = "192.168.20.161";
         mac = "d0:73:d5:6c:37:90";
       };
+      lgTvEthernet = {
+        name = "LG TV (Ethernet)";
+        ip = "192.168.20.70";
+        mac = "b0:37:95:1b:4c:bc";
+      };
+      lgTv = {
+        name = "LG TV";
+        ip = "192.168.20.71";
+        mac = "dc:03:98:56:11:9a";
+      };
       slzb = {
         name = "SLZB";
         ip = "192.168.20.192";

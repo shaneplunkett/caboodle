@@ -113,6 +113,11 @@ bridge-vlan-aware yes
 bridge-vids 2-4094
 ```
 
+The LG TV is on IoT for Home Assistant but never reaches the internet. The
+"LG TV Internet" policies block both its MACs from the External zone, on IoT
+and on the main LAN, so a wrong port profile can't let it out. It gets no
+firmware updates, which keeps it rootable.
+
 ## Zigbee
 
 - **The channel stays clear of the Wi-Fi,** whose 2.4 GHz crowds Zigbee 20
