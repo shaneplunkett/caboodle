@@ -199,6 +199,11 @@ in
         ip = "192.168.20.220";
         mac = "48:e1:e9:a4:dc:3c";
       };
+      merossPlug566f = {
+        name = "Meross Plug 566f";
+        ip = "192.168.20.224";
+        mac = "48:e1:e9:af:56:6f";
+      };
     };
   };
 }
