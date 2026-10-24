@@ -4,6 +4,7 @@ on:
       - "terraform/**"
       - "proxmox/**"
       - "flake.nix"
+      - "modules/devices.nix"
       - "scripts/terraform-ci.sh"
       - ".forgejo/workflows/terraform.yml"
   workflow_dispatch:
