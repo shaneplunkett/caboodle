@@ -126,27 +126,9 @@ remembers that app's channel from then on.
 
 ## Emulation
 
-Eden and Ryubing are both installed, since a game that breaks on one often
-runs on the other. Neither ships keys or firmware. Both come from Shane's
-own Switch: Lockpick_RCM writes `prod.keys` and `title.keys` to its SD card,
-and nxdumptool's "dump system update" sends the firmware over USB. Each
-emulator imports them from its own menu.
-
-- RetroArch plays Game Boy, GBC and GBA through the gambatte and mGBA
-  cores, and PPSSPP plays PSP. That matches what EmuDeck set up on the
-  Deck, so saves move between them as they are.
-- `fusee-nano` is patched to wait 250 ms between sending the exploit's
-  oversized control transfer and cancelling it. Upstream cancels at once,
-  and on the 20 Gbps USB-C controller the cancel often beats the request
-  onto the wire, so the Switch stays in RCM with a black screen while the
-  tool still prints `Smashed the stack: 0`. Unpatched, it failed six times
-  in a row there, and the patched build worked first time.
-- The rules in `emulation.nix` hand the logged-in user the Switch in RCM
-  (`0955:7321`) and nxdumptool's USB mode (`057e:3000`), so `fusee-nano`
-  and nxdumptool's `nxdt_host.py` run without sudo.
-- They ship as a udev package named `70-…` instead of `extraRules`, which
-  lands in `99-local.rules`. systemd's `73-seat-late.rules` applies
-  `uaccess` before that, so a tag added there does nothing.
+The emulators, and where their games and saves live, are shared with the
+Deck; see [docs/workstation](../workstation/README.md#emulation). Here,
+`~/Emulation` is the NAS's `games` share.
 
 ## Gotchas
 

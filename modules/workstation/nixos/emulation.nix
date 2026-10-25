@@ -106,6 +106,13 @@ in
       { config, lib, ... }:
       let
         emulation = "${config.home.homeDirectory}/Emulation";
+        noArtwork = lib.genAttrs [
+          "tall"
+          "long"
+          "hero"
+          "logo"
+          "icon"
+        ] (_: null);
         steamRomManagerConfig = pkgs.writeText "userConfigurations.json" (
           builtins.toJSON (
             map (parser: {
@@ -129,6 +136,7 @@ in
                 ]
               );
               executableModifier = "\"\${exePath}\"";
+              startInDirectory = "";
               titleModifier = "\${fuzzyTitle}";
               steamInputEnabled = "1";
               parserInputs.glob = "\${title}@(${parser.extensions})";
@@ -137,6 +145,37 @@ in
                 removeCharacters = true;
                 removeBrackets = true;
               };
+              userAccounts.specifiedAccounts = [ "Global" ];
+              titleFromVariable = {
+                limitToGroups = [ ];
+                skipFileIfVariableWasNotFound = false;
+                caseInsensitiveVariables = false;
+              };
+              sortAsFromVariable.limitToGroups = [ ];
+              imagePool = "\${fuzzyTitle}";
+              drmProtect = false;
+              defaultImage = noArtwork;
+              localImages = noArtwork;
+              overlayImages = noArtwork;
+              onlineImageQueries = [ "\${fuzzyTitle}" ];
+              imageProviders = [
+                "sgdb"
+                "steamCDN"
+              ];
+              imageProviderAPIs.sgdb = {
+                nsfw = false;
+                humor = false;
+                styles = [ ];
+                stylesHero = [ ];
+                stylesLogo = [ ];
+                stylesIcon = [ ];
+                imageMotionTypes = [ "static" ];
+                sizes = [ ];
+                sizesHero = [ ];
+                sizesIcon = [ ];
+              };
+              controllers = { };
+              group = "";
             }) steamRomManagerParsers
           )
         );

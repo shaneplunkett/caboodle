@@ -58,6 +58,56 @@ has to be declared.
 Tailscale is the Homebrew app rather than the hive's daemon, so
 `homelab.tailscale.enable` is off on both Macs.
 
+## Emulation
+
+The desktop and the Deck share `modules/workstation/nixos/emulation.nix`, so
+they run the same emulators against the same folder layout. Each host sets
+`homelab.emulation.root`, and `~/Emulation` links to it: the NAS's `games`
+share on the desktop, the SD card's `Emulation` folder on the Deck, so the
+Deck plays offline. Each of `roms`, `saves` and `bios` has a folder per
+system: `gb`, `gbc`, `gba`, `nds`, `psp`, `switch`, `n3ds` and `psvita`.
+
+Emulators rewrite their own settings files, so Nix doesn't own those.
+Home Manager links each emulator's save folder and keys into `~/Emulation`
+instead, and the rest stays settable in the emulator's menus.
+
+- RetroArch plays Game Boy, GBC and GBA through Gambatte and mGBA, and DS
+  through melonDS DS. It has one saves setting, so a content-directory
+  override per core and system (`config/<core>/<system>.cfg`) sends a game
+  from `roms/gba` to `saves/gba`. It names saves `.srm`, which is the same
+  bytes as a cart dump's `.sav`, so a dump needs renaming to load.
+- Eden and Ryubing both play Switch, since a game that breaks on one often
+  runs on the other. Their saves have different layouts, so `saves/switch`
+  has a folder for each. Both read `prod.keys` and `title.keys` from
+  `bios/switch`. Firmware installs from `bios/switch/firmware-*` through
+  each emulator's menu, and updates and DLC live in `roms/switch/updates`.
+  The keys and firmware come from Shane's own Switch: Lockpick_RCM writes
+  the keys to its SD card, and nxdumptool's "dump system update" sends the
+  firmware over USB.
+- Azahar plays 3DS and reads `bios/n3ds/boot9.bin`. Its saves, and Vita3K's,
+  aren't linked yet, since neither has been tried with these games.
+- Steam ROM Manager puts the games in Steam, with a parser per system.
+  Home Manager rewrites its `userConfigurations.json` on every switch, so a
+  parser change goes in the Nix, not the app. Run it after adding games,
+  with Steam closed. It fetches its presets from GitHub's API without
+  signing in, which allows 60 calls an hour per home connection, and it
+  shows "fatal error" when that runs out. `curl api.github.com/rate_limit`
+  shows when it resets.
+- The saves on the NAS and on the Deck are separate copies, so copy them
+  across by hand until something syncs them.
+- `fusee-nano` is patched to wait 250 ms between sending the exploit's
+  oversized control transfer and cancelling it. Upstream cancels at once,
+  and on the 20 Gbps USB-C controller the cancel often beats the request
+  onto the wire, so the Switch stays in RCM with a black screen while the
+  tool still prints `Smashed the stack: 0`. Unpatched, it failed six times
+  in a row there, and the patched build worked first time.
+- The rules in `emulation.nix` give the logged-in user the Switch in RCM
+  (`0955:7321`) and nxdumptool's USB mode (`057e:3000`), so `fusee-nano`
+  and nxdumptool's `nxdt_host.py` run without sudo.
+- They ship as a udev package named `70-…` instead of `extraRules`, which
+  lands in `99-local.rules`. systemd's `73-seat-late.rules` applies
+  `uaccess` before that, so a tag added there does nothing.
+
 ## Gotchas
 
 - `nixvim` keeps its own nixpkgs pin. Upstream tests against one revision,
