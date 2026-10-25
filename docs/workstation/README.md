@@ -76,6 +76,14 @@ instead, and the rest stays settable in the emulator's menus.
   override per core and system (`config/<core>/<system>.cfg`) sends a game
   from `roms/gba` to `saves/gba`. It names saves `.srm`, which is the same
   bytes as a cart dump's `.sav`, so a dump needs renaming to load.
+  RetroArch's shared autoconfig has no profile for Steam's virtual pad
+  (`28de:11ff`, what a game launched from Steam sees), so the module adds
+  one alongside the shared profiles.
+- PPSSPP plays PSP. Its default map expects the shoulders on button codes
+  its SDL driver never sends (it sends 192 for R and 193 for L), so every
+  switch sets `L` and `R` in `controls.ini`, through `emulator-controls.py`.
+  PPSSPP saves that file when it quits, so it has to be closed during the
+  switch.
 - Eden and Ryubing both play Switch, since a game that breaks on one often
   runs on the other. Their saves have different layouts, so `saves/switch`
   has a folder for each. Both read `prod.keys` and `title.keys` from
