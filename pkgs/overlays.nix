@@ -21,7 +21,7 @@ in
       inherit (aiPackages) codex;
     })
     // (prev.lib.optionalAttrs (builtins.hasAttr "claude-code" aiPackages) {
-      inherit (aiPackages) claude-code;
+      claude-code = prev.callPackage ./claude-code { inherit (aiPackages) claude-code; };
     })
     // prev.lib.optionalAttrs prev.stdenv.hostPlatform.isLinux {
       inherit (aiPackages) chatgpt claude-desktop;
