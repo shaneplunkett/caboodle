@@ -81,6 +81,10 @@ instead, and the rest stays settable in the emulator's menus.
   has a folder for each. Both read `prod.keys` and `title.keys` from
   `bios/switch`. Firmware installs from `bios/switch/firmware-*` through
   each emulator's menu, and updates and DLC live in `roms/switch/updates`.
+  Eden files each save under a user profile's ID, and a fresh install
+  makes a new profile, so it calls the copied saves orphaned. Copying
+  `nand/system/save/8000000000000010/su/avators/profiles.dat` from a machine
+  that already has the saves gives it the same profile.
   The keys and firmware come from Shane's own Switch: Lockpick_RCM writes
   the keys to its SD card, and nxdumptool's "dump system update" sends the
   firmware over USB.

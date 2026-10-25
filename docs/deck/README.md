@@ -81,3 +81,11 @@ nix run --inputs-from . nixpkgs#nixos-anywhere -- --flake .#deck \
   address". A shut down doesn't reset it. Battery Storage in the BIOS
   (Volume Up and Power, then Power) does: unplug the Deck first, and plug
   the charger in to wake it. It was dead on SteamOS too before the switch.
+- In Desktop Mode, the trackpads are a mouse only until an app opens the
+  controller through SDL, as Eden does, which turns the kernel's mouse
+  mode off. SteamOS keeps Steam running on the desktop to drive them, so
+  Plasma starts `steam -silent` too. KWin asks before letting Steam move the
+  pointer, so `XwaylandEisNoPrompt` turns that prompt off (Jovian issue
+  #519).
+- Plasma's screen locker is off. Shane's user has no password, so a lock
+  screen could only lock her out.
