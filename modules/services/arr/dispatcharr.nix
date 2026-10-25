@@ -1,3 +1,4 @@
+{ nodes, ... }:
 let
   dataDir = "/var/lib/dispatcharr";
   port = 9191;
@@ -24,6 +25,7 @@ in
       REDIS_HOST = "localhost";
       CELERY_BROKER_URL = "redis://localhost:6379/0";
       TZ = "Australia/Melbourne";
+      DISPATCHARR_TRUSTED_PROXIES = nodes.ingress.config.homelab.lanAddress;
     };
   };
 
