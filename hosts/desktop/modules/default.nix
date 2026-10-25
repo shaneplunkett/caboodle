@@ -2,7 +2,7 @@
 {
 
   imports = [
-    ./emulation.nix
+    ./docker.nix
     ./gaming.nix
     ./hardware-custom.nix
     ./lighting.nix

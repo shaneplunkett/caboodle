@@ -61,6 +61,15 @@
       url = "github:mst-mkt/omniwm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    jovian = {
+      url = "github:Jovian-Experiments/Jovian-NixOS";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nix-github-actions.follows = "";
+    };
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     noctalia.url = "git+https://github.com/noctalia-dev/noctalia?ref=cachix&shallow=1";
     noctalia-greeter.url = "github:noctalia-dev/noctalia-greeter";
     noctalia-plugins = {
@@ -249,6 +258,7 @@
             mini = workstationPkgs "aarch64-darwin";
             macbook = workstationPkgs "aarch64-darwin";
             desktop = workstationPkgs "x86_64-linux";
+            deck = workstationPkgs "x86_64-linux";
           };
           inherit nix-darwin;
           specialArgs = { inherit inputs vex-brain; };
@@ -294,6 +304,10 @@
 
         desktop = {
           imports = [ ./hosts/desktop ];
+        };
+
+        deck = {
+          imports = [ ./hosts/deck ];
         };
 
         dashboard = lxc "dashboard" { homelab.lanAddress = "192.168.1.152"; };

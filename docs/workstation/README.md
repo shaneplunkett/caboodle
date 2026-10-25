@@ -1,8 +1,10 @@
 # Workstations
 
-The desktop, the mini and the MacBook all import `modules/workstation`, and
-the Macs add `modules/workstation/darwin`. This is what holds for all of
-them. Each has its own doc too: [desktop](../desktop/README.md),
+The desktop, the Deck, the mini and the MacBook all import
+`modules/workstation`. The desktop and the Deck add
+`modules/workstation/nixos`, and the Macs add `modules/workstation/darwin`.
+This is what holds for all of them. Each has its own doc too:
+[desktop](../desktop/README.md), [Deck](../deck/README.md),
 [mini](../mini/README.md) and [MacBook](../macbook/README.md).
 
 ## Switching by hand

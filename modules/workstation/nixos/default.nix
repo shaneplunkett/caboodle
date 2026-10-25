@@ -4,7 +4,7 @@
     inputs.home-manager.nixosModules.home-manager
     inputs.catppuccin.nixosModules.catppuccin
     ./audio.nix
-    ./docker.nix
+    ./emulation.nix
     ./fonts.nix
     ./homedrives.nix
     ./locale.nix

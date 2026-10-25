@@ -2,7 +2,7 @@
 
 The whole kit and caboodle: every machine Shane runs, in one repo. That's a
 two-node Proxmox cluster (PVE and Cube) with a little Hetzner and Cloudflare,
-plus the desktop, the MacBook and the Mac mini. Terraform creates the
+plus the desktop, the Steam Deck, the MacBook and the Mac mini. Terraform creates the
 containers, and Nix configures every machine. What's actually deployed is whatever the code says, so this
 README only covers how the pieces fit together.
 
@@ -10,7 +10,7 @@ README only covers how the pieces fit together.
 
 ```
 flake.nix          colmena hive, dev shell, and the base LXC template
-hosts/<host>.nix   what a host runs (the desktop's is a folder)
+hosts/<host>.nix   what a host runs (the desktop's and the Deck's are folders)
 modules/           anything more than one host can import
   homelab.nix      the homelab.* options every host declares, whatever it runs
   nixos.nix        every NixOS host: Nix settings, nh's clean, node exporter
@@ -39,10 +39,10 @@ A service that runs on both kinds of host keeps its options in an
 host, and the NixOS half and the darwin half each read the same facts.
 
 The mini is a server, deployed on merge like the LXCs; see
-[docs/mini](docs/mini/README.md). The MacBook and the desktop are built by
-every pull request but switched by hand; see
-[docs/macbook](docs/macbook/README.md) and
-[docs/desktop](docs/desktop/README.md). What the three share is in
+[docs/mini](docs/mini/README.md). The MacBook, the desktop and the Deck are
+built by every pull request but switched by hand; see
+[docs/macbook](docs/macbook/README.md), [docs/desktop](docs/desktop/README.md)
+and [docs/deck](docs/deck/README.md). What they share is in
 [docs/workstation](docs/workstation/README.md).
 
 Modules can read the whole hive through colmena's `nodes` and `name`

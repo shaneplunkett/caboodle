@@ -1,0 +1,67 @@
+{ inputs, ... }:
+{
+  imports = [
+    inputs.jovian.nixosModules.default
+    inputs.disko.nixosModules.disko
+    ./disko.nix
+    ./hardware-configuration.nix
+    ../../modules/workstation
+    ../../modules/workstation/nixos
+  ];
+
+  deployment = {
+    tags = [ ];
+    allowLocalDeployment = true;
+  };
+
+  homelab = {
+    monitoring.enable = false;
+    tailscale.enable = false;
+  };
+
+  networking = {
+    hostName = "deck";
+    networkmanager.enable = true;
+    firewall.trustedInterfaces = [ "tailscale0" ];
+  };
+
+  jovian = {
+    devices.steamdeck.enable = true;
+    steam = {
+      enable = true;
+      autoStart = true;
+      user = "shane";
+      desktopSession = "plasma";
+    };
+  };
+
+  services = {
+    desktopManager.plasma6.enable = true;
+    tailscale.enable = true;
+    openssh = {
+      enable = true;
+      settings = {
+        PasswordAuthentication = false;
+        PermitRootLogin = "no";
+      };
+    };
+  };
+
+  users.users.shane.openssh.authorizedKeys.keyFiles = [
+    ../../modules/workstation/authorized-keys
+  ];
+
+  home-manager.users.shane = import ../../home/shane/homedeck.nix;
+
+  boot.loader = {
+    systemd-boot = {
+      enable = true;
+      configurationLimit = 10;
+      editor = false;
+      bootCounting.enable = true;
+    };
+    efi.canTouchEfiVariables = true;
+  };
+
+  system.stateVersion = "26.11";
+}
