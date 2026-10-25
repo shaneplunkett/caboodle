@@ -6,33 +6,29 @@ for how it fits together.
 
 ## Making a change
 
-- **Build:** check changes with `colmena build --on <host>`. Flakes ignore
-  untracked files, so `git add` new files first. Nix code reads for itself,
-  with no comments.
+- **Build:** CI builds the hosts a pull request changes on the builder, so
+  nothing evaluates or builds on Shane's desktop: a full evaluation of the
+  hive takes gigabytes, and a few at once take the machine down. The local
+  gate is `scripts/check.sh`. For one host's answer before filing,
+  `nix build --store ssh-ng://root@builder .#hydraJobs.<host>` builds it on
+  the builder and leaves nothing here. Flakes ignore untracked files, so
+  `git add` new files first. Nix code reads for itself, with no comments.
 - **Pull request:** land every change through a pull request on the forge
   (`origin`; GitHub is a mirror of it). Commit on a branch and file it with
   the `pr` skill, which opens it and assigns it to Shane for review. Done is a
-  green build check, plus a Terraform plan comment showing what you expect
-  when `terraform/` changed.
+  green build check, the derivation diff comment, plus a Terraform plan
+  comment showing what you expect when `terraform/` changed.
 - **Merge:** Shane merges, except the `ai-skills` bumps that merge
   themselves once every host builds (`docs/pve/builder.md`). Merging applies
   Terraform and deploys every host but the desktop and the MacBook. CI builds
   those two, and Shane switches each by hand per its doc under `docs/`.
-- **Derivation diff:** every pull request names which hosts change and
-  why. Fetch and rebase onto `origin/main` first: other agents' fetches move
-  it under you, and a stale base counts their changes as yours. Then compare
-  `hydraJobs`' derivation paths between `origin/main` and your branch,
-  each unpacked into a temp directory with `git archive` and evaluated as a
-  `path:` flake, which also works inside a worktree:
-
-  ```sh
-  nix eval --json path:/tmp/dd/<side>#hydraJobs --apply 'js: builtins.mapAttrs (_: d: d.drvPath) js'
-  ```
-
-  A package built from `lib.cleanSource ./.` changes with any file in its
-  folder, its README included. For one host,
-  `nix path-info --derivation .#hydraJobs.<host>` hits the eval cache on a
-  repeat run, and `nix eval` never does.
+- **Derivation diff:** CI works out which hosts a pull request changes,
+  against its merge base, and posts them as a `forge-bot` comment it edits on
+  each push. Shane reads it herself, so the pull request body doesn't list
+  hosts. Rebase onto `origin/main` before filing anyway, so the build check
+  runs against what would merge. A package built from `lib.cleanSource ./.`
+  changes with any file in its folder, its README included, so a docs edit
+  there shows up as that package's hosts.
 - **CI:** the files in `.forgejo/workflows/` are callers of `shane/workflows`
   (build, check, flake update, checkout), pinned to a tag. Change CI behaviour
   there, following its `AGENTS.md`, and Renovate moves the pins here. Steps

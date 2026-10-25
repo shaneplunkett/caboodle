@@ -53,6 +53,16 @@ stops answering, and only restarting the container clears it. A second switch
 looked free while the config was unchanged, until a systemd bump made the
 first switch reload the runner.
 
+## Pull requests
+
+Every pull request gets its derivation diff as a comment from `forge-bot`,
+edited on each push, and builds only the hosts in it. An unchanged host is
+the derivation `main` already built, so building it again proves nothing.
+The `hosts` job does the comparison, so it's the required check, and when
+no host changes the one build job is a placeholder whose steps skip,
+because Forgejo leaves a job with an empty matrix blocked for good. The
+`build.yml` section of `shane/workflows`' README has the details.
+
 ## Terraform
 
 A pull request that touches `terraform/` gets its plan as a comment. Run

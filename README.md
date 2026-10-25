@@ -62,11 +62,12 @@ A service backs up its data by listing it in `homelab.backup.paths`. See
 [docs/hetzner](docs/hetzner/README.md) for how that works and how to restore.
 
 ```sh
-colmena build --on <host>   # check it evaluates and builds
-colmena apply --on <host>   # deploy over SSH
+nix build --store ssh-ng://root@builder .#hydraJobs.<host>   # build on the builder
+colmena apply --on <host>                                     # deploy over SSH
 ```
 
-Flakes only see tracked files, so `git add` new files before building.
+Flakes only see tracked files, so `git add` new files before building. CI
+builds what a pull request changes, so the desktop needn't build at all.
 
 ### Adding a host
 
