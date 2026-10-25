@@ -83,8 +83,8 @@ in
   '';
 
   home.activation.emulatorSteamPad = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run ${pkgs.python3}/bin/python3 -I ${./emulator-controls.py} "$HOME/.config/eden/qt-config.ini" ${edenControls}
-    run ${pkgs.python3}/bin/python3 -I ${./emulator-controls.py} "$HOME/.config/azahar-emu/qt-config.ini" ${azaharControls}
+    run ${pkgs.python3}/bin/python3 -I ${../../modules/workstation/nixos/emulator-controls.py} "$HOME/.config/eden/qt-config.ini" Controls ${edenControls} --qt
+    run ${pkgs.python3}/bin/python3 -I ${../../modules/workstation/nixos/emulator-controls.py} "$HOME/.config/azahar-emu/qt-config.ini" Controls ${azaharControls} --qt
   '';
 
   home = {
