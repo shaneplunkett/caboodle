@@ -17,6 +17,7 @@
   homelab = {
     monitoring.enable = false;
     tailscale.enable = false;
+    emulation.root = "/run/media/shane/bebbbd81-2e56-4cfb-983a-7e04d3608c7d/Emulation";
   };
 
   networking = {

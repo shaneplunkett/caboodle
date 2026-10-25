@@ -23,6 +23,7 @@ in
     lanAddress = config.homelab.devices.nixDesktop.ip;
     monitoring.enable = false;
     tailscale.enable = false;
+    emulation.root = "/home/shane/unraid/games";
   };
 
   networking.hostName = "desktop";
