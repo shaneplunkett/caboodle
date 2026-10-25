@@ -89,3 +89,16 @@ nix run --inputs-from . nixpkgs#nixos-anywhere -- --flake .#deck \
   #519).
 - Plasma's screen locker is off. Shane's user has no password, so a lock
   screen could only lock her out.
+- The speaker amps, two CS35L41s on SPI (`spi-VLV1776:00` and `:01`), fail
+  to wake from runtime hibernate on this kernel: dmesg shows "Wake failed,
+  re-enter hibernate" and "Timed out waking device", their
+  `power/runtime_status` reads `error`, and PipeWire falls back to Dummy
+  Output. Only a reboot clears it, so a udev rule sets their
+  `power/control` to `on` and they never hibernate.
+- Games launched from Steam see Steam's virtual pad (`28de:11ff`, "Microsoft
+  X-Box 360 pad 0") instead of the Deck's controller. Eden and Azahar bind
+  controls by the pad's SDL GUID, so the Deck sets their player 1 to it on
+  every switch, using EmuDeck's mappings, through
+  `home/shane/emulator-controls.py`. The two GUIDs differ because Azahar's
+  SDL adds a checksum. An emulator writes its config when it closes, so it
+  has to be closed during the switch or it puts its old controls back.
