@@ -7,4 +7,4 @@ jobs:
   build:
     uses: shane/workflows/.forgejo/workflows/build.yml@v1.6.0
   check:
-    uses: shane/workflows/.forgejo/workflows/check.yml@v1.5.0
+    uses: shane/workflows/.forgejo/workflows/check.yml@v1.6.0

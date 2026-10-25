@@ -10,7 +10,7 @@ jobs:
   terraform:
     runs-on: nix
     steps:
-      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.5.0
+      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.6.0
         with:
           fetch-depth: 0
       - name: Apply, if this push changed terraform/, proxmox/, flake.nix or modules/devices.nix
@@ -28,7 +28,7 @@ jobs:
     needs: terraform
     runs-on: nix
     steps:
-      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.5.0
+      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.6.0
       - run: colmena apply --on builder
       - run: colmena apply --on @deploy-on-merge
 
@@ -36,7 +36,7 @@ jobs:
     needs: deploy
     runs-on: nix
     steps:
-      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.5.0
+      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.6.0
       - name: Wait for dns1 to answer
         run: |
           dns1=$(colmena eval -E '{ nodes, ... }: nodes.dns1.config.homelab.lanAddress' | jq -r .)
@@ -58,7 +58,7 @@ jobs:
     needs: deploy
     runs-on: nix
     steps:
-      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.5.0
+      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.6.0
         with:
           fetch-depth: 0
       - name: Apply again, if this push changed a Terraform secret
