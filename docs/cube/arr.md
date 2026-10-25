@@ -68,47 +68,8 @@ labels are state in the data folder.
 
 ## Dispatcharr
 
-Dispatcharr turns internet TV streams into a tuner Plex can watch and record
-from, by pretending to be an HDHomeRun. It covers free-to-air while the
-building aerial is down. [The research](../research/2026-10-25-iptv-into-plex-dvr.md)
-has the options and sources behind it.
-
-Its web UI sits behind the oauth2-proxy gate. Dispatcharr has no OIDC and
-no way to skip its login for local addresses, so it signs you in from the
-`X-Email` header the gate sends instead. It only believes that header from
-the ingress host, which `DISPATCHARR_TRUSTED_PROXIES` names. Plex skips
-ingress and talks to the port on the LAN.
-
-To set it up, in Dispatcharr:
-
-1. Make the admin with the same email as your Pocket ID account, since the
-   header is matched to an account by username and then by email. Its
-   password is the way in when Pocket ID is down.
-2. Turn on Settings, Reverse Proxy Auth, with the header `X-Email`.
-3. Add the M3U `https://i.mjh.nz/au/Melbourne/kodi-tv.m3u8`. The
-   `tvh-tv.m3u8` next to it pipes through ffmpeg for Tvheadend, which
-   Dispatcharr can't use.
-4. Add the EPG `https://i.mjh.nz/au/Melbourne/epg.xml.gz`.
-5. Make the channels and match them to the guide.
-
-Then in Plex, under Live TV & DVR, add a device by hand at
-`http://192.168.1.90:9191/hdhr`.
-
-- **The default trusted proxies never sign anyone in.** Unset, Dispatcharr
-  trusts private addresses for client IPs but not for sign-in, so the
-  ingress has to be named.
-- **Seven only works from an Australian IP.** Traffic out of a VPN breaks
-  it.
-- **Plex doesn't support emulated tuners.** They work, but a Plex update can
-  break them, as 1.43.0 did for a while.
-- **Plex wants one type of tuner per DVR.** Give Dispatcharr its own DVR
-  rather than adding it next to the HDHomeRun.
-
-Dispatcharr's Postgres lives in `db/`, which the backup skips because a
-live copy of it is useless. Dispatcharr dumps the database into `backups/`
-every night at 3am instead and keeps three. To restore, put the files back
-as in [docs/hetzner](../hetzner/README.md), start the container, and restore
-the newest dump from Dispatcharr's Backups page.
+Dispatcharr feeds Plex internet TV streams as an HDHomeRun.
+[dispatcharr.md](dispatcharr.md) covers setting it up, Plex and its gotchas.
 
 ## Restoring a database
 

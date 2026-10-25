@@ -8,6 +8,7 @@ stable and away from experiments on PVE.
 Per-service docs:
 
 - [arr.md](arr.md)
+- [dispatcharr.md](dispatcharr.md)
 - [plex.md](plex.md)
 - [photos.md](photos.md)
 - [paper.md](paper.md)
