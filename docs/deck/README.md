@@ -99,6 +99,6 @@ nix run --inputs-from . nixpkgs#nixos-anywhere -- --flake .#deck \
   X-Box 360 pad 0") instead of the Deck's controller. Eden and Azahar bind
   controls by the pad's SDL GUID, so the Deck sets their player 1 to it on
   every switch, using EmuDeck's mappings, through
-  `home/shane/emulator-controls.py`. The two GUIDs differ because Azahar's
+  `modules/workstation/nixos/emulator-controls.py`. The two GUIDs differ because Azahar's
   SDL adds a checksum. An emulator writes its config when it closes, so it
   has to be closed during the switch or it puts its old controls back.
