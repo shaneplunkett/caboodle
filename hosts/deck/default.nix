@@ -49,6 +49,10 @@
     };
   };
 
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="spi", KERNEL=="spi-VLV1776:0[01]", ATTR{power/control}="on"
+  '';
+
   security.sudo.wheelNeedsPassword = false;
 
   users.users.shane.openssh.authorizedKeys.keyFiles = [
