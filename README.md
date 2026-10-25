@@ -63,6 +63,7 @@ A service backs up its data by listing it in `homelab.backup.paths`. See
 
 ```sh
 nix build --store ssh-ng://root@builder .#hydraJobs.<host>   # build on the builder
+nix copy --from https://cache.shaneplunkett.com <path>       # fetch a result, signed
 colmena apply --on <host>                                     # deploy over SSH
 ```
 

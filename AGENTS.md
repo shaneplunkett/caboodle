@@ -11,8 +11,12 @@ for how it fits together.
   hive takes gigabytes, and a few at once take the machine down. The local
   gate is `scripts/check.sh`. For one host's answer before filing,
   `nix build --store ssh-ng://root@builder .#hydraJobs.<host>` builds it on
-  the builder and leaves nothing here. Flakes ignore untracked files, so
-  `git add` new files first. Nix code reads for itself, with no comments.
+  the builder and leaves nothing here. To run a result here, fetch it
+  through the cache, `nix copy --from https://cache.shaneplunkett.com
+  <path>`, since the builder signs nothing itself and a copy over SSH is
+  refused as unsigned. `docs/pve/builder.md` has the by-hand gotchas.
+  Flakes ignore untracked files, so `git add` new files first. Nix code
+  reads for itself, with no comments.
 - **Pull request:** land every change through a pull request on the forge
   (`origin`; GitHub is a mirror of it). Commit on a branch and file it with
   the `pr` skill, which opens it and assigns it to Shane for review. Done is a

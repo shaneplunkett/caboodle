@@ -63,6 +63,28 @@ no host changes the one build job is a placeholder whose steps skip,
 because Forgejo leaves a job with an empty matrix blocked for good. The
 `build.yml` section of `shane/workflows`' README has the details.
 
+## Building by hand
+
+`nix build --store ssh-ng://root@builder <flake attr>` evaluates here and
+builds there, and is the way to try one host or package before filing.
+
+- **Fetch a result through the cache, never over SSH.** The builder signs
+  nothing when it builds; Harmonia signs each path as it serves it. So the
+  path sits unsigned in the builder's store, `nix copy --from
+  ssh-ng://root@builder` hands over that unsigned copy, and a workstation
+  refuses it with `lacks a signature by a trusted key`. The same path from
+  `nix copy --from https://cache.shaneplunkett.com <path>` arrives signed
+  by the key every workstation already trusts.
+- **An overlay package needs `--eval-store auto`.** The repo's own packages
+  are overlays with no flake output, so building one means `--impure
+  --expr` with `builtins.getFlake`. That route serves the inputs from the
+  local fetcher cache without copying them to a remote eval store, and the
+  build dies with `path '/nix/store/...-nixos-...' is not valid`. Adding
+  `--eval-store auto` evaluates against the local store and ships only the
+  derivation closure to the builder.
+- **A by-hand build has no root on the builder**, so it lasts until the next
+  weekly collection or `min-free` sweep. Fetch what you want to keep.
+
 ## Terraform
 
 A pull request that touches `terraform/` gets its plan as a comment. Run
