@@ -28,8 +28,8 @@ and files still land as 99:100.
 
 ## Containers
 
-Maintainerr, Shelfarr and Calibre-Web-Automated have no NixOS module, so they
-run under Podman with `virtualisation.oci-containers`. Renovate opens the
+Maintainerr, Shelfarr, Calibre-Web-Automated and Dispatcharr have no NixOS
+module, so they run under Podman with `virtualisation.oci-containers`. Renovate opens the
 pull requests that move their images.
 
 - **Podman needs `XDG_RUNTIME_DIR=/run`.** Without it, rootful Podman puts
@@ -65,6 +65,41 @@ labels are state in the data folder.
   empty so Nix never touches share permissions.
 - Torrents are outgoing only. Deluge uses a random listening port and
   nothing is forwarded to it.
+
+## Dispatcharr
+
+Dispatcharr turns internet TV streams into a tuner Plex can watch and record
+from, by pretending to be an HDHomeRun. It covers free-to-air while the
+building aerial is down. [The research](../research/2026-10-25-iptv-into-plex-dvr.md)
+has the options and sources behind it.
+
+Its web UI sits behind the oauth2-proxy gate, and it keeps its own admin
+login for when Pocket ID is down. Plex skips ingress and talks to the port
+on the LAN.
+
+To set it up, in Dispatcharr:
+
+1. Add the M3U `https://i.mjh.nz/au/Melbourne/kodi-tv.m3u8`. The
+   `tvh-tv.m3u8` next to it pipes through ffmpeg for Tvheadend, which
+   Dispatcharr can't use.
+2. Add the EPG `https://i.mjh.nz/au/Melbourne/epg.xml.gz`.
+3. Make the channels and match them to the guide.
+
+Then in Plex, under Live TV & DVR, add a device by hand at
+`http://192.168.1.90:9191/hdhr`.
+
+- **Seven only works from an Australian IP.** Traffic out of a VPN breaks
+  it.
+- **Plex doesn't support emulated tuners.** They work, but a Plex update can
+  break them, as 1.43.0 did for a while.
+- **Plex wants one type of tuner per DVR.** Give Dispatcharr its own DVR
+  rather than adding it next to the HDHomeRun.
+
+Dispatcharr's Postgres lives in `db/`, which the backup skips because a
+live copy of it is useless. Dispatcharr dumps the database into `backups/`
+every night at 3am instead and keeps three. To restore, put the files back
+as in [docs/hetzner](../hetzner/README.md), start the container, and restore
+the newest dump from Dispatcharr's Backups page.
 
 ## Restoring a database
 

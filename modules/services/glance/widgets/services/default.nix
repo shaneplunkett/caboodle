@@ -13,6 +13,7 @@ let
     "radarr"
     "sonarr"
     "sonarranime"
+    "dispatcharr"
   ];
 
   overrides = {

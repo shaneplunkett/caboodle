@@ -27,6 +27,7 @@ in
   imports = [
     ./calibre-web-automated.nix
     ./deluge.nix
+    ./dispatcharr.nix
     ./maintainerr.nix
     ./prowlarr.nix
     ./radarr.nix

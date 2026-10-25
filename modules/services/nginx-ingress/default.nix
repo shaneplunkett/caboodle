@@ -25,6 +25,7 @@ let
       "/sabnzbd/api"
     ];
     deluge = [ ];
+    dispatcharr = [ ];
     rss = [ "/api/" ];
     zigbee = [ ];
     music = [ ];
