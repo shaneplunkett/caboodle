@@ -69,6 +69,7 @@ let
       "profiles\\1\\c_stick" = azaharStick 3 4;
     }
   );
+  azaharLayout = pkgs.writeText "azahar-layout.json" (builtins.toJSON { layout_option = "2"; });
 in
 {
   imports = [ ./modules/common ];
@@ -85,6 +86,7 @@ in
   home.activation.emulatorSteamPad = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     run ${pkgs.python3}/bin/python3 -I ${../../modules/workstation/nixos/emulator-controls.py} "$HOME/.config/eden/qt-config.ini" Controls ${edenControls} --qt
     run ${pkgs.python3}/bin/python3 -I ${../../modules/workstation/nixos/emulator-controls.py} "$HOME/.config/azahar-emu/qt-config.ini" Controls ${azaharControls} --qt
+    run ${pkgs.python3}/bin/python3 -I ${../../modules/workstation/nixos/emulator-controls.py} "$HOME/.config/azahar-emu/qt-config.ini" Layout ${azaharLayout} --qt
   '';
 
   home = {
