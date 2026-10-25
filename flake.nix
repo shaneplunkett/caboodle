@@ -46,7 +46,7 @@
       url = "git+ssh://forgejo@forge/shane/vex-code?shallow=1";
       flake = false;
     };
-    llm-agents.url = "github:numtide/llm-agents.nix/125f2c1b3ddccf591fe8d4d9d86d1171913ba64a";
+    llm-agents.url = "github:numtide/llm-agents.nix/e1e35b247842f7366c4e51904a24673139380dd1";
     electron-nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     homebrew-core = {
