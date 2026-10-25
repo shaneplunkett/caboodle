@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, nodes, ... }:
 let
   cfg = config.services.radarr;
   inherit (cfg) dataDir;
@@ -26,6 +26,9 @@ in
     enable = true;
     openFirewall = true;
     environmentFiles = [ config.age.secrets.radarr.path ];
-    settings.server.allowedHosts = "radarr.shaneplunkett.com,${config.homelab.lanAddress}";
+    settings.server = {
+      allowedHosts = "radarr.shaneplunkett.com,${config.homelab.lanAddress}";
+      trustedNetworks = nodes.ingress.config.homelab.lanAddress;
+    };
   };
 }

@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, nodes, ... }:
 let
   cfg = config.services.prowlarr;
   dataDir = "/var/lib/private/prowlarr";
@@ -28,7 +28,10 @@ in
     environmentFiles = [ config.age.secrets.prowlarr.path ];
     settings = {
       auth.required = "DisabledForLocalAddresses";
-      server.allowedHosts = "prowlarr.shaneplunkett.com,${config.homelab.lanAddress}";
+      server = {
+        allowedHosts = "prowlarr.shaneplunkett.com,${config.homelab.lanAddress}";
+        trustedNetworks = nodes.ingress.config.homelab.lanAddress;
+      };
     };
   };
 }

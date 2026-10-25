@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  nodes,
   utils,
   ...
 }:
@@ -48,6 +49,7 @@ in
     enable = true;
     openFirewall = true;
     environmentFiles = [ config.age.secrets.sonarr.path ];
+    settings.server.trustedNetworks = nodes.ingress.config.homelab.lanAddress;
   };
 
   systemd.services.sonarr-anime = {
