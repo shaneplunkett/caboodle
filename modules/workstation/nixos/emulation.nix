@@ -57,6 +57,13 @@ let
       extensions = ".iso|.ISO|.cso|.CSO";
     }
     {
+      system = "n3ds";
+      title = "Nintendo 3DS";
+      exe = "azahar";
+      args = "-f";
+      extensions = ".3ds|.3DS|.cci|.CCI|.cxi|.CXI";
+    }
+    {
       system = "switch";
       title = "Nintendo Switch";
       exe = "eden";
