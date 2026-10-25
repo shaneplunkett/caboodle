@@ -34,6 +34,7 @@
       autodiscover = true;
       autodiscoverNamespaces = [ "shane" ];
       minimumReleaseAge = "1 day";
+      lockFileMaintenance.minimumReleaseAge = null;
       schedule = [ "before 9am on sunday" ];
       timezone = "Australia/Melbourne";
     };
