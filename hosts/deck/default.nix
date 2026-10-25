@@ -42,10 +42,13 @@
       enable = true;
       settings = {
         PasswordAuthentication = false;
+        KbdInteractiveAuthentication = false;
         PermitRootLogin = "no";
       };
     };
   };
+
+  security.sudo.wheelNeedsPassword = false;
 
   users.users.shane.openssh.authorizedKeys.keyFiles = [
     ../../modules/workstation/authorized-keys
