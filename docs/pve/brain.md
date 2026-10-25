@@ -22,8 +22,10 @@ The app runs its migrations on startup. If the update brings new files in
 `ssh root@brain systemctl start restic-backups-homelab`, because migrations
 only run forward.
 
-The CLI, skills and Macs are deployed separately; see the vex-brain repo's
-`docs/runbooks/deploy.md`.
+The same bump ships the `vex` CLI and its `memory-save` skill to every
+workstation: the mini on merge, the desktop and the MacBook when Shane
+switches them. The vex-brain repo's `docs/runbooks/deploy.md` has the
+steps and the rollback.
 
 ## Cloudflare
 
@@ -43,10 +45,13 @@ Claude Code session files from the old host, and for many rotated sessions
 it's the only copy left. Nothing writes to it, and `source.sha256` and
 `destination.sha256` beside it are the manifests from when it was copied.
 
-To restore, put a dump on the host and run `vex-brain-restore <file>`:
+To restore, put a dump on the host and run `vex-brain-restore <file>`.
+The nightly backup overwrites the dump, so pick the snapshot by its time
+from `restic-homelab snapshots` (times are UTC) rather than taking
+`latest`:
 
 ```sh
-restic-homelab restore latest --target /root/restore --include /var/backup/vex-brain
+restic-homelab restore <snapshot> --target /root/restore --include /var/backup/vex-brain
 vex-brain-restore /root/restore/var/backup/vex-brain/vex_brain.dump
 ```
 

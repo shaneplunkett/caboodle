@@ -46,7 +46,14 @@ switch and whose bumps land on main without review, so audit its diff
 rather than summarise it: new commands, network access, writes outside
 `~/.config/omniwm/`, or a package URL off `github.com/OmniNull/OmniWM`.
 
-Done when every entry has been read and the omniwm diff audited.
+**vex-brain** runs its migrations on startup, and merging deploys it, so
+when it moved, list the files the bump brings:
+`tea api /repos/shane/vex-brain/compare/<old>...<new> | jq -r '.files[].filename'`.
+Anything under `app/migrations/` is a hit whose move is the backup in
+`docs/pve/brain.md`, taken before the merge.
+
+Done when every entry has been read, the omniwm diff audited and any
+vex-brain migrations listed.
 
 ## 3. Triage
 
