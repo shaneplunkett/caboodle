@@ -191,7 +191,7 @@ in
               );
               executableModifier = "\"\${exePath}\"";
               startInDirectory = "";
-              titleModifier = "\${fuzzyTitle}";
+              titleModifier = "\${/\\s*(\\(.*?\\)|\\[.*?\\])/g|\${title}|}";
               steamInputEnabled = "1";
               parserInputs.glob = "\${title}@(${parser.extensions})";
               fuzzyMatch = {
@@ -206,12 +206,12 @@ in
                 caseInsensitiveVariables = false;
               };
               sortAsFromVariable.limitToGroups = [ ];
-              imagePool = "\${fuzzyTitle}";
+              imagePool = "\${finalTitle}";
               drmProtect = false;
               defaultImage = noArtwork;
               localImages = noArtwork;
               overlayImages = noArtwork;
-              onlineImageQueries = [ "\${fuzzyTitle}" ];
+              onlineImageQueries = [ "\${finalTitle}" ];
               imageProviders = [
                 "sgdb"
                 "steamCDN"
