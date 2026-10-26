@@ -49,6 +49,27 @@ the LAN or Tailscale. Its admin UI only answers on the desktop itself, at
 whoever controls it can pair new clients. Moonlight shows a PIN, which goes
 on the UI's PIN page.
 
+Moonlight lists two apps. Desktop streams DP-2 as it is. Steam runs
+`sunshine-stream start`, which makes a headless Hyprland output called
+`STREAM` at the client's resolution and frame rate, moves Steam's workspace
+onto it, turns the physical monitors off and opens Big Picture fullscreen.
+Games then render at the client's size rather than 4K. Quitting the app in
+Moonlight runs `sunshine-stream stop`, which puts it all back; only
+disconnecting leaves the game running to come back to. If the monitors stay
+dark anyway, Super + Shift + M runs the stop from the desk.
+
+- Set Moonlight's resolution to Native on each client. Its default is
+  1280x720, which letterboxes the Deck's 1280x800.
+- A game that saved exclusive fullscreen at 4K draws a 4K frame into the
+  smaller output and shows its top-left corner. Borderless fills whatever
+  output it's on, so use that. Cap the frame rate too: the headless output
+  has no vsync, so an uncapped game burns CPU on frames the stream drops.
+- Big Picture drops out of fullscreen when a game goes fullscreen on its
+  workspace, and doesn't take it back when the game quits.
+- `output_name` matches Hyprland's output names. When none matches, Sunshine
+  quietly streams the first output, which is how Desktop gets DP-2.
+- Hyprland's config is Lua, so runtime changes go through `hyprctl eval`.
+  `hyprctl keyword`, which most shared Sunshine scripts use, does nothing.
 - If encoding breaks after a Mesa or kernel update,
   `, vainfo --display drm --device /dev/dri/renderD128` should list
   `VAEntrypointEncSlice` for H.264, HEVC and AV1. `renderD128` has to stay

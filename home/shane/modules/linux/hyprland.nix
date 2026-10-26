@@ -168,6 +168,7 @@ in
         (bind "${mod} + RETURN" (exec terminal))
         (bind "${mod} + SHIFT + W" (exec "hyprctl dispatch togglehidden"))
         (bind "${mod} + SHIFT + F" "hl.dsp.window.float()")
+        (bind "${mod} + SHIFT + M" (exec "sunshine-stream stop"))
 
         (bindOpts "${mod} + mouse:272" "hl.dsp.window.drag()" { mouse = true; })
         (bindOpts "${mod} + mouse:273" "hl.dsp.window.resize()" { mouse = true; })
