@@ -91,9 +91,24 @@ builds what a pull request changes, so the desktop needn't build at all.
    (`ssh-keyscan -t ed25519 <ip>`), name it in `agenix-rules.nix`, add it to
    the secrets it needs, and `agenix -r` to rekey. The builder trusts hosts
    from the same file, so this is also what lets it deploy there.
-5. `colmena apply --on <host>`. Colmena reaches hosts by their tailnet
-   name, which doesn't exist until this first deploy joins it, so for this
-   one deploy temporarily set `deployment.targetHost` to the LAN address.
+5. Deploy it once by hand. Colmena reaches hosts by their tailnet name,
+   which doesn't exist until this first deploy joins it, and the desktop
+   doesn't evaluate the hive. So build the host on the builder, and have the
+   host fetch it through the cache, passing the cache's key from
+   `modules/workstation/nix-settings.nix` since the host doesn't trust it
+   yet:
+
+   ```sh
+   path=$(nix build --no-link --print-out-paths --store ssh-ng://root@builder .#hydraJobs.<host>)
+   ssh root@<ip> "nix copy --from https://cache.shaneplunkett.com $path \
+     --option extra-trusted-public-keys <key> \
+     && nix-env -p /nix/var/nix/profiles/system --set $path \
+     && $path/bin/switch-to-configuration switch"
+   ```
+
+   A rebuilt host joins Tailscale as `<host>-1` while its old node exists,
+   so delete the old node and rename the new one in the admin console.
+   Then drop step 2's guards.
 
 ## Secrets
 

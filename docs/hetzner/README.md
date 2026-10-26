@@ -60,17 +60,20 @@ credentials already set:
 
 ```sh
 restic-homelab snapshots
-systemctl stop <service>
+systemctl stop <units>
 restic-homelab restore latest --target / --include <path>
-systemctl start <service>
+systemctl start <units>
 ```
 
-`restic-r2` is the same for the host's R2 bucket, if the Storage Box is the
-thing that's gone.
+Stop every unit that writes under the path. For FreshRSS that's
+`phpfpm-freshrss` and `freshrss-updater.timer`, since there's no `freshrss`
+unit. `restic-r2` is the same for the host's R2 bucket, if the Storage Box is
+the thing that's gone.
 
 If the host is gone, rebuild it first (the README's "Adding a host"), and its
 secret will decrypt once its new key is a recipient and the secrets are
-rekeyed. To read a repo from a laptop instead, set the same variables by
+rekeyed. Restore before its first nightly backup, or that backup of an empty
+service becomes `latest`. To read a repo from a laptop instead, set the same variables by
 hand in the dev shell, which has restic and rclone:
 
 ```sh
@@ -80,8 +83,9 @@ restic snapshots
 ```
 
 A service with a `prepare` step backs up a dump rather than its live files,
-so restore that and put it back in place. For Gatus, that means copying
-`backup.db` over `data.db` while Gatus is stopped.
+so restore that, copy it into place while the service is stopped, and chown
+it to the service's user. For Gatus that's `backup.db` over `data.db`, and
+for FreshRSS it's `users/<user>/backup.sqlite` over `db.sqlite`.
 
 ### Monitoring
 
@@ -111,5 +115,14 @@ Their final archives are on the box under `<service>-final-archives/`.
 - **Nothing under `/mnt` gets backed up.** That's where Proxmox mounts the
   Unraid shares, so the module refuses those paths and restic stays on one
   filesystem.
+- **A restored dump is owned by root**, since the backup runs as root.
+  Copied over an existing file it keeps that file's owner, but a rebuilt host
+  has no file to copy over. The service still opens a root-owned database
+  and silently saves nothing: FreshRSS refreshed all 28 feeds and stored
+  none of the new articles.
+- **A restore brings back only what the paths kept.** Excluded folders like
+  FreshRSS's `cache` come back missing. The service makes them on a real
+  host, but a restore into a scratch folder needs them made by hand, or
+  FreshRSS refuses to refresh.
 - **SFTP paths must be relative**: `./backups`, not `/backups`.
 - **SSH is on port 23**, not 22.
