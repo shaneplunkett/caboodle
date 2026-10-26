@@ -4708,6 +4708,7 @@ class PrismBambuCard extends HTMLElement {
         }
         .card {
             position: relative;
+            isolation: isolate;
             width: 100%;
             min-height: 600px;
             border-radius: 32px;
@@ -6215,42 +6216,6 @@ class PrismBambuCard extends HTMLElement {
         `
         }
         
-        <!-- Filament Info Popup -->
-        <div class="filament-popup-overlay" style="display: none;">
-            <div class="filament-popup">
-                <div class="filament-popup-header">
-                    <div class="filament-popup-color"></div>
-                    <div class="filament-popup-title">Filament Details</div>
-                    <button class="filament-popup-close"><ha-icon icon="mdi:close"></ha-icon></button>
-                </div>
-                <div class="filament-popup-content">
-                    <div class="filament-popup-row">
-                        <span class="filament-popup-label">Slot</span>
-                        <span class="filament-popup-value" data-field="slot"></span>
-                    </div>
-                    <div class="filament-popup-row">
-                        <span class="filament-popup-label">Name</span>
-                        <span class="filament-popup-value" data-field="name"></span>
-                    </div>
-                    <div class="filament-popup-row">
-                        <span class="filament-popup-label">Type</span>
-                        <span class="filament-popup-value" data-field="type"></span>
-                    </div>
-                    <div class="filament-popup-row" data-field-row="brand">
-                        <span class="filament-popup-label">Brand</span>
-                        <span class="filament-popup-value" data-field="brand"></span>
-                    </div>
-                    <div class="filament-popup-row">
-                        <span class="filament-popup-label">Remaining</span>
-                        <span class="filament-popup-value" data-field="remaining"></span>
-                    </div>
-                    <div class="filament-popup-row" data-field-row="temp">
-                        <span class="filament-popup-label">Nozzle Temp</span>
-                        <span class="filament-popup-value" data-field="temp"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
         `
             : ""
         }
@@ -6463,6 +6428,42 @@ class PrismBambuCard extends HTMLElement {
         </div>
 
       </div>
+        <!-- Filament Info Popup -->
+        <div class="filament-popup-overlay" style="display: none;">
+            <div class="filament-popup">
+                <div class="filament-popup-header">
+                    <div class="filament-popup-color"></div>
+                    <div class="filament-popup-title">Filament Details</div>
+                    <button class="filament-popup-close"><ha-icon icon="mdi:close"></ha-icon></button>
+                </div>
+                <div class="filament-popup-content">
+                    <div class="filament-popup-row">
+                        <span class="filament-popup-label">Slot</span>
+                        <span class="filament-popup-value" data-field="slot"></span>
+                    </div>
+                    <div class="filament-popup-row">
+                        <span class="filament-popup-label">Name</span>
+                        <span class="filament-popup-value" data-field="name"></span>
+                    </div>
+                    <div class="filament-popup-row">
+                        <span class="filament-popup-label">Type</span>
+                        <span class="filament-popup-value" data-field="type"></span>
+                    </div>
+                    <div class="filament-popup-row" data-field-row="brand">
+                        <span class="filament-popup-label">Brand</span>
+                        <span class="filament-popup-value" data-field="brand"></span>
+                    </div>
+                    <div class="filament-popup-row">
+                        <span class="filament-popup-label">Remaining</span>
+                        <span class="filament-popup-value" data-field="remaining"></span>
+                    </div>
+                    <div class="filament-popup-row" data-field-row="temp">
+                        <span class="filament-popup-label">Nozzle Temp</span>
+                        <span class="filament-popup-value" data-field="temp"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
     `;
 
     this.setupListeners();

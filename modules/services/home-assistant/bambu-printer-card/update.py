@@ -339,6 +339,17 @@ FIXES: list[tuple[str, str]] = [
                 ${data.cameraEntity ? `
                 <button class="header-icon-btn btn-camera""",
     ),
+    # Keep the card's z-indexes inside the card, so its header and buttons stop drawing over
+    # other cards' popups.
+    (
+        """        .card {
+            position: relative;
+            width: 100%;""",
+        """        .card {
+            position: relative;
+            isolation: isolate;
+            width: 100%;""",
+    ),
     # Our own element name, so it never clashes with the real Prism.
     (
         "customElements.define('prism-bambu', PrismBambuCard);",
@@ -348,10 +359,26 @@ FIXES: list[tuple[str, str]] = [
 ]
 
 
+def move_filament_popup(src: str) -> str:
+    """Move the filament popup out of the isolated card, so it still covers the whole page."""
+    start = src.index("        <!-- Filament Info Popup -->\n")
+    end = src.index("        </div>\n        ` : ''}\n\n        <div class=\"main-visual") + len(
+        "        </div>\n"
+    )
+    popup = src[start:end]
+    src = src[:start] + src[end:]
+    return replace_once(
+        src,
+        "      </div>\n    `;\n\n    this.setupListeners();",
+        "      </div>\n" + popup + "    `;\n\n    this.setupListeners();",
+    )
+
+
 def build(src: str) -> str:
     src = recolour(src)
     for old, new in FIXES:
         src = replace_once(src, old, new)
+    src = move_filament_popup(src)
     src = src.replace("/local/community/Prism-Dashboard/images/printer-blank.jpg", IMAGE)
     src = src.replace("type: 'prism-bambu'", "type: 'bambu-printer-card'")
     src = src.replace(
