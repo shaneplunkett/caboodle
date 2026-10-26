@@ -64,8 +64,11 @@ dark anyway, Super + Shift + M runs the stop from the desk.
   smaller output and shows its top-left corner. Borderless fills whatever
   output it's on, so use that. Cap the frame rate too: the headless output
   has no vsync, so an uncapped game burns CPU on frames the stream drops.
-- Big Picture drops out of fullscreen when a game goes fullscreen on its
-  workspace, and doesn't take it back when the game quits.
+- Hyprland allows one fullscreen window per workspace, so a game knocks Big
+  Picture out of fullscreen and it stays tiled after the game quits.
+  `exit_window_retains_fullscreen` hands fullscreen back to the next focused
+  window. The stream turns it on and `stop` restores the config's value,
+  since at the desk it would fullscreen whatever sits behind a closed video.
 - `output_name` matches Hyprland's output names. When none matches, Sunshine
   quietly streams the first output, which is how Desktop gets DP-2.
 - Hyprland's config is Lua, so runtime changes go through `hyprctl eval`.

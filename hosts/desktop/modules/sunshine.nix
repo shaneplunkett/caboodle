@@ -14,6 +14,9 @@ let
   workspaceMonitors = builtins.toJSON (
     map (rule: { inherit (rule) workspace monitor; }) hyprland.workspace_rule
   );
+  retainFullscreen =
+    enabled:
+    "hyprctl eval 'hl.config({ misc = { exit_window_retains_fullscreen = ${lib.boolToString enabled} } })'";
   setMonitors =
     disabled:
     lib.concatMapStrings (monitor: ''
@@ -45,6 +48,7 @@ let
         hyprctl dispatch 'hl.dsp.workspace.move({ workspace = "${steamWorkspace}", monitor = "STREAM" })'
         ${setMonitors true}
         hyprctl dispatch 'hl.dsp.focus({ workspace = "${steamWorkspace}" })'
+        ${retainFullscreen true}
 
         setsid -f steam steam://open/bigpicture >/dev/null 2>&1
         for _ in $(seq 100); do
@@ -58,6 +62,7 @@ let
       stop() {
         set +e
         setsid -f steam steam://close/bigpicture >/dev/null 2>&1
+        ${retainFullscreen (hyprland.misc.exit_window_retains_fullscreen or false)}
         ${setMonitors false}
         hyprctl output remove STREAM
         hyprctl workspaces -j \
