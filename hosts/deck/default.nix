@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ inputs, pkgs, ... }:
 {
   imports = [
     inputs.jovian.nixosModules.default
@@ -52,6 +52,8 @@
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="spi", KERNEL=="spi-VLV1776:0[01]", ATTR{power/control}="on"
   '';
+
+  environment.systemPackages = [ pkgs.moonlight-qt ];
 
   security.sudo.wheelNeedsPassword = false;
 
