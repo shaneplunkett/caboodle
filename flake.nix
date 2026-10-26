@@ -332,7 +332,11 @@
 
         gym = lxc "gym" { homelab.lanAddress = "192.168.1.209"; };
 
-        rss = lxc "rss" { homelab.lanAddress = "192.168.1.153"; };
+        rss = lxc "rss" {
+          homelab.lanAddress = "192.168.1.153";
+          homelab.monitoring.enable = false;
+          deployment.tags = [ ];
+        };
 
         photos = lxc "photos" { homelab.lanAddress = "192.168.1.154"; };
 
