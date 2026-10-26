@@ -1,7 +1,7 @@
 resource "unifi_port_forward" "host" {
   for_each = { for forward in local.network.forwards : forward.name => forward }
   name     = each.key
-  protocol = "tcp_udp"
+  protocol = each.value.protocol
 
   wan = {
     interface  = "wan"

@@ -99,9 +99,25 @@
     };
 
     portForwards = lib.mkOption {
-      type = lib.types.attrsOf lib.types.port;
+      type = lib.types.attrsOf (
+        lib.types.coercedTo lib.types.port (port: { inherit port; }) (
+          lib.types.submodule {
+            options = {
+              port = lib.mkOption { type = lib.types.port; };
+              protocol = lib.mkOption {
+                type = lib.types.enum [
+                  "tcp"
+                  "udp"
+                  "tcp_udp"
+                ];
+                default = "tcp_udp";
+              };
+            };
+          }
+        )
+      );
       default = { };
-      description = "Ports the gateway forwards from the internet to this host, by rule name. The WAN and local port match.";
+      description = "Ports the gateway forwards from the internet to this host, by rule name, as a port or a port and protocol. The WAN and local port match.";
     };
   };
 

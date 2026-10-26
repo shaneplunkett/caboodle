@@ -230,8 +230,9 @@
           forwardList = lib.concatLists (
             lib.mapAttrsToList (
               _: node:
-              lib.mapAttrsToList (name: port: {
-                inherit name port;
+              lib.mapAttrsToList (name: forward: {
+                inherit name;
+                inherit (forward) port protocol;
                 ip = node.config.homelab.lanAddress;
               }) node.config.homelab.portForwards
             ) onLan

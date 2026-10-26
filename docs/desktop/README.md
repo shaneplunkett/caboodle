@@ -43,8 +43,8 @@ nrs --local
 
 ## Game streaming
 
-Sunshine streams the desktop to Moonlight on the Macs, over the LAN or
-Tailscale. Its admin UI only answers on the desktop itself, at
+Sunshine streams the desktop to Moonlight on the Macs and the Deck, over
+the LAN or Tailscale. Its admin UI only answers on the desktop itself, at
 `https://localhost:47990`. Give it a unique username and password, since
 whoever controls it can pair new clients. Moonlight shows a PIN, which goes
 on the UI's PIN page.
@@ -53,6 +53,12 @@ on the UI's PIN page.
   `, vainfo --display drm --device /dev/dri/renderD128` should list
   `VAEntrypointEncSlice` for H.264, HEVC and AV1. `renderD128` has to stay
   the discrete GPU; the iGPU is `renderD129`.
+- Away from home, Tailscale needs a direct path or the stream goes through
+  a DERP relay, which is too slow for it: Moonlight goes blocky and warns
+  about a slow connection, and `tailscale status` shows `relay`. A phone
+  hotspot's carrier NAT can't hole-punch, so the gateway forwards
+  tailscaled's UDP port to the desktop. Only the desktop gets one; other
+  hosts that need a direct path get their own port.
 - HDR needs KMS capture and `cap_sys_admin`, which this setup avoids, so
   it's unproven here.
 

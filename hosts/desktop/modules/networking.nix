@@ -1,4 +1,5 @@
-_: {
+{ config, ... }:
+{
   networking = {
     networkmanager.enable = true;
     modemmanager.enable = false;
@@ -11,8 +12,16 @@ _: {
     };
   };
 
+  homelab.portForwards.tailscale-desktop = {
+    inherit (config.services.tailscale) port;
+    protocol = "udp";
+  };
+
   services = {
-    tailscale.extraSetFlags = [ "--accept-dns=true" ];
+    tailscale = {
+      extraSetFlags = [ "--accept-dns=true" ];
+      openFirewall = true;
+    };
 
     resolved = {
       enable = true;
