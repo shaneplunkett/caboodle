@@ -74,7 +74,7 @@ resource "proxmox_virtual_environment_container" "this" {
   }
 
   lifecycle {
-    ignore_changes = [device_passthrough, mount_point]
+    ignore_changes = [device_passthrough, mount_point, operating_system[0].template_file_id]
   }
 
   depends_on = [unifi_client.this]
