@@ -357,6 +357,11 @@
             ./hosts/nas.nix
           ];
         };
+
+        pve = {
+          imports = [ ./hosts/pve ];
+          deployment.tags = [ ];
+        };
       };
     };
 
