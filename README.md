@@ -71,26 +71,33 @@ builds what a pull request changes, so the desktop needn't build at all.
 
 ### Adding a host
 
-1. Build the template if it's changed:
-   `nix build .#nixosConfigurations.base.config.system.build.tarball`, and
-   upload it to each Proxmox node's `local:vztmpl` under the name
-   `terraform/modules/nixos-lxc` expects.
-2. Add `hosts/<host>.nix` and an entry in the hive pointing at it,
-   `<host> = lxc "<host>" { homelab.lanAddress = "..."; };`. The host has
-   no key until its container boots, so until step 4 lands, keep it out of
-   merge deploys and monitoring with `deployment.tags = [ ];` and
-   `homelab.monitoring.enable = false;`.
-3. Add a `terraform/<proxmox-node>-<host>.tf` using `modules/nixos-lxc` and apply it.
-   Terraform reserves the host's address in UniFi before the container first
-   boots, and a host that isn't in the hive fails the plan. Leave
-   `mac_address` out and Terraform makes one. Never copy one from another
-   host: a duplicated MAC once had two containers fighting over one DHCP
-   lease.
-4. Add the host's key to `modules/agenix/host-keys.nix`
+New hosts are Incus containers. Cube's guests are still Proxmox LXCs from
+`terraform/modules/nixos-lxc` until they move.
+
+1. Add `hosts/<host>.nix` and an entry in the hive pointing at it, with its
+   container in `homelab.guest` (`modules/services/incus/README.md`):
+
+   ```nix
+   <host> = incus "<host>" {
+     homelab.lanAddress = "...";
+     homelab.guest.host = "pve";
+     homelab.monitoring.enable = false;
+     deployment.tags = [ ];
+   };
+   ```
+
+   The host has no key until its container boots, so until step 3 lands,
+   the last two lines keep it out of merge deploys and monitoring.
+2. Merge it. Terraform reserves the host's address in UniFi and creates the
+   container from the base image. Leave `mac` out and Terraform makes one.
+   Never copy one from another host: a duplicated MAC once had two
+   containers fighting over one DHCP lease. A rebuilt host can keep its own
+   old MAC, and Terraform takes over its old UniFi client.
+3. Add the host's key to `modules/agenix/host-keys.nix`
    (`ssh-keyscan -t ed25519 <ip>`), name it in `agenix-rules.nix`, add it to
    the secrets it needs, and `agenix -r` to rekey. The builder trusts hosts
    from the same file, so this is also what lets it deploy there.
-5. Deploy it once by hand. Colmena reaches hosts by their tailnet name,
+4. Deploy it once by hand. Colmena reaches hosts by their tailnet name,
    which doesn't exist until this first deploy joins it, and the desktop
    doesn't evaluate the hive. So build the host on the builder, and have the
    host fetch it through the cache, passing the cache's key from
@@ -107,7 +114,7 @@ builds what a pull request changes, so the desktop needn't build at all.
 
    A rebuilt host joins Tailscale as `<host>-1` while its old node exists,
    so delete the old node and rename the new one in the admin console.
-   Then drop step 2's guards.
+   Then drop step 1's guards.
 
 ## Secrets
 

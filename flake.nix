@@ -333,8 +333,15 @@
 
         ingress = lxc "ingress" { homelab.lanAddress = "192.168.1.149"; };
 
-        dns1 = lxc "dns" {
+        dns1 = incus "dns" {
           homelab.lanAddress = "192.168.1.91";
+          homelab.guest = {
+            host = "pve";
+            cores = 1;
+            memory = 1024;
+            mac = "BC:24:11:10:29:FC";
+          };
+          homelab.monitoring.enable = false;
           deployment.tags = [ ];
         };
 
