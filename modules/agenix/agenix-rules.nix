@@ -263,6 +263,10 @@ in
     shane
     builder
   ];
+  "terraform-incus-key.age".publicKeys = [
+    shane
+    builder
+  ];
   "backup-r2-dashboard.age".publicKeys = [
     shane
     dashboard

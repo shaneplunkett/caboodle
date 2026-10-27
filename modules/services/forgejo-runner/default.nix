@@ -21,6 +21,7 @@ let
     "terraform-access-emails"
     "terraform-forgejo-token"
     "terraform-unifi-token"
+    "terraform-incus-key"
   ] lib.id;
   secrets = [ "forgejo-runner-secret" ] ++ lib.attrValues credentials;
 in

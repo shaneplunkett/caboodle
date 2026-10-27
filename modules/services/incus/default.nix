@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.homelab.incus;
 in
@@ -47,9 +52,12 @@ in
 
     services.lvm.boot.thin.enable = true;
 
+    networking.firewall.allowedTCPPorts = [ 8443 ];
+
     virtualisation.incus = {
       enable = true;
       preseed = {
+        config."core.https_address" = ":8443";
         storage_pools = [
           {
             name = "default";
@@ -75,9 +83,33 @@ in
                 path = "/";
                 pool = "default";
               };
+              tun = {
+                type = "unix-char";
+                source = "/dev/net/tun";
+                path = "/dev/net/tun";
+              };
             };
           }
         ];
+      };
+    };
+
+    systemd.services.incus-trust-terraform = {
+      wantedBy = [ "incus.service" ];
+      after = [ "incus-preseed.service" ];
+      bindsTo = [ "incus.service" ];
+      path = [
+        config.virtualisation.incus.package
+        pkgs.openssl
+      ];
+      script = ''
+        fingerprint=$(openssl x509 -in ${./terraform.crt} -noout -fingerprint -sha256 | cut -d= -f2 | tr -d : | tr A-F a-f)
+        incus config trust show "$fingerprint" > /dev/null 2>&1 \
+          || incus config trust add-certificate ${./terraform.crt} --name terraform
+      '';
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
       };
     };
   };
