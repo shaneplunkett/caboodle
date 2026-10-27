@@ -28,15 +28,25 @@ in
     };
 
     systemd.network = {
-      netdevs.br0.netdevConfig = {
-        Kind = "bridge";
-        Name = "br0";
-        MACAddress = cfg.mac;
+      netdevs.br0 = {
+        netdevConfig = {
+          Kind = "bridge";
+          Name = "br0";
+          MACAddress = cfg.mac;
+        };
+        bridgeConfig.VLANFiltering = true;
       };
       networks = {
         uplink = {
           matchConfig.Name = cfg.uplink;
           networkConfig.Bridge = "br0";
+          bridgeVLANs = [
+            {
+              PVID = 1;
+              EgressUntagged = 1;
+            }
+            { VLAN = "2-4094"; }
+          ];
         };
         br0 = {
           matchConfig.Name = "br0";
