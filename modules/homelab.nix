@@ -39,6 +39,26 @@
               default = true;
               description = "Whether the container should be running.";
             };
+            vlans = lib.mkOption {
+              type = lib.types.listOf (
+                lib.types.submodule {
+                  options = {
+                    id = lib.mkOption {
+                      type = lib.types.ints.between 2 4094;
+                    };
+                    mac = lib.mkOption {
+                      type = lib.types.str;
+                    };
+                    address = lib.mkOption {
+                      type = lib.types.str;
+                      description = "Static address with its prefix, like 192.168.20.117/24. UniFi reserves it for the MAC.";
+                    };
+                  };
+                }
+              );
+              default = [ ];
+              description = "NICs on other VLANs, eth1 onwards, each untagged on its VLAN with a static address.";
+            };
           };
         }
       );

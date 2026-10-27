@@ -389,7 +389,23 @@
 
         paper = lxc "paper" { homelab.lanAddress = "192.168.1.155"; };
 
-        home = lxc "home" { homelab.lanAddress = "192.168.1.117"; };
+        home = lxc "home" {
+          homelab.lanAddress = "192.168.1.117";
+          homelab.guest = {
+            host = "pve";
+            memory = 3072;
+            disk = 16;
+            mac = "BC:24:11:21:E0:4E";
+            vlans = [
+              {
+                id = 20;
+                mac = "BC:24:11:33:8D:CE";
+                address = "192.168.20.117/24";
+              }
+            ];
+            running = false;
+          };
+        };
 
         brain = incus "brain" {
           homelab.lanAddress = "192.168.1.243";

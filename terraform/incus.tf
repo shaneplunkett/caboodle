@@ -11,6 +11,11 @@ locals {
   guest_macs = {
     for name, guest in local.guests : name => lower(coalesce(guest.mac, lookup(local.generated_guest_macs, name, null)))
   }
+  guest_vlans = merge([
+    for name, guest in local.guests : {
+      for vlan in guest.vlans : "${name}-${vlan.id}" => merge(vlan, { guest = name })
+    }
+  ]...)
 }
 
 resource "random_id" "guest_mac" {
@@ -30,6 +35,13 @@ resource "unifi_client" "guest" {
       error_message = "${each.key} has no LAN address. Give it homelab.lanAddress in flake.nix."
     }
   }
+}
+
+resource "unifi_client" "guest_vlan" {
+  for_each = local.guest_vlans
+  mac      = lower(each.value.mac)
+  name     = "${each.value.guest} (VLAN ${each.value.id})"
+  fixed_ip = split("/", each.value.address)[0]
 }
 
 # Guests only use the image when they're created, and colmena brings them up
@@ -73,6 +85,20 @@ resource "incus_instance" "guest" {
     }
   }
 
+  dynamic "device" {
+    for_each = { for i, vlan in each.value.vlans : "eth${i + 1}" => vlan }
+    content {
+      name = device.key
+      type = "nic"
+      properties = {
+        nictype = "bridged"
+        parent  = "br0"
+        hwaddr  = lower(device.value.mac)
+        vlan    = tostring(device.value.id)
+      }
+    }
+  }
+
   device {
     name = "root"
     type = "disk"
@@ -87,7 +113,7 @@ resource "incus_instance" "guest" {
     ignore_changes = [image]
   }
 
-  depends_on = [unifi_client.guest]
+  depends_on = [unifi_client.guest, unifi_client.guest_vlan]
 }
 
 moved {
@@ -145,6 +171,23 @@ moved {
 
 removed {
   from = module.forge.proxmox_virtual_environment_container.this
+  lifecycle {
+    destroy = false
+  }
+}
+
+moved {
+  from = module.home.unifi_client.this
+  to   = unifi_client.guest["home"]
+}
+
+moved {
+  from = module.home.unifi_client.extra["BC:24:11:33:8D:CE"]
+  to   = unifi_client.guest_vlan["home-20"]
+}
+
+removed {
+  from = module.home.proxmox_virtual_environment_container.this
   lifecycle {
     destroy = false
   }
