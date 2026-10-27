@@ -1,8 +1,9 @@
 # Home
 
-NixOS LXC on Cube running Home Assistant, with Zigbee2MQTT, Matter and Music
-Assistant beside it. The container is in `terraform/cube-home.tf` and the
-services are imported in `hosts/home.nix`.
+NixOS Incus container on PVE running Home Assistant, with Zigbee2MQTT, Matter
+and Music Assistant beside it. Its size and VLAN leg are `homelab.guest` in
+`flake.nix`, `terraform/incus.tf` makes it, and the services are imported in
+`hosts/home.nix`.
 
 ## Why a container image
 
@@ -105,9 +106,10 @@ flaky.
 The container's second leg, `eth1`, is on the IoT VLAN for Matter, which
 talks IPv6 link-local and can't cross the router the way HomeKit and Hue do.
 With it, the "Home Assistant to IoT" firewall policy only matters if `eth1`
-goes away. Cube's `vmbr0` isn't VLAN-aware, so for `tag=20` Proxmox makes
-its own `vmbr0v20` bridge on `enp2s0.20` and puts `eth1` on that. Moving
-home to Incus needs a VLAN for `eth1` on PVE's `br0`.
+goes away. `eth1` is `homelab.guest.vlans`, untagged on VLAN 20 through
+PVE's VLAN-aware `br0`, with its static address in Nix. It has to keep the
+name `eth1`, since Home Assistant saves its adapters by name (Settings,
+System, Network).
 
 The LG TV is on IoT for Home Assistant but never reaches the internet. The
 "LG TV Internet" policies block both its MACs from the External zone, on IoT

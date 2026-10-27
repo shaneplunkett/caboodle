@@ -389,7 +389,7 @@
 
         paper = lxc "paper" { homelab.lanAddress = "192.168.1.155"; };
 
-        home = lxc "home" {
+        home = incus "home" {
           homelab.lanAddress = "192.168.1.117";
           homelab.guest = {
             host = "pve";
@@ -403,7 +403,6 @@
                 address = "192.168.20.117/24";
               }
             ];
-            running = false;
           };
         };
 
