@@ -59,8 +59,11 @@ in
       config.nix.package
       pkgs.colmena
       pkgs.terraform
+      pkgs.util-linux
     ];
   };
+
+  systemd.oomd.enableSystemSlice = true;
 
   systemd.tmpfiles.settings.forgejo-runner-tmp."/var/lib/private/forgejo-runner/builder/tmp".e.age =
     "1d";

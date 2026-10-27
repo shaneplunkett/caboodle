@@ -18,6 +18,15 @@ Nix store stays warm between runs. Whatever a job leaves behind stays too.
   job. nix-ld lets generic Linux binaries a job downloads, like the `ruff`
   that `uv sync` installs, run unpatched. Without it they fail with
   `Could not start dynamically linked executable`.
+- An evaluation of every host's `hydraJobs` peaks around 14 GB, and a pull
+  request's `hosts` job runs two at once. Two pull requests evaluating
+  together once filled the builder's memory. It has no swap, so the kernel
+  never killed anything. It spent 90 minutes dropping and rereading pages,
+  SSH stopped answering, and only `incus restart builder` brought it back.
+  The `hosts` job now takes a `flock` around its evaluations, since Forgejo
+  ignores `concurrency` on a job. As a backstop, systemd-oomd watches
+  `system.slice` and kills whichever service is thrashing, which fails that
+  service's jobs but leaves the box reachable.
 - The runner isn't a trusted Nix user, so a flake can't add caches for
   itself. The builder trusts the workstations' caches instead, or a desktop
   build would compile noctalia from source.
