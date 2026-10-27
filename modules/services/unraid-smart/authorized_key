@@ -1,1 +1,0 @@
-restrict,command="for d in $(smartctl --scan | cut -d' ' -f1); do smartctl --json=c -a $d; done" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA/+bavhBnqfRkvkKDGiVgQ8dkdc5XU7Ps6Cb+RXAqHy monitoring unraid-smart

@@ -22,7 +22,7 @@ the host has to keep:
 ## Media
 
 The `unraid-media` pool is bind-mounted at `/mnt/media`, the same path as
-Plex, and the apps store their paths under it. Unraid's NFS export squashes
+Plex, and the apps store their paths under it. The NAS's NFS export squashes
 every user to `nobody:users`, so the services run as their normal NixOS users
 and files still land as 99:100.
 
@@ -61,7 +61,7 @@ anything set in the web UI.
 labels are state in the data folder.
 
 - The NixOS module creates the download folders with tmpfiles, which would
-  `chmod` and `chown` them on the Unraid share. Those entries are forced
+  `chmod` and `chown` them on the NAS share. Those entries are forced
   empty so Nix never touches share permissions.
 - Torrents are outgoing only. Deluge uses a random listening port and
   nothing is forwarded to it.

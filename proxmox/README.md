@@ -33,9 +33,6 @@ A rebuilt node needs `node-exporter.sh` run again:
 - **Containers see the host's sensors.** Every LXC's node exporter reports the
   hypervisor's temperatures too, so the hardware rules only look at the
   Proxmox hosts.
-- **Unraid's disks aren't here.** Its HBA and NVMe are passed through to the
-  VM, so PVE can't see them. [docs/pve/unraid.md](../docs/pve/unraid.md)
-  covers how they're watched.
 
 ## Cube's second NVMe
 
@@ -102,16 +99,6 @@ The dry run is there to catch anything being removed, which a normal upgrade
 never does. Running the upgrade as its own unit means a dropped SSH session
 can't interrupt dpkg. The old kernel stays installed, so if a new one
 misbehaves, `proxmox-boot-tool kernel pin <version>` and a reboot goes back.
-
-Before rebooting PVE:
-
-- **Stop Unraid from its own UI first.** It has no guest agent, so Proxmox
-  can only press its power button and force it off if the array takes too
-  long to stop, which means a parity check.
-- **Check Unraid's array started.** Auto start is on in Disk Settings, but
-  if it's ever off, nothing can mount its shares until someone starts it.
-- **Then remount its shares on Cube**, because they go stale whenever
-  Unraid restarts. `docs/cube/README.md` has the commands.
 
 ## The builder's key
 

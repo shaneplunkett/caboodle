@@ -100,7 +100,7 @@ in
   config = lib.mkIf (cfg.paths != [ ]) {
     assertions = map (path: {
       assertion = path != "/mnt" && !lib.hasPrefix "/mnt/" path;
-      message = "homelab.backup.paths: ${path} is under /mnt, where Proxmox mounts the Unraid shares.";
+      message = "homelab.backup.paths: ${path} is under /mnt, where the NAS shares are mounted.";
     }) cfg.paths;
 
     homelab.secrets = [

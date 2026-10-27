@@ -6,7 +6,7 @@ backup.
 ## Storage
 
 Everything lives on the container's own disk, on cube's NVMe. Nothing is on
-Unraid, so the stale NFS mounts in [README.md](README.md) can't take it
+the NAS, so the stale NFS mounts in [README.md](README.md) can't take it
 down.
 
 The disk alert is also the "library is filling up" alert. Grow the disk in

@@ -112,8 +112,8 @@ Their final archives are on the box under `<service>-final-archives/`.
 - **Back up real paths, not symlinks.** Services with `DynamicUser` keep
   their state in `/var/lib/private/<name>`, and `/var/lib/<name>` is a
   symlink restic would store as just a link.
-- **Nothing under `/mnt` gets backed up.** That's where Proxmox mounts the
-  Unraid shares, so the module refuses those paths and restic stays on one
+- **Nothing under `/mnt` gets backed up.** That's where the NAS shares are
+  mounted, so the module refuses those paths and restic stays on one
   filesystem.
 - **A restored dump is owned by root**, since the backup runs as root.
   Copied over an existing file it keeps that file's owner, but a rebuilt host

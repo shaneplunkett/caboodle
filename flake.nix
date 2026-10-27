@@ -351,13 +351,6 @@
           deployment.tags = [ ];
         };
 
-        nas = {
-          imports = [
-            ./modules/vm.nix
-            ./hosts/nas.nix
-          ];
-        };
-
         pve = {
           imports = [ ./hosts/pve ];
           deployment.tags = [ ];

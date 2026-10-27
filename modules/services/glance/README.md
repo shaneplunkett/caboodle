@@ -49,8 +49,7 @@ each as a YAML block in its `widgets/<name>/README.md`.
 4. `git add` the new folder, since flakes can't see untracked files.
 
 Add it to this list of widgets adapted from community-widgets, so updates
-know where to look: `proxmox-ve-stats` (from `proxmox-ve-stats`), `unraid`
-(from `unraid-widget`).
+know where to look: `proxmox-ve-stats` (from `proxmox-ve-stats`).
 
 ### Why not `$include`?
 

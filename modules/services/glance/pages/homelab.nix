@@ -1,7 +1,6 @@
 {
   lib,
   nodes,
-  secrets,
 }:
 {
   name = "Homelab";
@@ -15,7 +14,6 @@
           inherit lib nodes;
           group = "homelab";
         })
-        (import ../widgets/unraid { inherit secrets; })
       ];
     }
     {

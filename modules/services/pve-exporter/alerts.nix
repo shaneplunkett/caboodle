@@ -12,7 +12,6 @@ let
     "brain"
     "ingress"
     "plex"
-    "Unraid"
   ];
 
   links = import ../grafana/links.nix;
@@ -39,10 +38,10 @@ let
     {
       type = "nfs";
       by = "storage";
-      where = "Unraid's {{ $labels.storage }} share";
+      where = "the NAS's {{ $labels.storage }} share";
       warning = null;
       critical = 0.98;
-      check = "ssh pve df -h /mnt/pve/{{ $labels.storage }}";
+      check = "ssh cube df -h /mnt/pve/{{ $labels.storage }}";
     }
   ];
 

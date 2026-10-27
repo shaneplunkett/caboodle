@@ -54,12 +54,6 @@ in
         pkce = false;
         groups = [ "proxmox_admins" ];
       };
-      unraid = {
-        name = "Unraid";
-        callbackURLs = [ "https://unraid.shaneplunkett.com/graphql/api/auth/oidc/callback" ];
-        pkce = false;
-        groups = [ "unraid_admins" ];
-      };
     };
   };
 

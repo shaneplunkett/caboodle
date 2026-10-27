@@ -1,6 +1,6 @@
 resource "proxmox_storage_nfs" "unraid_media" {
   id      = "unraid-media"
-  server  = unifi_client.device["Unraid"].fixed_ip
+  server  = unifi_client.device["Beast"].fixed_ip
   export  = "/mnt/user/Media"
   content = ["images"]
   options = "soft,nofail"
@@ -9,7 +9,7 @@ resource "proxmox_storage_nfs" "unraid_media" {
 
 resource "proxmox_storage_nfs" "unraid_appdata" {
   id      = "unraid-appdata"
-  server  = unifi_client.device["Unraid"].fixed_ip
+  server  = unifi_client.device["Beast"].fixed_ip
   export  = "/mnt/user/appdata"
   content = ["images"]
   options = "soft,nofail"
@@ -18,7 +18,7 @@ resource "proxmox_storage_nfs" "unraid_appdata" {
 
 resource "proxmox_storage_nfs" "unraid_programs" {
   id      = "unraid-programs"
-  server  = unifi_client.device["Unraid"].fixed_ip
+  server  = unifi_client.device["Beast"].fixed_ip
   export  = "/mnt/user/Programs"
   content = ["images"]
   options = "soft,nofail"

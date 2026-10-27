@@ -74,11 +74,6 @@ in
         mac = "e0:d5:5e:84:3e:48";
         proxmox = true;
       };
-      unraid = {
-        name = "Unraid";
-        ip = "192.168.1.132";
-        mac = "bc:24:11:d7:ef:b5";
-      };
       mini = {
         name = "Mini";
         ip = "192.168.1.252";

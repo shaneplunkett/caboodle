@@ -12,7 +12,7 @@ that URL or the three endpoints in it.
 ## Adding an app
 
 Check Pocket ID's [client examples](https://pocket-id.org/docs/client-examples)
-first. They cover a lot of apps, including Proxmox and Unraid, and list the
+first. They cover a lot of apps, including Proxmox, and list the
 callback URL and scopes each one wants.
 
 1. Make the client secret, which saves it in Bitwarden:
@@ -42,7 +42,7 @@ callback URL and scopes each one wants.
    ```
 
    Add `pkce = false;` if the app doesn't support PKCE. An app that isn't a
-   host in the hive, like Proxmox or Unraid, is declared in
+   host in the hive, like Proxmox, is declared in
    `modules/services/pocket-id`.
 4. Point the app at Pocket ID in its module, reading the secret from
    `config.age.secrets.<app>-oidc-client-secret.path`.
@@ -99,17 +99,6 @@ The secret goes in on stdin so it stays out of sudo's log.
   DNS is in `terraform/proxmox-dns.tf`: Blocky on dns1 and dns2 first, the
   router last as a fallback.
 - `shane@pam` is the way in when Pocket ID is down.
-
-### Unraid
-
-Unraid keeps OIDC in its own UI, under Settings, Management Access, API,
-OIDC.
-
-- The issuer URL has no trailing slash.
-- Add `groups` to the scopes, and use Advanced authorization with one rule,
-  `groups` contains `unraid_admins`. Every OIDC login signs in as root, so
-  this rule is the only thing deciding who gets in.
-- The root password still works when Pocket ID is down.
 
 ### Apps without OIDC
 

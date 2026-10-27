@@ -12,7 +12,6 @@ in
   homelab.secrets = [
     "proxmox-token"
     "linear-api-key"
-    "unraid-api-key"
     "immich-glance-api-key"
   ];
 
@@ -33,7 +32,7 @@ in
 
       pages = [
         (import ./pages/home.nix { inherit nodes secrets; })
-        (import ./pages/homelab.nix { inherit lib nodes secrets; })
+        (import ./pages/homelab.nix { inherit lib nodes; })
         (import ./pages/media.nix { inherit lib nodes; })
       ];
     };

@@ -35,10 +35,6 @@ in
     monitoring
 
   ];
-  "unraid-smart-ssh-key.age".publicKeys = [
-    shane
-    monitoring
-  ];
   "pve-exporter.age".publicKeys = [
     shane
     monitoring
@@ -213,10 +209,6 @@ in
     forge
   ];
   "immich-glance-api-key.age".publicKeys = [
-    shane
-    dashboard
-  ];
-  "unraid-api-key.age".publicKeys = [
     shane
     dashboard
   ];

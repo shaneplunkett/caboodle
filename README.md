@@ -15,7 +15,6 @@ modules/           anything more than one host can import
   homelab.nix      the homelab.* options every host declares, whatever it runs
   nixos.nix        every NixOS host: Nix settings, nh's clean, node exporter
   lxc.nix          every LXC: Proxmox LXC support, the platform, root's keys
-  vm.nix           every VM: QEMU guest support, its disk image, the platform, root's keys
   darwin/          every Mac: Nix settings, the deploy user, node exporter
   agenix/          secrets, their recipients, and the homelab.secrets option
   services/<name>/ one folder per service
