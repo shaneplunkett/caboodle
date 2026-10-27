@@ -4,6 +4,7 @@
     inputs.disko.nixosModules.disko
     ./disko.nix
     ./hardware-configuration.nix
+    ./smartctl.nix
     ../../modules/services/incus
     ../../modules/services/nas
   ];
