@@ -1,8 +1,8 @@
 # Builder
 
-NixOS LXC on PVE that runs the forge's Forgejo runner. The container is in
-`terraform/pve-builder.tf` and the service in
-`modules/services/forgejo-runner`. It keeps no state worth backing up, so a
+NixOS Incus container on PVE that runs the forge's Forgejo runner. Its size
+is `homelab.guest` in `flake.nix`, `terraform/incus.tf` makes it, and the
+service is in `modules/services/forgejo-runner`. It keeps no state worth backing up, so a
 dead builder is rebuilt from code.
 
 ## How jobs run
@@ -256,11 +256,6 @@ ssh root@builder ssh-keygen -y -f /run/agenix/builder-ssh-key
 
 ## Gotchas
 
-- **Changing a container's memory in Terraform reboots it.** The provider
-  restarts the container after a memory change, though Proxmox could apply
-  it live. For the builder that means rebooting in the middle of its own
-  apply. Resize it by hand first with `pct set <vmid> --memory <MiB>` on the
-  Proxmox node, so the plan has no memory change left to apply.
 - **`rbw add` and `rbw edit` read from stdin** when it isn't a terminal, and
   only the first line becomes the password. A multi-line value like an SSH
   key can't live in Bitwarden that way, so `builder-ssh-key` exists only in

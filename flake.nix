@@ -105,6 +105,7 @@
         }
         // settings;
       lxc = guest ./modules/lxc.nix;
+      incus = guest ./modules/incus.nix;
       systems = [
         "x86_64-linux"
         "aarch64-darwin"
@@ -370,7 +371,7 @@
 
         forge = lxc "forge" { homelab.lanAddress = "192.168.1.115"; };
 
-        builder = lxc "builder" {
+        builder = incus "builder" {
           homelab.lanAddress = "192.168.1.224";
           homelab.guest = {
             host = "pve";
@@ -378,7 +379,6 @@
             memory = 49152;
             disk = 250;
             mac = "BC:24:11:CC:42:C2";
-            running = false;
           };
           deployment.tags = [ ];
         };
