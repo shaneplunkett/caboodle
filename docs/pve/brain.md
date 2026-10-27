@@ -1,8 +1,8 @@
 # Brain
 
-NixOS LXC on PVE running the Vex brain (the memory server behind the `vex`
+NixOS LXC on Cube running the Vex brain (the memory server behind the `vex`
 CLI) and its PostgreSQL. The container is `module "brain"` in
-`terraform/pve-brain.tf`, and the service is `modules/services/vex-brain`.
+`terraform/cube-brain.tf`, and the service is `modules/services/vex-brain`.
 
 ## How it runs
 

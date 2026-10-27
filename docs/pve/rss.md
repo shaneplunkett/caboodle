@@ -1,8 +1,8 @@
 # RSS
 
-NixOS LXC on PVE running FreshRSS, the feed reader at
-`https://rss.shaneplunkett.com`. The container is `module "rss"` in
-`terraform/pve-rss.tf`, and the service is `modules/services/freshrss`.
+NixOS Incus container on PVE running FreshRSS, the feed reader at
+`https://rss.shaneplunkett.com`. Its size is `homelab.guest` in `flake.nix`,
+`terraform/incus.tf` makes it, and the service is `modules/services/freshrss`.
 
 ## Signing in
 

@@ -1,8 +1,8 @@
 # Auth
 
-NixOS LXC on PVE running Pocket ID, Shane's single sign-on. It's an
+NixOS LXC on Cube running Pocket ID, Shane's single sign-on. It's an
 OIDC provider that only does passkeys, so there are no passwords anywhere.
-The container is `module "auth"` in `terraform/pve-auth.tf`, and the service
+The container is `module "auth"` in `terraform/cube-auth.tf`, and the service
 is `modules/services/pocket-id`.
 
 The admin UI is `https://auth.shaneplunkett.com`. Pocket ID publishes its
