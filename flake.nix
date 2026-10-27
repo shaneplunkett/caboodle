@@ -334,7 +334,16 @@
 
         monitoring = lxc "monitoring" { homelab.lanAddress = "192.168.1.78"; };
 
-        ingress = lxc "ingress" { homelab.lanAddress = "192.168.1.149"; };
+        ingress = lxc "ingress" {
+          homelab.lanAddress = "192.168.1.149";
+          homelab.guest = {
+            host = "pve";
+            cores = 1;
+            memory = 1024;
+            mac = "BC:24:11:42:4E:7D";
+            running = false;
+          };
+        };
 
         dns1 = incus "dns" {
           homelab.lanAddress = "192.168.1.91";
@@ -383,11 +392,38 @@
 
         home = lxc "home" { homelab.lanAddress = "192.168.1.117"; };
 
-        brain = lxc "brain" { homelab.lanAddress = "192.168.1.243"; };
+        brain = lxc "brain" {
+          homelab.lanAddress = "192.168.1.243";
+          homelab.guest = {
+            host = "pve";
+            cores = 4;
+            memory = 8192;
+            disk = 64;
+            mac = "BC:24:11:D3:65:F1";
+            running = false;
+          };
+        };
 
-        auth = lxc "auth" { homelab.lanAddress = "192.168.1.31"; };
+        auth = lxc "auth" {
+          homelab.lanAddress = "192.168.1.31";
+          homelab.guest = {
+            host = "pve";
+            cores = 1;
+            memory = 1024;
+            mac = "BC:24:11:40:64:96";
+            running = false;
+          };
+        };
 
-        forge = lxc "forge" { homelab.lanAddress = "192.168.1.115"; };
+        forge = lxc "forge" {
+          homelab.lanAddress = "192.168.1.115";
+          homelab.guest = {
+            host = "pve";
+            disk = 32;
+            mac = "BC:24:11:12:40:4A";
+            running = false;
+          };
+        };
 
         builder = incus "builder" {
           homelab.lanAddress = "192.168.1.224";

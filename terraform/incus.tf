@@ -101,3 +101,51 @@ removed {
     destroy = false
   }
 }
+
+moved {
+  from = module.auth.unifi_client.this
+  to   = unifi_client.guest["auth"]
+}
+
+removed {
+  from = module.auth.proxmox_virtual_environment_container.this
+  lifecycle {
+    destroy = false
+  }
+}
+
+moved {
+  from = module.ingress.unifi_client.this
+  to   = unifi_client.guest["ingress"]
+}
+
+removed {
+  from = module.ingress.proxmox_virtual_environment_container.this
+  lifecycle {
+    destroy = false
+  }
+}
+
+moved {
+  from = module.brain.unifi_client.this
+  to   = unifi_client.guest["brain"]
+}
+
+removed {
+  from = module.brain.proxmox_virtual_environment_container.this
+  lifecycle {
+    destroy = false
+  }
+}
+
+moved {
+  from = module.forge.unifi_client.this
+  to   = unifi_client.guest["forge"]
+}
+
+removed {
+  from = module.forge.proxmox_virtual_environment_container.this
+  lifecycle {
+    destroy = false
+  }
+}
