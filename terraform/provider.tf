@@ -1,5 +1,5 @@
 provider "proxmox" {
-  endpoint  = local.pve.api_url
+  endpoint  = local.cube.api_url
   api_token = var.pve_api_token
   insecure  = true
 
@@ -7,11 +7,6 @@ provider "proxmox" {
     agent    = false
     username = "shane"
 
-    node {
-      name    = local.pve.name
-      address = local.pve.ip
-
-    }
     node {
       name    = local.cube.name
       address = local.cube.ip

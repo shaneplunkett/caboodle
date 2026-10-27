@@ -1,6 +1,5 @@
 resource "terraform_data" "node_exporter" {
   for_each = {
-    (local.pve.name)  = local.pve.ip
     (local.cube.name) = local.cube.ip
   }
 
