@@ -1,8 +1,8 @@
 # Forge
 
-NixOS LXC on Cube running Forgejo, Shane's git forge. The container is
-`module "forge"` in `terraform/cube-forge.tf`, and the service is
-`modules/services/forgejo`.
+NixOS Incus container on PVE running Forgejo, Shane's git forge. Its size
+is `homelab.guest` in `flake.nix`, `terraform/incus.tf` makes it, and the
+service is `modules/services/forgejo`.
 
 The web UI is `https://git.shaneplunkett.com`, through ingress. SSH clones
 go straight to the host over the tailnet, as

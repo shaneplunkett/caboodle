@@ -1,8 +1,9 @@
 # Brain
 
-NixOS LXC on Cube running the Vex brain (the memory server behind the `vex`
-CLI) and its PostgreSQL. The container is `module "brain"` in
-`terraform/cube-brain.tf`, and the service is `modules/services/vex-brain`.
+NixOS Incus container on PVE running the Vex brain (the memory server behind
+the `vex` CLI) and its PostgreSQL. Its size is `homelab.guest` in
+`flake.nix`, `terraform/incus.tf` makes it, and the service is
+`modules/services/vex-brain`.
 
 ## How it runs
 

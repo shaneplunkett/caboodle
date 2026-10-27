@@ -1,9 +1,9 @@
 # Auth
 
-NixOS LXC on Cube running Pocket ID, Shane's single sign-on. It's an
-OIDC provider that only does passkeys, so there are no passwords anywhere.
-The container is `module "auth"` in `terraform/cube-auth.tf`, and the service
-is `modules/services/pocket-id`.
+NixOS Incus container on PVE running Pocket ID, Shane's single sign-on.
+It's an OIDC provider that only does passkeys, so there are no passwords
+anywhere. Its size is `homelab.guest` in `flake.nix`, `terraform/incus.tf`
+makes it, and the service is `modules/services/pocket-id`.
 
 The admin UI is `https://auth.shaneplunkett.com`. Pocket ID publishes its
 endpoints at `/.well-known/openid-configuration`, and most apps only need
