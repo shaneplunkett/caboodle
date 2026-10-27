@@ -1,7 +1,7 @@
 module "ingress" {
   source        = "./modules/nixos-lxc"
   hostname      = "ingress"
-  node_name     = local.pve.name
+  node_name     = local.cube.name
   ip            = "dhcp"
   mac_address   = "BC:24:11:42:4E:7D"
   lan_addresses = local.lan_addresses
