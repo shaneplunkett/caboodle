@@ -1,11 +1,7 @@
-{ pkgs, ... }:
-{
-  environment.systemPackages = [ pkgs.smartmontools ];
+_: {
+  imports = [ ../../modules/services/smartctl ];
 
   services.prometheus.exporters.smartctl = {
-    enable = true;
-    openFirewall = true;
-    maxInterval = "5m";
     devices = map (id: "/dev/disk/by-id/${id}") [
       "ata-ST12000VN0008-2YS101_ZV7086XX"
       "ata-ST12000VN0008-2YS101_ZRT05E1B"

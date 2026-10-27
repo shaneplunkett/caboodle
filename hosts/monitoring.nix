@@ -4,6 +4,7 @@
     ../modules/services/pve-exporter
     ../modules/services/proxmox-hosts
     ../modules/services/smartctl/alerts.nix
+    ../modules/services/nas/alerts.nix
     ../modules/services/alertmanager
     ../modules/services/gatus/alerts.nix
     ../modules/services/grafana

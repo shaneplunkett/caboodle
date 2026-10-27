@@ -125,8 +125,6 @@ and nothing gets debugged twice at once.
 ## Left to decide
 
 - LVM-thin or btrfs for the Incus storage pool on each host.
-- SMART monitoring, now that `unraid-smart` has nothing to SSH into. Running
-  smartctl on the NAS host itself is the obvious answer.
 - Retiring Unraid's UI, its Glance widget, its Pocket ID client and its
   ingress route.
 - Whether the desktop moves from SMB to NFS.

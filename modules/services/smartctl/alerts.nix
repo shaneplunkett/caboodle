@@ -8,7 +8,7 @@ let
   monitored = lib.filterAttrs (
     _: node: node.config.services.prometheus.exporters.smartctl.enable or false
   ) nodes;
-  hosts = ''host=~"${lib.concatStringsSep "|" (lib.attrNames monitored)}"'';
+  hostMatcher = ''host=~"${lib.concatStringsSep "|" (lib.attrNames monitored)}"'';
   smartLog = "ssh root@{{ $labels.host }} smartctl -a /dev/disk/by-id/{{ $labels.device }}";
 
   missingDrives = lib.concatLists (
@@ -67,7 +67,7 @@ in
                 }
                 {
                   alert = "SmartctlReadFailed";
-                  expr = "smartctl_device_smartctl_exit_status{${hosts}} % 8 > 0";
+                  expr = "smartctl_device_smartctl_exit_status{${hostMatcher}} % 8 > 0";
                   for = "10m";
                   labels.severity = "warning";
                   annotations = {
@@ -78,7 +78,7 @@ in
                 }
                 {
                   alert = "SmartctlHealthFailed";
-                  expr = "smartctl_device_smart_status{${hosts}} == 0";
+                  expr = "smartctl_device_smart_status{${hostMatcher}} == 0";
                   labels.severity = "critical";
                   annotations = {
                     summary = "{{ $labels.device }} on {{ $labels.host }} is failing SMART health checks";
@@ -88,17 +88,17 @@ in
                 }
                 {
                   alert = "SmartctlSectorsGrowing";
-                  expr = ''delta(smartctl_device_attribute{${hosts}, attribute_value_type="raw", attribute_id=~"5|197|198"}[1d]) > 0'';
+                  expr = ''delta(smartctl_device_attribute{${hostMatcher}, attribute_value_type="raw", attribute_id="5"}[1d]) > 0'';
                   labels.severity = "warning";
                   annotations = {
                     summary = "{{ $labels.device }} on {{ $labels.host }} has more {{ $labels.attribute_name }} sectors";
-                    condition = "Reallocated, pending or uncorrectable sectors increased in the last day";
+                    condition = "Reallocated sectors increased in the last day";
                     check = smartLog;
                   };
                 }
                 {
                   alert = "SmartctlPendingSectors";
-                  expr = ''smartctl_device_attribute{${hosts}, attribute_value_type="raw", attribute_id=~"197|198"} > 0'';
+                  expr = ''smartctl_device_attribute{${hostMatcher}, attribute_value_type="raw", attribute_id=~"197|198"} > 0'';
                   for = "5m";
                   labels.severity = "warning";
                   annotations = {
@@ -109,7 +109,7 @@ in
                 }
                 {
                   alert = "SmartctlDriveHot";
-                  expr = ''(smartctl_device_temperature{${hosts}, temperature_type="current"} > 50 and on(host, device) smartctl_device{protocol="ATA"}) or (smartctl_device_temperature{${hosts}, temperature_type="current"} > 70 and on(host, device) smartctl_device{protocol="NVMe"})'';
+                  expr = ''(smartctl_device_temperature{${hostMatcher}, temperature_type="current"} > 50 and on(host, device) smartctl_device{protocol="ATA"}) or (smartctl_device_temperature{${hostMatcher}, temperature_type="current"} > 70 and on(host, device) smartctl_device{protocol="NVMe"})'';
                   for = "10m";
                   labels.severity = "warning";
                   annotations = {
@@ -120,7 +120,7 @@ in
                 }
                 {
                   alert = "SmartctlCriticalWarning";
-                  expr = "smartctl_device_critical_warning{${hosts}} > 0";
+                  expr = "smartctl_device_critical_warning{${hostMatcher}} > 0";
                   labels.severity = "critical";
                   annotations = {
                     summary = "{{ $labels.device }} on {{ $labels.host }} is raising NVMe critical warning {{ $value }}";
@@ -130,7 +130,7 @@ in
                 }
                 {
                   alert = "SmartctlMediaErrors";
-                  expr = "increase(smartctl_device_media_errors{${hosts}}[1d]) > 0";
+                  expr = "increase(smartctl_device_media_errors{${hostMatcher}}[1d]) > 0";
                   labels.severity = "warning";
                   annotations = {
                     summary = "{{ $labels.device }} on {{ $labels.host }} logged new NVMe media errors";
@@ -140,7 +140,7 @@ in
                 }
                 {
                   alert = "SmartctlSpareLow";
-                  expr = "smartctl_device_available_spare{${hosts}} < 2 * smartctl_device_available_spare_threshold{${hosts}}";
+                  expr = "smartctl_device_available_spare{${hostMatcher}} < 2 * smartctl_device_available_spare_threshold{${hostMatcher}}";
                   labels.severity = "warning";
                   annotations = {
                     summary = "{{ $labels.device }} on {{ $labels.host }} has {{ $value }}% spare blocks left";
@@ -150,23 +150,12 @@ in
                 }
                 {
                   alert = "SmartctlWearingOut";
-                  expr = "smartctl_device_percentage_used{${hosts}} >= 90";
+                  expr = "smartctl_device_percentage_used{${hostMatcher}} >= 90";
                   labels.severity = "warning";
                   annotations = {
                     summary = "{{ $labels.device }} on {{ $labels.host }} has used {{ $value }}% of its rated endurance";
                     condition = "At least 90% of the manufacturer's rated NVMe endurance used";
                     check = smartLog;
-                  };
-                }
-                {
-                  alert = "NasDiskSpaceLow";
-                  expr = ''node_filesystem_avail_bytes{${hosts}, fstype="xfs", mountpoint=~"/mnt/disk[0-9]+"} < 200 * 1000 * 1000 * 1000'';
-                  for = "10m";
-                  labels.severity = "warning";
-                  annotations = {
-                    summary = "{{ $labels.mountpoint }} on {{ $labels.host }} has {{ $value | humanize1024 }}B free";
-                    condition = "Less than 200 GB free on this data disk for 10m";
-                    check = "ssh root@{{ $labels.host }} df -h {{ $labels.mountpoint }}";
                   };
                 }
               ]
