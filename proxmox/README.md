@@ -37,7 +37,7 @@ A rebuilt Cube needs `node-exporter.sh` run again:
 
 - **Containers see the host's sensors.** Every container's node exporter
   reports the hypervisor's temperatures too, so the hardware rules only look
-  at Cube.
+  at the hypervisors themselves.
 
 ## Cube's second NVMe
 
