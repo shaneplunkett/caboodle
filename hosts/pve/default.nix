@@ -16,7 +16,7 @@
   networking.hostName = "pve";
 
   homelab = {
-    monitoring.enable = false;
+    lanAddress = config.homelab.devices.pve.ip;
     tailscale.subnetRouter = true;
     incus = {
       uplink = "eno1";

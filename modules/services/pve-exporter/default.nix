@@ -22,7 +22,7 @@ in
         cluster = [ "1" ];
         node = [ "1" ];
       };
-      static_configs = [ { targets = [ config.homelab.devices.pve.ip ]; } ];
+      static_configs = [ { targets = [ config.homelab.devices.cube.ip ]; } ];
       relabel_configs = [
         {
           source_labels = [ "__address__" ];

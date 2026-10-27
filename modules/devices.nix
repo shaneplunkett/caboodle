@@ -66,7 +66,6 @@ in
         name = "Beast";
         ip = "192.168.1.169";
         mac = "e8:9c:25:7a:2d:c4";
-        proxmox = true;
       };
       cube = {
         name = "Cube";
