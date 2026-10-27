@@ -18,6 +18,7 @@ let
     home
     photos
     paper
+    pve
     ;
 in
 {
@@ -122,6 +123,7 @@ in
     home
     photos
     paper
+    pve
   ];
   "backup-brain.age".publicKeys = [
     shane

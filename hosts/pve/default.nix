@@ -17,7 +17,7 @@
 
   homelab = {
     monitoring.enable = false;
-    tailscale.enable = false;
+    tailscale.subnetRouter = true;
     incus = {
       uplink = "eno1";
       inherit (config.homelab.devices.pve) mac;
