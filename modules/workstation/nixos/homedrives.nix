@@ -20,6 +20,7 @@ in
         "vers=3.0"
         "x-systemd.automount"
         "x-systemd.idle-timeout=600"
+        "x-systemd.mount-timeout=5s"
         "nofail"
       ];
     }
