@@ -84,8 +84,8 @@ come back on by themselves, and the plugs in its `plugs` variable.
 - It only acts in the first 20 minutes after pve boots, so a Home Assistant
   restart or a device rejoining Wi-Fi can't turn off a 3D printer mid-print.
 - It reads the boot time from System Monitor's
-  `sensor.system_monitor_uptime`. Inside podman, `/proc/uptime` is the
-  Proxmox host's, which is exactly what a power cut resets. System Monitor
+  `sensor.system_monitor_uptime`. Inside podman, `/proc/uptime` is PVE's,
+  which is exactly what a power cut resets. System Monitor
   ships that sensor disabled, so it has to be turned on.
 
 ## Scenes
@@ -142,10 +142,11 @@ firmware updates, which keeps it rootable.
 The Eve Aqua is HomeKit over Thread, reached through the route Apple's
 border routers (the HomePod and the Apple TV) advertise.
 
-- **The host has to accept IPv6 router adverts.** Proxmox turns
-  `IPv6AcceptRA` off in the container's `eth0.network`, so the module turns
-  it back on with a drop-in. Without the route, pairing fails with
-  `NetworkError`.
+- **The host has to accept IPv6 router adverts.** networkd's default only
+  accepts them while IPv6 forwarding is off, so `hosts/home.nix` sets
+  `IPv6AcceptRA` on `eth0` outright. Without the route, pairing fails with
+  `NetworkError`. On home, `ip -6 route` shows it as `proto ra`, via each
+  border router.
 - **Every Apple border router has to be on the main LAN.** When the Apple TV
   sat on the IoT VLAN, the Aqua's replies left through it and were dropped at
   the firewall, so pairing timed out.

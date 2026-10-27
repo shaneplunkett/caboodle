@@ -49,11 +49,6 @@ in
 
   systemd.tmpfiles.rules = [ "d ${dataDir} 0750 root root -" ];
 
-  environment.etc."systemd/network/eth0.network.d/50-accept-ra.conf".text = ''
-    [Network]
-    IPv6AcceptRA=true
-  '';
-
   networking.firewall = {
     allowedTCPPorts = [ port ];
     allowedUDPPorts = [ 5353 ];
