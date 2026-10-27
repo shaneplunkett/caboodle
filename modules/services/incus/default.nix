@@ -45,6 +45,8 @@ in
       };
     };
 
+    services.lvm.boot.thin.enable = true;
+
     virtualisation.incus = {
       enable = true;
       preseed = {
