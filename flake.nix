@@ -341,8 +341,6 @@
             memory = 1024;
             mac = "BC:24:11:10:29:FC";
           };
-          homelab.monitoring.enable = false;
-          deployment.tags = [ ];
         };
 
         dns2 = lxc "dns" {
