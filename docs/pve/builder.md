@@ -228,9 +228,10 @@ rbw get nix-cache-signing-key | nix key convert-secret-to-public
 
 A build only stays cached while something roots it, because the store is
 collected weekly and whenever free space drops below `min-free`. Jobs root
-a build with `--out-link` into the runner's state directory. `min-free` has
-to leave more room than the disk alert does, or Discord hears about a full
-disk before Nix gets a chance to clear it.
+a build with `--out-link` into the runner's state directory. The builder's
+disk alert is worked out from `min-free` in `hosts/builder.nix`, set 5 GiB
+past it, so Discord only hears about a full disk when collection can't keep
+up.
 
 The build workflow also runs on pushes to `main` only to root each host's
 latest build, so the desktop and MacBook stay cached until they're switched.
