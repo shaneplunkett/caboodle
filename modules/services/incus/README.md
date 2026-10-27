@@ -61,6 +61,15 @@ narrows `/proc/stat` to the guest's pinned CPUs, but on cgroup v2 the times
 are the host's, so a guest sharing CPUs with the builder looks as busy as
 the builder. The CPU alert and the dashboard read Incus instead.
 
+The pool alerts read Incus's pool size and used bytes, which for LVM are the
+thin pool's data use, the same as `lvs`. Two gaps need covering beside them.
+When Incus fails to read a pool it leaves the pool out and the scrape still
+succeeds, so `IncusPoolMetricsMissing` watches for each preseed pool's series
+going missing. Incus doesn't report the thin pool's metadata, which breaks
+the pool just as surely when it fills, so `incus-thinpool-metrics` writes
+both percentages from `lvs` into node exporter's textfile directory every
+minute.
+
 ## Looking after a guest
 
 On the guest's Incus host:
