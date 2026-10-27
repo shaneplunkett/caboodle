@@ -8,11 +8,7 @@
 let
   byThreshold = import ../prometheus/thresholds.nix { inherit lib nodes options; } "name";
 
-  criticalGuests = [
-    "brain"
-    "ingress"
-    "plex"
-  ];
+  criticalGuests = [ "plex" ];
 
   links = import ../grafana/links.nix;
 
@@ -45,6 +41,10 @@ let
     }
   ];
 
+  usage = "max without (instance) (pve_disk_usage_bytes)";
+  week = "7d:1h";
+  minimumHours = 72;
+
   perStorage =
     s: expr:
     ''max by (${s.by}) ((${expr}) * on(id) group_left(node, storage) pve_storage_info{plugintype="${s.type}"})'';
@@ -71,7 +71,7 @@ let
       (full s "StorageAlmostFull" "critical" s.critical)
       {
         alert = "StorageRunningOut";
-        expr = "${perStorage s "(pve_disk_size_bytes - pve_disk_usage_bytes) / (deriv(pve_disk_usage_bytes[7d]) > 0)"} < 14 * 86400";
+        expr = "${perStorage s "max without (instance) (pve_disk_size_bytes - pve_disk_usage_bytes) / (deriv((${usage})[${week}]) > 0) and on(id) count_over_time((${usage})[${week}]) >= ${toString minimumHours}"} < 14 * 86400";
         for = "1h";
         labels = {
           severity = "warning";
@@ -79,7 +79,7 @@ let
         };
         annotations = {
           summary = "${s.where} fills up in {{ $value | humanizeDuration }} at this week's rate";
-          condition = "Projected full within 14d for 1h";
+          condition = "Projected full within 14d for 1h, from at least ${toString minimumHours}h of history";
           inherit (s) check;
         };
       }
@@ -93,26 +93,7 @@ in
           {
             name = "pve";
             rules =
-              byThreshold "disk" (
-                {
-                  value,
-                  percent,
-                  matcher,
-                }:
-                {
-                  alert = "LxcDiskFilling";
-                  expr = ''(pve_disk_usage_bytes / pve_disk_size_bytes) * on(id) group_left(name, node) pve_guest_info{type="lxc", ${matcher}} > ${toString value}'';
-                  for = "10m";
-                  labels.severity = "warning";
-                  annotations = {
-                    summary = "{{ $labels.name }} on {{ $labels.node }} is {{ $value | humanizePercentage }} full";
-                    condition = "Root disk over ${percent} for 10m";
-                    check = ''ssh {{ $labels.node }} sudo pct exec {{ reReplaceAll "^lxc/" "" $labels.id }} -- du -xh -d2 / | sort -h | tail'';
-                    dashboard = links.hostHealth "{{ $labels.name }}";
-                  };
-                }
-              )
-              ++ byThreshold "cpu" (
+              byThreshold "cpu" (
                 {
                   value,
                   percent,

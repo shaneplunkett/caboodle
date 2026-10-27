@@ -1,4 +1,8 @@
-{ lib, proxmox }:
+{
+  lib,
+  proxmox,
+  incus,
+}:
 let
   inherit (import ./panels.nix { inherit lib; })
     prometheus
@@ -14,7 +18,8 @@ let
     dashboard
     ;
 
-  containers = ''job="node",host!~"${lib.concatStringsSep "|" proxmox}"'';
+  hypervisors = proxmox ++ lib.attrNames incus;
+  containers = ''job="node",host!~"${lib.concatStringsSep "|" hypervisors}"'';
   guestStorage = "local-lvm";
 
   physicalNics = ''device=~"eth.*|en.*"'';
@@ -25,6 +30,7 @@ let
     ''100 * (1 - avg by (host) (rate(node_cpu_seconds_total{${selector},mode="idle"}[${window}])))'';
   guestCpuUsed =
     selector: "100 * pve_cpu_usage_ratio * on (id) group_left (name) pve_guest_info{${selector}}";
+  containerCpuUsed = ''label_replace(${guestCpuUsed lxc}, "host", "$1", "name", "(.*)") or on (host) ${cpuUsed containers "$__rate_interval"}'';
   memory = import ../../prometheus/memory.nix;
   memoryUsed =
     selector:
@@ -39,11 +45,24 @@ let
     direction: selector:
     "rate(node_network_${direction}_bytes_total{${selector},${physicalNics}}[$__rate_interval])";
 
-  proxmoxCard =
+  hypervisorCard =
     x: name:
     let
       node = ''host="${name}"'';
       storage = ''id="storage/${name}/${guestStorage}"'';
+      guests =
+        if incus ? ${name} then
+          [
+            (query "Root disk" (rootUsed node))
+            (query "Guests up" ''count(up{job="node",host=~"${
+              lib.concatStringsSep "|" incus.${name}
+            }"} == 1) or vector(0)'')
+          ]
+        else
+          [
+            (query "Guest storage" "100 * pve_disk_usage_bytes{${storage}} / pve_disk_size_bytes{${storage}}")
+            (query "Guests up" ''count(pve_up * on (id) group_right () pve_guest_info{node="${name}"} == 1) or vector(0)'')
+          ];
     in
     stat {
       title = name;
@@ -52,9 +71,8 @@ let
       targets = [
         (query "CPU" (cpuUsed node "$__rate_interval"))
         (query "Memory" (memoryUsed node))
-        (query "Guest storage" "100 * pve_disk_usage_bytes{${storage}} / pve_disk_size_bytes{${storage}}")
-        (query "Guests up" ''count(pve_up * on (id) group_right () pve_guest_info{node="${name}"} == 1) or vector(0)'')
-      ];
+      ]
+      ++ guests;
       defaults = removeAttrs percent [ "max" ];
       overrides = [ (byRefId "D" plainNumber) ];
     };
@@ -86,18 +104,18 @@ dashboard {
   ];
 
   panels = [
-    (row "Proxmox" 0)
+    (row "Hypervisors" 0)
   ]
-  ++ lib.imap0 (i: proxmoxCard (i * 12)) proxmox
+  ++ lib.imap0 (i: hypervisorCard (i * 12)) hypervisors
   ++ [
     (row "Containers" 6)
-    (usageNow "CPU now" (at 0 7 8 11) "{{name}}" (guestCpuUsed lxc))
+    (usageNow "CPU now" (at 0 7 8 11) "{{host}}" containerCpuUsed)
     (usageNow "Memory now" (at 8 7 8 11) "{{host}}" (memoryUsed containers))
     (usageNow "Root disk now" (at 16 7 8 11) "{{host}}" (rootUsed containers))
     (overTime {
       title = "CPU";
       gridPos = at 0 18 12 9;
-      targets = [ (query "{{name}}" (guestCpuUsed lxc)) ];
+      targets = [ (query "{{host}}" containerCpuUsed) ];
     })
     (overTime {
       title = "Memory";

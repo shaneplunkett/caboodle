@@ -11,6 +11,17 @@ let
     hosts = import ./dashboards/hosts.nix {
       inherit lib;
       proxmox = lib.attrNames config.homelab.proxmoxNodes;
+      incus = lib.mapAttrs (
+        host: _:
+        lib.attrNames (
+          lib.filterAttrs (
+            _: node:
+            node.config.homelab.monitoring.enable
+            && node.config.homelab.guest != null
+            && node.config.homelab.guest.host == host
+          ) nodes
+        )
+      ) (lib.filterAttrs (_: node: node.config.virtualisation.incus.enable or false) nodes);
     };
     dns = import ./dashboards/dns.nix { inherit lib nodes; };
     logs = import ./dashboards/logs.nix { inherit lib; };
