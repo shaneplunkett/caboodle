@@ -18,11 +18,6 @@ in
       type = lib.types.str;
       description = "The bridge's MAC, the uplink's own, so the host keeps its UniFi reservation.";
     };
-
-    storage = lib.mkOption {
-      type = lib.types.str;
-      description = "The block device Incus turns into an LVM thin pool for the guests' disks.";
-    };
   };
 
   config = {
@@ -63,7 +58,7 @@ in
             name = "default";
             driver = "lvm";
             config = {
-              source = cfg.storage;
+              source = "incus";
               "lvm.vg_name" = "incus";
             };
           }

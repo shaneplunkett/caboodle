@@ -4,6 +4,14 @@ Runs Incus on a NixOS host, with a bridge onto the LAN and an LVM-thin pool
 for the guests' disks. `virtualisation.incus.preseed` sets up the pool and
 the `default` profile, so they come from Nix rather than `incus admin init`.
 
+## Storage
+
+The host's disko makes an empty LVM volume group called `incus`, and the
+pool's `source` names that group rather than a partition. Once it creates a
+pool, Incus records its source as the group's name, so a preseed naming the
+partition fails on every run after the first ("Pool source cannot be
+changed"), and never reaches the profile.
+
 ## Terraform's access
 
 Terraform talks to Incus over HTTPS on port 8443 with a client certificate.

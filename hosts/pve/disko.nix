@@ -23,8 +23,19 @@ _: {
             mountpoint = "/";
           };
         };
-        incus.size = "100%";
+        incus = {
+          size = "100%";
+          content = {
+            type = "lvm_pv";
+            vg = "incus";
+          };
+        };
       };
     };
+  };
+
+  disko.devices.lvm_vg.incus = {
+    type = "lvm_vg";
+    lvs = { };
   };
 }

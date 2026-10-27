@@ -21,7 +21,6 @@
     incus = {
       uplink = "eno1";
       inherit (config.homelab.devices.pve) mac;
-      storage = "/dev/disk/by-partlabel/disk-main-incus";
     };
   };
 
