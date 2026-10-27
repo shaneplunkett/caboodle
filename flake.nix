@@ -330,8 +330,6 @@
             host = "pve";
             mac = "BC:24:11:C0:8C:06";
           };
-          homelab.monitoring.enable = false;
-          deployment.tags = [ ];
         };
 
         monitoring = lxc "monitoring" { homelab.lanAddress = "192.168.1.78"; };
@@ -367,8 +365,6 @@
             memory = 1024;
             mac = "BC:24:11:C4:3F:EC";
           };
-          homelab.monitoring.enable = false;
-          deployment.tags = [ ];
         };
 
         rss = incus "rss" {
@@ -379,8 +375,6 @@
             memory = 1024;
             mac = "BC:24:11:FD:C5:8A";
           };
-          homelab.monitoring.enable = false;
-          deployment.tags = [ ];
         };
 
         photos = lxc "photos" { homelab.lanAddress = "192.168.1.154"; };
