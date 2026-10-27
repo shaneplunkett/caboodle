@@ -2,8 +2,9 @@
 
 ## Summary
 
-Secondary Proxmox host. Runs the always-on services that need to stay
-stable and away from experiments on PVE.
+The one Proxmox node left, a cluster of one. Its guests are Proxmox LXCs
+from `terraform/cube-*.tf` until they move to Incus, the way PVE's did
+([incus](../../modules/services/incus/README.md#moving-a-guest-onto-incus)).
 
 Per-service docs:
 

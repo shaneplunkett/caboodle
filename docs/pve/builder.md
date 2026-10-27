@@ -49,8 +49,8 @@ That graceful restart is also why the builder can't switch twice in one
 deploy. Every switch restarts `sysinit-reactivation.target`, and while the
 runner is stopping, that restart waits for the stop, which waits for the
 deploy job, which waits for the switch. New units queue behind it too, so SSH
-stops answering, and only restarting the container clears it. A second switch
-looked free while the config was unchanged, until a systemd bump made the
+stops answering, and only `incus restart builder` on PVE clears it. A second
+switch looked free while the config was unchanged, until a systemd bump made the
 first switch reload the runner.
 
 ## Pull requests
@@ -102,9 +102,11 @@ Cloudflare out first, since it shares the least.
 
 State is in Terraform Cloud. The tokens are agenix secrets the runner loads
 as credentials. Three have other names in Bitwarden: `homelab_tfc_token`,
-`homelab_pve_token` and `homelab_hcloud_token`. Setting a container's devices
+`homelab_pve_token` and `homelab_hcloud_token`. Setting a Cube LXC's devices
 and bind mounts runs `pct` over SSH as `shane`, so the builder's key is in
-`shane`'s authorized keys on both nodes.
+`shane`'s authorized keys on Cube. Incus guests need none of that, since
+Terraform reaches Incus with its own client certificate
+([incus](../../modules/services/incus/README.md#terraforms-access)).
 
 A changed secret restarts the runner the same graceful way. Its restart
 triggers hash the `.age` files, because their paths sit in the flake's

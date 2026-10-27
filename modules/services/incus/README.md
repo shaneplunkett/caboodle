@@ -61,6 +61,85 @@ narrows `/proc/stat` to the guest's pinned CPUs, but on cgroup v2 the times
 are the host's, so a guest sharing CPUs with the builder looks as busy as
 the builder. The CPU alert and the dashboard read Incus instead.
 
+## Looking after a guest
+
+On the guest's Incus host:
+
+- `incus restart <guest>` restarts it.
+- `incus exec <guest> -- bash` opens a shell, even when the guest's network
+  or SSH is down.
+
+To resize one, change `cores`, `memory` or `disk` in its `homelab.guest`
+and merge. Terraform applies it before any host deploys.
+
+Incus keeps no snapshots or backups of its own. What's worth keeping is in
+each service's `homelab.backup.paths`, which restic sends offsite, so a dead
+guest is made again by Terraform and restored from there
+([hetzner](../../../docs/hetzner/README.md#restoring-a-hosts-data)).
+
+## Moving a guest onto Incus
+
+This is how PVE's Proxmox LXCs moved, and it's how Cube's will. The guest
+keeps its identity, so nothing is rekeyed or restored from backup. It takes
+two pull requests, and nothing else merges between them.
+
+1. The first gives the node a `homelab.guest` with its old MAC and
+   `running = false`, and keeps the `lxc` helper. In Terraform, its
+   `cube-<guest>.tf` goes, a `moved` block hands the old UniFi client to
+   `unifi_client.guest`, and a `removed` block with `destroy = false`
+   forgets the old container without deleting it. Merging creates the new container, stopped.
+2. By hand, stop the apps, alloy and tailscaled on the old host. Stream its
+   host keys and `/var/lib` to the Incus host:
+
+   ```sh
+   ssh root@<old> 'tar -C / --numeric-owner --exclude=var/lib/systemd \
+     --exclude=var/lib/containers -cpf - etc/ssh/ssh_host_* var/lib' \
+     | ssh root@<incus-host> 'cat > /root/<guest>.tar'
+   ```
+
+   Shut the old one down and set it not to start on boot (`pct set <id>
+   --onboot 0` on Cube), since the new one has its MAC. Then on the Incus
+   host:
+
+   ```sh
+   incus start <guest>
+   incus exec <guest> -- tar -C / --numeric-owner -xpf - < /root/<guest>.tar
+   ```
+
+3. Build the second pull request's system on the builder before it
+   merges (`.#hydraJobs.<guest>`), and switch the guest to it from
+   `incus exec <guest> -- bash`, with the cache's key from
+   `modules/workstation/nix-settings.nix`:
+
+   ```sh
+   nix copy --from http://<builder>:5000 $path --option extra-trusted-public-keys <key>
+   nix-env -p /nix/var/nix/profiles/system --set $path
+   $path/bin/switch-to-configuration switch
+   ```
+
+4. The second pull request switches the node to the `incus` helper and
+   drops `running = false`.
+
+Why it works:
+
+- `/var/lib/nixos` keeps the uids and gids, so the files still belong to
+  the right users.
+- The old host keys mean agenix needs no rekey.
+- `/var/lib/tailscale` keeps the tailnet node, so it isn't `<guest>-1`.
+- Postgres is copied raw while it's stopped, so there's no dump and restore.
+
+Gotchas:
+
+- **Never fetch from `cache.shaneplunkett.com` while moving ingress.** The
+  cache is served through ingress, and fetching from it mid-move took
+  everything web down for 4 minutes. Go to Harmonia on the builder directly.
+- **Don't SSH over Tailscale to a host and stop its tailscaled.** Use the
+  LAN address.
+- **Podman images pinned by tag can be left out.** They pull again on
+  start, which is why the tar skips `var/lib/containers`.
+- **An interface name an app saves must stay the same.** Home Assistant
+  saves `eth1`, so home's VLAN leg is still `eth1`.
+
 ## VLANs
 
 `br0` filters by VLAN, like a VLAN-aware bridge on Proxmox. The uplink

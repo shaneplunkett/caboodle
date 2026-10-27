@@ -1,18 +1,23 @@
 # Proxmox nodes
 
-Config that lives on the Proxmox hosts themselves, where Nix can't reach.
+Config that lives on Cube itself, where Nix can't reach. Cube is the only
+Proxmox node left, a cluster of one. PVE is a NixOS host now, so none of
+this applies to it ([docs/pve](../docs/pve/README.md)).
 
 ## TUN for containers
 
-`90-homelab-tun.conf` gives every container on a Proxmox node `/dev/net/tun`, so
+`90-homelab-tun.conf` gives every container on Cube `/dev/net/tun`, so
 Tailscale can run in kernel mode. Every container includes
 `common.conf.d` through `common.conf`, so there's nothing per-container.
 
-Install it on each node, and again after rebuilding one:
+Install it on Cube, and again after rebuilding it:
 
 ```sh
-scp proxmox/90-homelab-tun.conf root@<proxmox-node>:/usr/share/lxc/config/common.conf.d/
+scp proxmox/90-homelab-tun.conf root@<cube>:/usr/share/lxc/config/common.conf.d/
 ```
+
+Incus guests get TUN from the `default` profile instead
+([incus](../modules/services/incus/README.md#tun)).
 
 Running containers only pick it up when they restart.
 
@@ -27,12 +32,12 @@ Why it's done this way:
 
 ## Node exporter
 
-A rebuilt node needs `node-exporter.sh` run again:
-`terraform apply -replace='terraform_data.node_exporter["<node>"]'`.
+A rebuilt Cube needs `node-exporter.sh` run again:
+`terraform apply -replace='terraform_data.node_exporter["cube"]'`.
 
-- **Containers see the host's sensors.** Every LXC's node exporter reports the
-  hypervisor's temperatures too, so the hardware rules only look at the
-  Proxmox hosts.
+- **Containers see the host's sensors.** Every container's node exporter
+  reports the hypervisor's temperatures too, so the hardware rules only look
+  at Cube.
 
 ## Cube's second NVMe
 
@@ -57,7 +62,7 @@ sudo pvesh create /nodes/cube/disks/lvmthin --device "$dev" --name nvme --add_st
 Proxmox sends its notifications, like the daily "packages available" and
 backup results, to the homelab alerts channel through a webhook target named
 `discord`, and the `to-discord` matcher routes everything to it. They're
-cluster-wide, so they cover both Proxmox nodes. The webhook's ID and token are a
+cluster-wide, which is only Cube now. The webhook's ID and token are a
 Proxmox secret, and the body only carries the title and severity, because a
 full package list goes past Discord's message limit.
 
@@ -66,7 +71,7 @@ To make them again, from `modules/agenix` in this repo:
 ```sh
 url=$(agenix -d discord-webhook.age | cut -d= -f2-)
 body=$(printf '%s' '{"username":"Proxmox","embeds":[{"title":{{ json title }},"description":{{ json severity }}}]}' | base64 -w0)
-printf '%s\n' "${url#*/webhooks/}" | ssh shane@<node> "sudo bash -c 'read -r token
+printf '%s\n' "${url#*/webhooks/}" | ssh shane@<cube> "sudo bash -c 'read -r token
 pvesh create /cluster/notifications/endpoints/webhook --name discord --method post \
   --url \"https://discord.com/api/webhooks/{{ secrets.webhook }}\" \
   --header \"name=Content-Type,value=\$(printf %s application/json | base64 -w0)\" \
@@ -81,18 +86,17 @@ unset url
 - **Matchers and targets share names**, so the matcher can't also be called
   `discord`.
 
-## Upgrading the nodes
+## Upgrading Cube
 
-Proxmox's daily check posts to Discord when packages are waiting. Upgrade one
-node at a time, Cube first, and only start the second once the first is back
-and the cluster is quorate again, because with two nodes the cluster loses
-quorum while either one is down.
+Proxmox's daily check posts to Discord when packages are waiting. Cube's LXCs,
+monitoring and dns2 among them, are down while it reboots. PVE has no apt.
+It gets the weekly flake update when it's switched by hand.
 
 ```sh
-ssh shane@<node> 'sudo apt-get -s full-upgrade | grep -E "^Remv|upgraded"'
-ssh shane@<node> 'sudo systemd-run --unit=pve-upgrade --collect --setenv=DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::=--force-confold full-upgrade'
-ssh shane@<node> 'sudo journalctl -fu pve-upgrade'
-ssh shane@<node> 'sudo systemctl reboot'
+ssh shane@<cube> 'sudo apt-get -s full-upgrade | grep -E "^Remv|upgraded"'
+ssh shane@<cube> 'sudo systemd-run --unit=pve-upgrade --collect --setenv=DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::=--force-confold full-upgrade'
+ssh shane@<cube> 'sudo journalctl -fu pve-upgrade'
+ssh shane@<cube> 'sudo systemctl reboot'
 ```
 
 The dry run is there to catch anything being removed, which a normal upgrade
@@ -102,10 +106,10 @@ misbehaves, `proxmox-boot-tool kernel pin <version>` and a reboot goes back.
 
 ## The builder's key
 
-The builder's SSH key is in `shane`'s `authorized_keys` on both nodes, so
+The builder's SSH key is in `shane`'s `authorized_keys` on Cube, so
 Terraform on the builder can run `pct` for container devices and bind mounts.
-Add it again after rebuilding a node:
+Add it again after rebuilding Cube:
 
 ```sh
-ssh root@builder ssh-keygen -y -f /run/agenix/builder-ssh-key | ssh shane@<node> 'cat >> ~/.ssh/authorized_keys'
+ssh root@builder ssh-keygen -y -f /run/agenix/builder-ssh-key | ssh shane@<cube> 'cat >> ~/.ssh/authorized_keys'
 ```

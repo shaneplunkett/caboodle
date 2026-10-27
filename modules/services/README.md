@@ -19,14 +19,15 @@ Glance has its own [README](glance/README.md).
 
 - Use `ruleFiles` with `pkgs.writeText`, one file per module. `rules` joins
   every module's strings into one file, so only the first group loads.
-- Inside an LXC, node exporter's CPU numbers come from the host's counters and
-  are wrong. CPU per container comes from the PVE exporter instead.
+- Inside a Proxmox LXC, node exporter's CPU numbers come from the host's
+  counters and are wrong, so CPU for Cube's guests comes from the PVE
+  exporter instead.
 
 ## Loki
 
 - With `auth_enabled = false` the tenant is called `fake`. The ruler's local
   storage expects rules under `<dir>/fake/`, hence the odd path.
-- Kernel OOM messages aren't visible inside an LXC. The OOM alert matches
+- Kernel OOM messages aren't visible inside a container. The OOM alert matches
   systemd's "OOM killer" log line in `init.scope` instead.
 
 ## Alloy
@@ -66,8 +67,9 @@ Glance has its own [README](glance/README.md).
 
 Blocky does ad blocking and local records, and asks Unbound on the same
 host for everything else (`docs/internet-down.md` has the full chain). Both are fully
-declared in Nix with no state, so redundancy is the same host module on one
-host per Proxmox node. There's nothing to cluster or back up.
+declared in Nix with no state, so redundancy is the same host module on two
+hosts, dns1 on PVE and dns2 on Cube. Either machine can go down and DNS
+stays up. There's nothing to cluster or back up.
 
 - Unbound listens on `127.0.0.1:5335`. Blocky wants port 53 on every address,
   so the two can't share it, and systemd-resolved is off for the same reason.
@@ -87,7 +89,8 @@ host per Proxmox node. There's nothing to cluster or back up.
 ## Tailscale
 
 Every Nix host joins as `tag:homelab` with the OAuth client secret, so keys
-don't expire. Containers get TUN from the drop-in in `proxmox/`.
+don't expire. Incus guests get TUN from the `default` profile in
+`modules/services/incus`, and Cube's LXCs from the drop-in in `proxmox/`.
 
 - An OAuth secret used as an auth key makes ephemeral devices by default,
   which vanish when they go offline. `authKeyParameters` turns that off.

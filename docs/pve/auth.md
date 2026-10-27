@@ -68,13 +68,14 @@ The group's name is what goes in the claim, not its display name.
 
 ### Proxmox
 
-The realm is cluster-wide, and Terraform can't manage it. The Terraform
-token's role has no `Realm.Allocate` or `Permissions.Modify`, and adding
-`Permissions.Modify` would let it grant itself anything. So the realm was
+The realm is cluster-wide, and Cube is the whole cluster. Terraform can't
+manage it. The Terraform token's role has no `Realm.Allocate` or
+`Permissions.Modify`, and adding `Permissions.Modify` would let it grant
+itself anything. So the realm was
 made once by hand. To make it again, from this repo:
 
 ```sh
-printf '%s\n' "$(rbw get proxmox-oidc-client-secret)" | ssh shane@<pve> 'sudo bash -c '\''
+printf '%s\n' "$(rbw get proxmox-oidc-client-secret)" | ssh shane@<cube> 'sudo bash -c '\''
 read -r key
 pveum realm add pocket-id --type openid --comment "Pocket ID" \
   --issuer-url https://auth.shaneplunkett.com --client-id proxmox --client-key "$key" \
@@ -93,9 +94,9 @@ The secret goes in on stdin so it stays out of sudo's log.
   group.
 - **Don't add `openid` to the scopes.** Proxmox adds it itself.
 - **The callback is the bare origin,** `https://proxmox.shaneplunkett.com`.
-  Signing in at a Proxmox node's own address needs that origin added to the client.
-- **The Proxmox nodes need to resolve `auth.shaneplunkett.com`.** Proxmox fetches
-  tokens itself, and the router doesn't know the servers' names. Each Proxmox node's
+  Signing in at Cube's own address needs that origin added to the client.
+- **Cube needs to resolve `auth.shaneplunkett.com`.** Proxmox fetches
+  tokens itself, and the router doesn't know the servers' names. Cube's
   DNS is in `terraform/proxmox-dns.tf`: Blocky on dns1 and dns2 first, the
   router last as a fallback.
 - `shane@pam` is the way in when Pocket ID is down.

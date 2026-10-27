@@ -1,6 +1,6 @@
 # The Mac mini
 
-The mini is a Mac server in the hive, deployed on merge like the LXCs.
+The mini is a Mac server in the hive, deployed on merge like the other servers.
 Colmena runs from a fork that can deploy darwin nodes until upstream merges
 it. The mini is also the builder's darwin remote builder, so the PR build
 check builds every Mac on it. It's a workstation too, so
@@ -68,7 +68,7 @@ Its log is `~/Library/Logs/bluebubbles-server.log`.
 
 The macOS application firewall lets signed apps accept connections and
 silently drops the rest, and anything Nix builds is only ad-hoc signed. So
-it's off, which makes the mini a LAN server like the LXCs, whose firewalls
+it's off, which makes the mini a LAN server like the rest, whose firewalls
 open each service's port to the whole LAN anyway. That's what lets
 Prometheus scrape it.
 
@@ -77,7 +77,7 @@ host dashboard work it out the way Activity Monitor does: total memory less
 app memory, wired and compressed. `modules/services/prometheus/memory.nix`
 holds both versions. Free memory alone means nothing on a Mac, because macOS
 fills spare memory with file cache on purpose. The disk, CPU and HostDown
-alerts work as on the LXCs.
+alerts work as on the other servers.
 
 ## Tuned for agents
 

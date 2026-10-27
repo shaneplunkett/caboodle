@@ -1,6 +1,6 @@
 # The desktop
 
-The NixOS desktop is a host in the hive like the LXCs and the mini, but
+The NixOS desktop is a host in the hive like the servers and the mini, but
 merging never deploys it. The PR build check builds it on the builder,
 which fills the cache, and Shane switches it on the desktop when she's
 ready. [docs/workstation](../workstation/README.md) covers what it shares
