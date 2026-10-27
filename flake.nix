@@ -311,13 +311,19 @@
           imports = [ ./hosts/deck ];
         };
 
-        dashboard = lxc "dashboard" { homelab.lanAddress = "192.168.1.152"; };
+        dashboard = lxc "dashboard" {
+          homelab.lanAddress = "192.168.1.152";
+          deployment.tags = [ ];
+        };
 
         monitoring = lxc "monitoring" { homelab.lanAddress = "192.168.1.78"; };
 
         ingress = lxc "ingress" { homelab.lanAddress = "192.168.1.149"; };
 
-        dns1 = lxc "dns" { homelab.lanAddress = "192.168.1.91"; };
+        dns1 = lxc "dns" {
+          homelab.lanAddress = "192.168.1.91";
+          deployment.tags = [ ];
+        };
 
         dns2 = lxc "dns" {
           homelab.lanAddress = "192.168.1.236";
@@ -330,9 +336,15 @@
 
         dlna = lxc "dlna" { homelab.lanAddress = "192.168.1.66"; };
 
-        gym = lxc "gym" { homelab.lanAddress = "192.168.1.209"; };
+        gym = lxc "gym" {
+          homelab.lanAddress = "192.168.1.209";
+          deployment.tags = [ ];
+        };
 
-        rss = lxc "rss" { homelab.lanAddress = "192.168.1.153"; };
+        rss = lxc "rss" {
+          homelab.lanAddress = "192.168.1.153";
+          deployment.tags = [ ];
+        };
 
         photos = lxc "photos" { homelab.lanAddress = "192.168.1.154"; };
 
