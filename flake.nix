@@ -324,8 +324,13 @@
           imports = [ ./hosts/deck ];
         };
 
-        dashboard = lxc "dashboard" {
+        dashboard = incus "dashboard" {
           homelab.lanAddress = "192.168.1.152";
+          homelab.guest = {
+            host = "pve";
+            mac = "BC:24:11:C0:8C:06";
+          };
+          homelab.monitoring.enable = false;
           deployment.tags = [ ];
         };
 
@@ -354,13 +359,27 @@
 
         dlna = lxc "dlna" { homelab.lanAddress = "192.168.1.66"; };
 
-        gym = lxc "gym" {
+        gym = incus "gym" {
           homelab.lanAddress = "192.168.1.209";
+          homelab.guest = {
+            host = "pve";
+            cores = 1;
+            memory = 1024;
+            mac = "BC:24:11:C4:3F:EC";
+          };
+          homelab.monitoring.enable = false;
           deployment.tags = [ ];
         };
 
-        rss = lxc "rss" {
+        rss = incus "rss" {
           homelab.lanAddress = "192.168.1.153";
+          homelab.guest = {
+            host = "pve";
+            cores = 1;
+            memory = 1024;
+            mac = "BC:24:11:FD:C5:8A";
+          };
+          homelab.monitoring.enable = false;
           deployment.tags = [ ];
         };
 
