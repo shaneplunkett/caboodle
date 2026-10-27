@@ -19,6 +19,7 @@ let
     ;
 
   hypervisors = proxmox ++ lib.attrNames incus;
+  notIncusGuest = ''host!~"${lib.concatStringsSep "|" (lib.concatLists (lib.attrValues incus))}"'';
   containers = ''job="node",host!~"${lib.concatStringsSep "|" hypervisors}"'';
   guestStorage = "local-lvm";
 
@@ -30,7 +31,11 @@ let
     ''100 * (1 - avg by (host) (rate(node_cpu_seconds_total{${selector},mode="idle"}[${window}])))'';
   guestCpuUsed =
     selector: "100 * pve_cpu_usage_ratio * on (id) group_left (name) pve_guest_info{${selector}}";
-  containerCpuUsed = ''label_replace(${guestCpuUsed lxc}, "host", "$1", "name", "(.*)") or on (host) ${cpuUsed containers "$__rate_interval"}'';
+  incusCpuUsed =
+    selector:
+    "100 * sum without (cpu, mode) (rate(incus_cpu_seconds_total{${selector}}[$__rate_interval])) / incus_cpu_effective_total{${selector}}";
+  byName = expr: ''label_replace(${expr}, "host", "$1", "name", "(.*)")'';
+  containerCpuUsed = "${byName (guestCpuUsed lxc)} or on (host) ${byName (incusCpuUsed ''job="incus"'')} or on (host) ${cpuUsed "${containers},${notIncusGuest}" "$__rate_interval"}";
   memory = import ../../prometheus/memory.nix;
   memoryUsed =
     selector:
@@ -144,7 +149,8 @@ dashboard {
       defaults = removeAttrs percent [ "max" ];
       targets = [
         (query "used" (guestCpuUsed guest))
-        (query "{{mode}}" ''100 * avg by (mode) (rate(node_cpu_seconds_total{${host},mode!="idle"}[$__rate_interval])) unless on () pve_guest_info{${guest}}'')
+        (query "used" (incusCpuUsed guest))
+        (query "{{mode}}" ''100 * avg by (mode) (rate(node_cpu_seconds_total{${host},${notIncusGuest},mode!="idle"}[$__rate_interval])) unless on () pve_guest_info{${guest}}'')
       ];
     })
     (overTime {

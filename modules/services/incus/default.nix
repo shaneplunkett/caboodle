@@ -62,7 +62,10 @@ in
     virtualisation.incus = {
       enable = true;
       preseed = {
-        config."core.https_address" = ":8443";
+        config = {
+          "core.https_address" = ":8443";
+          "core.metrics_authentication" = "false";
+        };
         storage_pools = [
           {
             name = "default";

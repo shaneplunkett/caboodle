@@ -50,6 +50,17 @@ Terraform ignores newer builds. To refresh it, run
 `running = false` creates the container without starting it. Use it when a
 guest takes over another's MAC, so the two never share the LAN.
 
+## Metrics
+
+Prometheus scrapes each guest's CPU from Incus's `/1.0/metrics` on port
+8443. The preseed turns off authentication on that endpoint only, so it
+needs no certificate. The rest of the API still wants one.
+
+Node exporter's CPU figures inside a guest are not the guest's own. lxcfs
+narrows `/proc/stat` to the guest's pinned CPUs, but on cgroup v2 the times
+are the host's, so a guest sharing CPUs with the builder looks as busy as
+the builder. The CPU alert and the dashboard read Incus instead.
+
 ## VLANs
 
 `br0` filters by VLAN, like a VLAN-aware bridge on Proxmox. The uplink

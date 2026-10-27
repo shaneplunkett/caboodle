@@ -11,6 +11,7 @@
     ../modules/services/loki
     ../modules/services/blocky/monitoring.nix
     ../modules/services/unbound/monitoring.nix
+    ../modules/services/incus/monitoring.nix
     ../modules/services/blackbox
     ../modules/services/unpoller
     ../modules/services/tailscale/alerts.nix
