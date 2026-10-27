@@ -9,6 +9,17 @@ let
   byThreshold = import ../prometheus/thresholds.nix { inherit lib nodes options; } "name";
   links = import ../grafana/links.nix;
   incusHosts = lib.filterAttrs (_: node: node.config.virtualisation.incus.enable or false) nodes;
+  poolFull = alert: severity: value: {
+    inherit alert;
+    expr = "incus_storage_pool_used_bytes / incus_storage_pool_size_bytes > ${toString value}";
+    for = "10m";
+    labels.severity = severity;
+    annotations = {
+      summary = "Incus pool {{ $labels.pool }} on {{ $labels.host }} is {{ $value | humanizePercentage }} full";
+      condition = "Over ${toString (builtins.floor (value * 100))}% full for 10m";
+      check = "ssh {{ $labels.host }} sudo lvs incus";
+    };
+  };
 in
 {
   services.prometheus = {
@@ -56,13 +67,15 @@ in
                   }
                 )
                 ++ [
+                  (poolFull "IncusPoolFilling" "warning" 0.8)
+                  (poolFull "IncusPoolAlmostFull" "critical" 0.9)
                   {
                     alert = "IncusMetricsDown";
                     expr = ''up{job="incus"} == 0'';
                     for = "5m";
                     labels.severity = "warning";
                     annotations = {
-                      summary = "Incus on {{ $labels.host }} isn't serving metrics, so its guests' CPU alerts are blind";
+                      summary = "Incus on {{ $labels.host }} isn't serving metrics, so its guest CPU and pool alerts are blind";
                       condition = "Incus metrics scrape failing for 5m";
                       check = "ssh {{ $labels.host }} incus config get core.metrics_authentication";
                     };
