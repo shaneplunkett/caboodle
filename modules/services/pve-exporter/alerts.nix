@@ -27,7 +27,7 @@ let
       type = "dir";
       by = "node, storage";
       where = "{{ $labels.storage }} on {{ $labels.node }}";
-      warning = 0.85;
+      warning = null;
       critical = 0.95;
       check = "ssh {{ $labels.node }} sudo du -xh -d2 / | sort -h | tail";
     }
