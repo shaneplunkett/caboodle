@@ -95,15 +95,16 @@
           config.allowUnfree = true;
           overlays = [ colmena.overlays.default ] ++ import ./pkgs/overlays.nix { inherit inputs; };
         };
-      lxc =
-        host: settings:
+      guest =
+        module: host: settings:
         {
           imports = [
-            ./modules/lxc.nix
+            module
             ./hosts/${host}.nix
           ];
         }
         // settings;
+      lxc = guest ./modules/lxc.nix;
       systems = [
         "x86_64-linux"
         "aarch64-darwin"
@@ -211,6 +212,14 @@
               { homelab.monitoring.enable = false; }
             ];
           };
+          incus-base = nixpkgs.lib.nixosSystem {
+            modules = [
+              ./modules/homelab.nix
+              ./modules/nixos.nix
+              ./modules/incus.nix
+              { homelab.monitoring.enable = false; }
+            ];
+          };
         };
 
       darwinConfigurations = nixpkgs.lib.filterAttrs (
@@ -247,6 +256,9 @@
         {
           inherit gateway devices forwards;
           hosts = builtins.mapAttrs (_: node: node.config.homelab.lanAddress) onLan;
+          guests = builtins.mapAttrs (_: node: node.config.homelab.guest) (
+            lib.filterAttrs (_: node: node.config.homelab.guest != null) self.colmenaHive.nodes
+          );
         };
 
       colmenaHive = colmena.lib.makeHive {
@@ -360,6 +372,14 @@
 
         builder = lxc "builder" {
           homelab.lanAddress = "192.168.1.224";
+          homelab.guest = {
+            host = "pve";
+            cores = 20;
+            memory = 49152;
+            disk = 250;
+            mac = "BC:24:11:CC:42:C2";
+            running = false;
+          };
           deployment.tags = [ ];
         };
 

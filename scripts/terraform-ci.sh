@@ -21,7 +21,16 @@ TF_VAR_forgejo_api_token="$(<"$creds/terraform-forgejo-token")"
 TF_VAR_unifi_api_key="$(<"$creds/terraform-unifi-token")"
 export TF_TOKEN_app_terraform_io TF_VAR_pve_api_token TF_VAR_hcloud_token TF_VAR_cloudflare_api_token TF_VAR_access_editor_emails TF_VAR_forgejo_api_token TF_VAR_unifi_api_key
 
-cd "$(git rev-parse --show-toplevel)/terraform"
+root="$(git rev-parse --show-toplevel)"
+
+# The Incus provider reads its client certificate from INCUS_CONF.
+INCUS_CONF="$(mktemp -d)"
+trap 'rm -rf "$INCUS_CONF"' EXIT
+cp "$root/modules/services/incus/terraform.crt" "$INCUS_CONF/client.crt"
+install -m 600 "$creds/terraform-incus-key" "$INCUS_CONF/client.key"
+export INCUS_CONF
+
+cd "$root/terraform"
 terraform init -input=false -no-color
 terraform plan -input=false -no-color -lock-timeout=10m -out=tfplan | tee plan.txt
 

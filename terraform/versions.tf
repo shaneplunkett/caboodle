@@ -37,6 +37,10 @@ terraform {
       source  = "ubiquiti-community/unifi"
       version = "0.59.0"
     }
+    incus = {
+      source  = "lxc/incus"
+      version = "~> 1.2"
+    }
 
   }
 }

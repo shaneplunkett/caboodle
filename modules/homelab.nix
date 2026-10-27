@@ -7,6 +7,45 @@
       description = "The host's LAN address, for anything that must keep working without Tailscale. A host that's always on the LAN has one; a laptop doesn't.";
     };
 
+    guest = lib.mkOption {
+      type = lib.types.nullOr (
+        lib.types.submodule {
+          options = {
+            host = lib.mkOption {
+              type = lib.types.str;
+              description = "The Incus remote the container runs on.";
+            };
+            cores = lib.mkOption {
+              type = lib.types.ints.positive;
+              default = 2;
+            };
+            memory = lib.mkOption {
+              type = lib.types.ints.positive;
+              default = 2048;
+              description = "Memory in MiB.";
+            };
+            disk = lib.mkOption {
+              type = lib.types.ints.positive;
+              default = 8;
+              description = "Root disk in GiB.";
+            };
+            mac = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "MAC address for eth0, generated if unset. UniFi reserves the host's LAN address for it.";
+            };
+            running = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Whether the container should be running.";
+            };
+          };
+        }
+      );
+      default = null;
+      description = "The Incus container the host runs in. Terraform creates it from the base image and reserves its LAN address in UniFi.";
+    };
+
     sshUser = lib.mkOption {
       type = lib.types.str;
       default = "root";

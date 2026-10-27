@@ -35,6 +35,21 @@ openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:secp384r1 -nodes \
 Then remove the old certificate with `incus config trust remove`, since the
 unit only adds.
 
+## Guests
+
+A guest is a hive node with `homelab.guest` set, which names its Incus host
+and its size. `network.guests` exports them, and `terraform/incus.tf`
+creates each container from the base image with its UniFi reservation. The
+container's name is the node's name, and NixOS leaves the hostname to Incus.
+
+The base image is `nixosConfigurations.incus-base`, built on the runner by
+`scripts/incus-image.sh`. A guest only uses it once, when it's created, so
+Terraform ignores newer builds. To refresh it, run
+`terraform apply -replace='incus_image.nixos["<host>"]'`.
+
+`running = false` creates the container without starting it. Use it when a
+guest takes over another's MAC, so the two never share the LAN.
+
 ## TUN
 
 The `default` profile hands every guest `/dev/net/tun`, so Tailscale runs in

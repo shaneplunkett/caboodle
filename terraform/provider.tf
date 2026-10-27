@@ -14,6 +14,15 @@ provider "proxmox" {
   }
 }
 
+provider "incus" {
+  accept_remote_certificate = true
+
+  remote {
+    name    = "pve"
+    address = "https://${local.network.devices.pve.ip}:8443"
+  }
+}
+
 provider "hcloud" {
   token = var.hcloud_token
 }
