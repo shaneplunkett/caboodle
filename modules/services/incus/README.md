@@ -79,9 +79,17 @@ guest is made again by Terraform and restored from there
 
 ## Moving a guest onto Incus
 
-This is how PVE's Proxmox LXCs moved, and it's how Cube's will. The guest
-keeps its identity, so nothing is rekeyed or restored from backup. It takes
-two pull requests, and nothing else merges between them.
+This is how PVE's Proxmox LXCs moved. The guest keeps its identity, so
+nothing is rekeyed or restored from backup. It takes two pull requests, and
+nothing else merges between them.
+
+It suits a guest whose state all lives in `/var/lib`. A guest with bind
+mounts or passed-through devices, like plex, arr and dlna on Cube, needs
+them as Incus `disk` and `unix-char` devices before it starts, and
+`homelab.guest` can't describe those yet. The builder can't move this way
+either, since step 3 builds on it and fetches from its Harmonia. It moved
+by taking only its host keys and `/var/lib/tailscale`, then building its
+own system once it was up.
 
 1. The first gives the node a `homelab.guest` with its old MAC and
    `running = false`, and keeps the `lxc` helper. In Terraform, its
@@ -92,10 +100,16 @@ two pull requests, and nothing else merges between them.
    host keys and `/var/lib` to the Incus host:
 
    ```sh
-   ssh root@<old> 'tar -C / --numeric-owner --exclude=var/lib/systemd \
+   ssh root@<old> 'cd / && tar --numeric-owner --exclude=var/lib/systemd \
      --exclude=var/lib/containers -cpf - etc/ssh/ssh_host_* var/lib' \
      | ssh root@<incus-host> 'cat > /root/<guest>.tar'
+   ssh root@<incus-host> 'tar -tf /root/<guest>.tar | grep ssh_host_'
    ```
+
+   The `cd /` matters: the glob is expanded before tar's `-C` applies, so
+   without it the keys are silently left out. Check they're in the tar
+   before going on, since without them the new guest can't decrypt its
+   secrets.
 
    Shut the old one down and set it not to start on boot (`pct set <id>
    --onboot 0` on Cube), since the new one has its MAC. Then on the Incus
