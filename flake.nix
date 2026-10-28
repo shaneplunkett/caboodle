@@ -50,11 +50,11 @@
     electron-nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     homebrew-core = {
-      url = "github:homebrew/homebrew-core/726b46e5846b7a2f6a5fc241fc60b06a3b8b0c71";
+      url = "github:homebrew/homebrew-core/5b84252f73bf1d88b7a8c520a5bcf7b94b351fe1";
       flake = false;
     };
     homebrew-cask = {
-      url = "github:homebrew/homebrew-cask/2225832657a15c0719c6f194d90c49523ca235c9";
+      url = "github:homebrew/homebrew-cask/7e94470676ecb6d7b9749ea26f8e3303c42ac912";
       flake = false;
     };
     omniwm = {
