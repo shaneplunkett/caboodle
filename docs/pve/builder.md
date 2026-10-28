@@ -18,15 +18,30 @@ Nix store stays warm between runs. Whatever a job leaves behind stays too.
   job. nix-ld lets generic Linux binaries a job downloads, like the `ruff`
   that `uv sync` installs, run unpatched. Without it they fail with
   `Could not start dynamically linked executable`.
-- An evaluation of every host's `hydraJobs` peaks around 14 GB, and a pull
-  request's `hosts` job runs two at once. Two pull requests evaluating
-  together once filled the builder's memory. It has no swap, so the kernel
-  never killed anything. It spent 90 minutes dropping and rereading pages,
-  SSH stopped answering, and only `incus restart builder` brought it back.
-  The `hosts` job now takes a `flock` around its evaluations, since Forgejo
-  ignores `concurrency` on a job. As a backstop, systemd-oomd watches
-  `system.slice` and kills whichever service is thrashing, which fails that
-  service's jobs but leaves the box reachable.
+- An evaluation of every host's `hydraJobs` peaks around 14 GB. A pull
+  request's `hosts` job evaluates its head once and compares it with the
+  mapping `main` left for the merge base, in
+  `/var/lib/forgejo-runner/builder/evals/<repo>/<sha>.json`. Each push to
+  `main` evaluates once to write that file, and a mapping no job has
+  touched in 30 days is deleted. If the merge base has no mapping, the job
+  evaluates it too, one after the other, never side by side. A `flock`
+  keeps it to one full evaluation on the box at a time, since Forgejo
+  ignores `concurrency` on a job.
+- The runner is capped at 32 GB. That holds one full evaluation with room
+  for the per-host build jobs beside it, or the pair a branch on a pin
+  older than v1.7.0 still runs side by side. Builds happen in nix-daemon, outside the
+  cap, and the 16 GB left is theirs and the OS's. Past the cap the kernel
+  kills the biggest process in the runner, almost always an evaluation, and
+  only that job fails: `OOMPolicy=continue` keeps the runner and its other
+  jobs going. Re-run the failed job once the others finish.
+- If the runner thrashes below its cap instead, systemd-oomd kills it
+  whole once its memory pressure stays over 50% for 20 seconds. Every job
+  it had running fails with a lost runner, and systemd restarts it. Re-run
+  those jobs, deploys included. oomd used to watch `system.slice` instead,
+  which never fired: "full" pressure means every task in the cgroup is
+  stalled at once, and while the runner's own evaluations stalled, other
+  services kept the slice at 15%. Twice in one day the box went unreachable
+  with nothing killed, until an `incus restart builder` or a manual kill.
 - The runner isn't a trusted Nix user, so a flake can't add caches for
   itself. The builder trusts the workstations' caches instead, or a desktop
   build would compile noctalia from source.
@@ -71,6 +86,13 @@ The `hosts` job does the comparison, so it's the required check, and when
 no host changes the one build job is a placeholder whose steps skip,
 because Forgejo leaves a job with an empty matrix blocked for good. The
 `build.yml` section of `shane/workflows`' README has the details.
+
+`main` won't merge a pull request that's behind it. Use Update Branch,
+which rebases, or rebase it yourself. A behind branch's diff is against an
+older `main`, so it can miss what another merge changed. Once it's up to
+date, its merge base is `main`, and the diff is exactly what merging
+changes. Every merge makes the other open pull requests stale, so each one
+rebuilds after its update. Renovate rebases its own the next time it runs.
 
 ## Building by hand
 
@@ -267,6 +289,29 @@ ssh root@builder ssh-keygen -y -f /run/agenix/builder-ssh-key
 ```
 
 ## Gotchas
+
+- **Testing the memory backstop.** Run one evaluation as a transient unit
+  under a small cap and watch it from a second SSH session, never through
+  the runner. Copy a checkout into a `mktemp -d` on the builder first, and
+  only start with more than 30 GB free:
+
+  ```sh
+  systemd-run --unit wedge-test -p MemoryMax=6G \
+    -p ManagedOOMMemoryPressure=kill -p ManagedOOMMemoryPressureLimit=50% \
+    -p ManagedOOMMemoryPressureDurationSec=20s -p CPUQuota=400% \
+    -p RuntimeMaxSec=900 --wait --collect \
+    nix eval --no-eval-cache --json "path:$dir#hydraJobs" \
+    --apply 'jobs: builtins.mapAttrs (_: job: job.drvPath) jobs'
+  ```
+
+  On 28 October the kernel killed it 45 seconds in, as it reached 6 GB.
+  Its memory pressure never left 0, so oomd had nothing to act on, and SSH
+  and PVE's load were unaffected. To see oomd fire, add `-p MemoryHigh=4G`
+  and raise `MemoryMax` to 8G. The kernel then throttles the evaluation
+  instead of killing it, its pressure climbs past 50% within a minute, and
+  `journalctl -u systemd-oomd` logs it being marked for killing 20 seconds
+  later. Without `--no-eval-cache`, a revision the builder has already
+  evaluated comes from the cache and proves nothing.
 
 - **`rbw add` and `rbw edit` read from stdin** when it isn't a terminal, and
   only the first line becomes the password. A multi-line value like an SSH

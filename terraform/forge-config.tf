@@ -52,10 +52,11 @@ moved {
 }
 
 resource "forgejo_branch_protection" "caboodle_main" {
-  repository_id       = data.forgejo_repository.caboodle.id
-  branch_name         = "main"
-  enable_push         = true
-  enable_status_check = true
+  repository_id            = data.forgejo_repository.caboodle.id
+  branch_name              = "main"
+  enable_push              = true
+  enable_status_check      = true
+  block_on_outdated_branch = true
   status_check_contexts = [
     "/ hosts (pull_request)",
     "/ build (*) (pull_request)",

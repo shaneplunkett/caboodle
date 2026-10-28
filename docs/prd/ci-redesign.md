@@ -1,8 +1,8 @@
 # CI redesign
 
 Working notes from the design conversation begun on 28 October 2026.
-The design is open. These notes record agreed requirements and questions
-as the conversation progresses.
+These notes record agreed requirements and questions as the conversation
+progresses.
 
 The interview is paused for external research at Shane's request. Examine
 StepBro's own setup and Colmena work, the Nix evaluation GitHub tooling
@@ -23,6 +23,24 @@ CPU and elapsed time. Keep the existing deployment interface while testing
 those options. This is a research recommendation, not a selected
 implementation. No benchmarks have run. The research has not established
 that the current cross-host configuration needs to change.
+
+## Decision, 28 October 2026
+
+Shane chose the small, reversible fix over a redesign: fix the concurrency
+and the repeated work, and keep Colmena, Forgejo, the monorepo and the
+current preview semantics. Each pull request evaluates once, against the
+mapping `main` cached for its merge base, the runner has a memory cap with
+oomd watching it, and `main` refuses an outdated branch so the preview is
+always against current `main`.
+[ADR 0002](../adr/0002-evaluate-once-and-block-outdated-branches.md) has
+the trade-off, and the [builder doc](../pve/builder.md#how-jobs-run) the
+mechanics.
+
+The forge move, ephemeral runners and nix-eval-jobs are deferred, not
+rejected. Reopen them if a single full evaluation nears 25 GB, or if the
+rebuild after each merge leaves Renovate's pull requests queueing for long
+enough to hurt. The requirements and findings below stay as the brief for
+that redesign.
 
 ## Why revisit it
 
@@ -163,11 +181,11 @@ workflow has no explicit handoff of evaluated derivations. PR results are
 unrooted and can be garbage-collected. Evaluation-cache behaviour and
 per-host evaluation costs remain unmeasured.
 
-Two documentation mismatches need resolving during the design. The
-Terraform ADR describes a preliminary plan without refresh, while the
+The Terraform ADR describes a preliminary plan without refresh, while the
 inspected workflows use path filters and the script runs a normal plan.
-The builder doc also promises oomd preserves reachability, whereas the
-28 October handoff records it failing to trigger.
+That mismatch still needs resolving. The builder doc's promise that oomd
+preserved reachability, which the 28 October handoff records failing,
+was corrected with the decision above.
 
 ## Evaluation options to measure
 

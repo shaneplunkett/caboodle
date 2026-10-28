@@ -30,8 +30,9 @@ the MacBook and the Mac mini. Read `README.md` for how it fits together.
 - **Derivation diff:** CI works out which hosts a pull request changes,
   against its merge base, and posts them as a `forge-bot` comment it edits on
   each push. Shane reads it herself, so the pull request body doesn't list
-  hosts. Rebase onto `origin/main` before filing anyway, so the build check
-  runs against what would merge. A package built from `lib.cleanSource ./.`
+  hosts. Rebase onto `origin/main` before filing: `main` won't merge a
+  branch that's behind it, so a pull request goes stale whenever another
+  merges and needs updating again. A package built from `lib.cleanSource ./.`
   changes with any file in its folder, its README included, so a docs edit
   there shows up as that package's hosts.
 - **CI:** the files in `.forgejo/workflows/` are callers of `shane/workflows`

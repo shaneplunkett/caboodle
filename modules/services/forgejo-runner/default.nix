@@ -63,10 +63,10 @@ in
     ];
   };
 
-  systemd.oomd.enableSystemSlice = true;
-
-  systemd.tmpfiles.settings.forgejo-runner-tmp."/var/lib/private/forgejo-runner/builder/tmp".e.age =
-    "1d";
+  systemd.tmpfiles.settings = {
+    forgejo-runner-tmp."/var/lib/private/forgejo-runner/builder/tmp".e.age = "1d";
+    forgejo-runner-evals."/var/lib/private/forgejo-runner/builder/evals".e.age = "30d";
+  };
 
   systemd.services.${unit} = {
     environment.TMPDIR = "/var/lib/forgejo-runner/builder/tmp";
@@ -76,6 +76,11 @@ in
       ExecReload = "+${config.systemd.package}/bin/systemd-run --on-active=5s ${config.systemd.package}/bin/systemctl --no-block restart ${unit}.service";
       TimeoutStopSec = "65min";
       KillMode = "mixed";
+      MemoryMax = "32G";
+      ManagedOOMMemoryPressure = "kill";
+      ManagedOOMMemoryPressureLimit = "50%";
+      ManagedOOMMemoryPressureDurationSec = "20s";
+      OOMPolicy = "continue";
       StateDirectory = lib.mkForce [
         "forgejo-runner/builder"
         "forgejo-runner/builder/tmp"
