@@ -2,17 +2,23 @@
 
 A pull request's derivation diff evaluates its head once and compares it
 with the mapping `main` cached for the merge base, and `main` refuses to
-merge a branch that's behind it. Every evaluation on the builder takes the
-same lock, and the runner has a memory cap with oomd watching it. Colmena,
-Forgejo, the monorepo and what the diff compares all stay as they were.
-Two pull requests evaluating base and head side by side took the builder
-down twice on 28 October, and this fixes that without a redesign.
+merge a branch that's behind it. Every full evaluation of the hive on the
+builder takes the same lock, and the runner has a memory cap, with oomd as
+a second line for thrashing below it. Colmena, Forgejo, the monorepo and
+what the diff compares all stay as they were. Two pull requests evaluating
+base and head side by side took the builder down twice on 28 October, and
+this fixes that without a redesign.
 
 The cost is a rebuild after every merge. Each open pull request goes stale
 when another lands, and has to be updated and checked again before it can
-merge, so a Renovate morning queues. Each evaluation still covers the whole
-hive, so a bigger hive still costs more per run. The
-[CI redesign notes](../prd/ci-redesign.md) say when to reopen this.
+merge, so a Renovate morning queues. The `ai-skills` self-merge can strand:
+if anything merges while its pull request is building, Forgejo keeps the
+scheduled merge but won't run it on a behind branch, and nothing refreshes
+the branch until the next `ai-skills` push or an Update Branch by hand.
+Renovate's pull requests recover on their own, since it rebases them
+daily. Each evaluation still covers the whole hive, so a bigger hive still
+costs more per run. The [CI redesign notes](../prd/ci-redesign.md) say
+when to reopen this.
 
 ## Considered options
 

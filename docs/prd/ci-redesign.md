@@ -30,11 +30,18 @@ Shane chose the small, reversible fix over a redesign: fix the concurrency
 and the repeated work, and keep Colmena, Forgejo, the monorepo and the
 current preview semantics. Each pull request evaluates once, against the
 mapping `main` cached for its merge base, the runner has a memory cap with
-oomd watching it, and `main` refuses an outdated branch so the preview is
-always against current `main`.
+oomd as a second line below it, and `main` refuses an outdated branch so
+the preview is always against current `main`.
 [ADR 0002](../adr/0002-evaluate-once-and-block-outdated-branches.md) has
 the trade-off, and the [builder doc](../pve/builder.md#how-jobs-run) the
 mechanics.
+
+A known trade-off: the `ai-skills` pull request merges itself, and if
+another merge lands while it builds, it sits behind `main` until the next
+`ai-skills` push or an Update Branch by hand. If that bites, the follow-up
+is a step on each push to `main` that calls Forgejo's
+`POST /repos/{owner}/{repo}/pulls/{index}/update` on the open pull
+requests scheduled to merge.
 
 The forge move, ephemeral runners and nix-eval-jobs are deferred, not
 rejected. Reopen them if a single full evaluation nears 25 GB, or if the

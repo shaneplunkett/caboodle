@@ -18,7 +18,11 @@ Nix store stays warm between runs. Whatever a job leaves behind stays too.
   job. nix-ld lets generic Linux binaries a job downloads, like the `ruff`
   that `uv sync` installs, run unpatched. Without it they fail with
   `Could not start dynamically linked executable`.
-- An evaluation of every host's `hydraJobs` peaks around 14 GB. A pull
+- This bullet is `build.yml` from `shane/workflows` v1.7.0
+  ([workflows#19](https://git.shaneplunkett.com/shane/workflows/pulls/19)),
+  and until Renovate moves caboodle's pin there from v1.6.1, the `hosts`
+  job still evaluates base and head side by side with no cache. An
+  evaluation of every host's `hydraJobs` peaks around 14 GB. A pull
   request's `hosts` job evaluates its head once and compares it with the
   mapping `main` left for the merge base, in
   `/var/lib/forgejo-runner/builder/evals/<repo>/<sha>.json`. Each push to
@@ -28,20 +32,27 @@ Nix store stays warm between runs. Whatever a job leaves behind stays too.
   keeps it to one full evaluation on the box at a time, since Forgejo
   ignores `concurrency` on a job.
 - The runner is capped at 32 GB. That holds one full evaluation with room
-  for the per-host build jobs beside it, or the pair a branch on a pin
-  older than v1.7.0 still runs side by side. Builds happen in nix-daemon, outside the
-  cap, and the 16 GB left is theirs and the OS's. Past the cap the kernel
-  kills the biggest process in the runner, almost always an evaluation, and
-  only that job fails: `OOMPolicy=continue` keeps the runner and its other
-  jobs going. Re-run the failed job once the others finish.
+  for the per-host build jobs beside it, or the pair the v1.6.1 pin still
+  runs side by side. Builds happen in nix-daemon, outside the cap, and the
+  16 GB left is theirs and the OS's. Past the cap the kernel kills the
+  biggest process in the runner, almost always an evaluation. The wedge
+  test showed that kill. `OOMPolicy=continue` stops systemd taking the
+  whole runner down over it, so the expected outcome is that the killed
+  evaluation's job fails and the others carry on. That isn't a promise: if
+  several evaluations grow at once, the kernel can kill again, in another
+  job. Re-run whatever failed once the rest finish.
 - If the runner thrashes below its cap instead, systemd-oomd kills it
   whole once its memory pressure stays over 50% for 20 seconds. Every job
   it had running fails with a lost runner, and systemd restarts it. Re-run
-  those jobs, deploys included. oomd used to watch `system.slice` instead,
-  which never fired: "full" pressure means every task in the cgroup is
-  stalled at once, and while the runner's own evaluations stalled, other
-  services kept the slice at 15%. Twice in one day the box went unreachable
-  with nothing killed, until an `incus restart builder` or a manual kill.
+  those jobs, deploys included. That's the second line, and unproven as
+  set up here: the test only saw oomd fire under a `MemoryHigh` throttle,
+  which the runner doesn't set. Hitting the cap alone leaves the pressure
+  near 0, so the kernel kill comes first. oomd used to watch
+  `system.slice` instead, which never fired: "full" pressure means every
+  task in the cgroup is stalled at once, and while the runner's own
+  evaluations stalled, other services kept the slice at 15%. Twice in one
+  day the box went unreachable with nothing killed, until an
+  `incus restart builder` or a manual kill.
 - The runner isn't a trusted Nix user, so a flake can't add caches for
   itself. The builder trusts the workstations' caches instead, or a desktop
   build would compile noctalia from source.
@@ -87,12 +98,13 @@ no host changes the one build job is a placeholder whose steps skip,
 because Forgejo leaves a job with an empty matrix blocked for good. The
 `build.yml` section of `shane/workflows`' README has the details.
 
-`main` won't merge a pull request that's behind it. Use Update Branch,
-which rebases, or rebase it yourself. A behind branch's diff is against an
-older `main`, so it can miss what another merge changed. Once it's up to
-date, its merge base is `main`, and the diff is exactly what merging
-changes. Every merge makes the other open pull requests stale, so each one
-rebuilds after its update. Renovate rebases its own the next time it runs.
+`main` won't merge a pull request that's behind it. Use Update Branch's
+rebase option, since the button merges `main` in by default, or rebase it
+yourself. A behind branch's diff is against an older `main`, so it can miss
+what another merge changed. Once it's up to date, its merge base is `main`,
+and the diff is exactly what merging changes. Every merge makes the other
+open pull requests stale, so each one rebuilds after its update. Renovate
+rebases its own the next time it runs.
 
 ## Building by hand
 
@@ -166,6 +178,16 @@ surface it.
 with `only: ai-skills` on its own branch and merges once every host builds.
 The review happened in `ai-skills`, so a bad skill is fixed by reverting it
 there, and the next push carries the revert over.
+
+If another pull request merges while the skills one is still building, the
+skills branch falls behind `main`, and Forgejo keeps its scheduled merge but
+won't carry it out. It sits open with green checks and an out-of-date
+notice. The next `ai-skills` push clears it: the run commits the bump on
+current `main`, force-pushes `update/ai-skills`, and refreshes the same
+pull request. A push doesn't cancel a scheduled merge, so it goes through
+once the new head's checks pass. To land it sooner, rebase it with Update
+Branch. The weekly update merges by hand, so it only ever needs the Update
+Branch.
 
 ## Renovate
 
