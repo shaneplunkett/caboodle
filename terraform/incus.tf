@@ -99,6 +99,30 @@ resource "incus_instance" "guest" {
     }
   }
 
+  dynamic "device" {
+    for_each = each.value.mounts
+    content {
+      name = trim(replace(device.key, "/", "-"), "-")
+      type = "disk"
+      properties = {
+        source = device.value
+        path   = device.key
+      }
+    }
+  }
+
+  dynamic "device" {
+    for_each = { for d in each.value.devices : trim(replace(d.path, "/", "-"), "-") => d }
+    content {
+      name = device.key
+      type = "unix-char"
+      properties = merge(
+        { path = device.value.path },
+        device.value.gid == null ? {} : { gid = tostring(device.value.gid) },
+      )
+    }
+  }
+
   device {
     name = "root"
     type = "disk"

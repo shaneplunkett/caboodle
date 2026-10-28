@@ -50,6 +50,13 @@ Terraform ignores newer builds. To refresh it, run
 `running = false` creates the container without starting it. Use it when a
 guest takes over another's MAC, so the two never share the LAN.
 
+`mounts` bind-mounts host directories into the guest as Incus `disk`
+devices, and `devices` passes character devices through as `unix-char`
+ones, with `gid` owning the device inside, like plex's Quick Sync
+`renderD128`. Both are named after their path, so `/mnt/media` is the
+device `mnt-media`. Guests are unprivileged and nothing is shifted, so a
+mounted file whose owner the guest can't map shows as `nobody`.
+
 ## Metrics
 
 Prometheus scrapes each guest's CPU from Incus's `/1.0/metrics` on port
@@ -93,12 +100,12 @@ nothing is rekeyed or restored from backup. It takes two pull requests, and
 nothing else merges between them.
 
 It suits a guest whose state all lives in `/var/lib`. A guest with bind
-mounts or passed-through devices, like plex, arr and dlna on Cube, needs
-them as Incus `disk` and `unix-char` devices before it starts, and
-`homelab.guest` can't describe those yet. The builder can't move this way
-either, since step 3 builds on it and fetches from its Harmonia. It moved
-by taking only its host keys and `/var/lib/tailscale`, then building its
-own system once it was up.
+mounts or passed-through devices, like plex, arr and dlna on Cube, gets
+them as `mounts` and `devices` in the first pull request, and its Incus
+host needs the mounts' sources before the guest starts. The builder can't
+move this way either, since step 3 builds on it and fetches from its
+Harmonia. It moved by taking only its host keys and `/var/lib/tailscale`,
+then building its own system once it was up.
 
 1. The first gives the node a `homelab.guest` with its old MAC and
    `running = false`, and keeps the `lxc` helper. In Terraform, its
