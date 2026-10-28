@@ -17,12 +17,14 @@ the hive's configuration model. StepBro's Atelier retains repeated
 attribute evaluations and Colmena deployment; Hestia and Hydra demonstrate
 evaluated-derivation reuse. Both approaches have precedent.
 
-The proposed next step is a comparison on one frozen caboodle revision,
-checking identical complete derivation mappings and measuring memory,
-CPU and elapsed time. Keep the existing deployment interface while testing
-those options. This is a research recommendation, not a selected
-implementation. No benchmarks have run. The research has not established
-that the current cross-host configuration needs to change.
+The [first controlled trial](../research/2026-10-28-nix-eval-jobs-trial.md)
+is complete. One worker with an 8192 MiB budget produced the same complete
+22-host derivation mapping as the reference, with 8.073 GiB peak memory
+against 13.002 GiB. A 4096 MiB budget failed four hosts despite a zero
+process exit status. Versions and cache conditions limit the performance
+comparison, and the production evaluator remains unchanged. The result
+supports bounded evaluation as a candidate without changing the current
+cross-host configuration or deployment interface.
 
 ## Why revisit it
 
@@ -172,7 +174,9 @@ The builder doc also promises oomd preserves reachability, whereas the
 ## Evaluation options to measure
 
 Source inspection on 28 October found mechanisms worth testing before
-restricting cross-host configuration. No profiling experiments have run.
+restricting cross-host configuration. The trial linked above supplies the
+first measurements; the options below remain candidates rather than an
+adopted architecture.
 
 The [pinned Colmena evaluator](https://github.com/stepbrobd/colmena/blob/eee6f1800c4b9b680c925be75da82f467ab6c1b6/src/nix/hive/eval.nix)
 exposes `evalSelectedDrvPaths`, retaining checked configurations and access
@@ -204,9 +208,9 @@ The flake evaluation cache and binary cache are distinct from an explicit
 manifest. Neither establishes that the current full-manifest command avoids
 module evaluation. Their actual benefit here remains unmeasured.
 
-### Proposed first measurements
+### Further measurements considered
 
-Use one frozen revision and compare fresh individual evaluations of dns1,
+Beyond the completed trial, compare fresh individual evaluations of dns1,
 desktop and dashboard with a single evaluation of the same three hosts.
 Require matching derivation paths and record peak memory, CPU and elapsed
 time. These hosts sample a small server, workstation SSH generation and

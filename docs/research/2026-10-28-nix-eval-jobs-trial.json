@@ -1,0 +1,155 @@
+{
+  "caveats": [
+    "No existing Nix 2.35.3 CLI was found; no matching reference was run. Prior complete Nix 2.34.9 reference reused; nix-eval-jobs 2.35.4 links Nix 2.35.3.",
+    "Library version alone would not prove identical evaluator configuration. Explicit no-build options preserved; binary identities recorded.",
+    "One sample per mode; warm store/page/source caches retained, eval-cache explicitly false. New jobs sample followed earlier trials and a deployment, so timing is not a controlled distribution.",
+    "Same two-CPU quota; cgroup CPU throttling may affect wall time. Accumulated throttled time is not elapsed wall time.",
+    "Cgroup peak includes charged cache and all sample processes; GNU Time RSS is a different measure. Separate daemon was monitored."
+  ],
+  "cgroup_caps_gib": {
+    "jobs_4096_mib": 8,
+    "jobs_8192_mib": 12,
+    "plain": 20
+  },
+  "complete_manifest_equal": true,
+  "cpu_quota": "200%",
+  "date": "2026-10-28",
+  "expected_hosts": [
+    "arr",
+    "auth",
+    "brain",
+    "builder",
+    "dashboard",
+    "deck",
+    "desktop",
+    "dlna",
+    "dns1",
+    "dns2",
+    "forge",
+    "gym",
+    "home",
+    "ingress",
+    "macbook",
+    "mini",
+    "monitoring",
+    "paper",
+    "photos",
+    "plex",
+    "pve",
+    "rss"
+  ],
+  "flags_common": {
+    "allow-import-from-derivation": false,
+    "builders": "",
+    "eval-cache": false,
+    "fallback": false,
+    "max-jobs": 0,
+    "substitute": false
+  },
+  "git_tree": "b40c26554ca94f552d7288f2eb8bdddaa1809e60",
+  "raw_evidence_directories": [
+    "/tmp/caboodle-eval-trial-20261028-0702",
+    "/tmp/caboodle-eval-followup-20261028-0717"
+  ],
+  "reference_manifest": {
+    "arr": "/nix/store/afa4q64r0bcamckzigxxhjd5sk69wpyr-nixos-system-unnamed-lxc-proxmox-26.11pre-git.drv",
+    "auth": "/nix/store/gjbrr5m7jib0l860vg4qbisw587lyiiy-nixos-system-unnamed-lxc-26.11pre-git.drv",
+    "brain": "/nix/store/icq86k2h722382404jbpnj34aplhwsqj-nixos-system-unnamed-lxc-26.11pre-git.drv",
+    "builder": "/nix/store/fg9h4xxs6bqv8zd9m51q6blkx4s2wfl4-nixos-system-unnamed-lxc-26.11pre-git.drv",
+    "dashboard": "/nix/store/3csmgjv8k3x5cphd4cim2i3kpb96xcc0-nixos-system-unnamed-lxc-26.11pre-git.drv",
+    "deck": "/nix/store/mwj2ldfd0md4crwqnw91z9789j0533rd-nixos-system-deck-26.11pre-git.drv",
+    "desktop": "/nix/store/3kxwkfgpnrzs9v4qfia60ai8cs0lh0cp-nixos-system-desktop-26.11pre-git.drv",
+    "dlna": "/nix/store/rjsg92blnrd186ghk18kpfa3gbr85g7f-nixos-system-unnamed-lxc-proxmox-26.11pre-git.drv",
+    "dns1": "/nix/store/k88lg2c7kp2ailh0n6p17y2f0wsbz4ig-nixos-system-unnamed-lxc-26.11pre-git.drv",
+    "dns2": "/nix/store/1kvwd0bd2fdczqf8sazyhyi2j87rxck7-nixos-system-unnamed-lxc-proxmox-26.11pre-git.drv",
+    "forge": "/nix/store/xcanpxnp05ykfiy6whph2z32svpjk4i5-nixos-system-unnamed-lxc-26.11pre-git.drv",
+    "gym": "/nix/store/7s0zrzhgfs8qzamfznmd5m26lqazndyz-nixos-system-unnamed-lxc-26.11pre-git.drv",
+    "home": "/nix/store/ckpdx8smzdm4mhg4wi6hdkyragd9pfpc-nixos-system-unnamed-lxc-26.11pre-git.drv",
+    "ingress": "/nix/store/x4fvkanjhh4rz2zwwx9b507bpil5p3bm-nixos-system-unnamed-lxc-26.11pre-git.drv",
+    "macbook": "/nix/store/q33ls1brzdncsib0a9wqzd95jk9avngx-darwin-system-26.11.bb0b90d.drv",
+    "mini": "/nix/store/j3g9sskrnb7nis0rr3zlb2v60926f5wi-darwin-system-26.11.bb0b90d.drv",
+    "monitoring": "/nix/store/9apzdjnamknravzkcygqn6rjjj0w8qr8-nixos-system-unnamed-lxc-proxmox-26.11pre-git.drv",
+    "paper": "/nix/store/k6kk0r8yx01mwd9a2pklrhv34ygq435a-nixos-system-unnamed-lxc-proxmox-26.11pre-git.drv",
+    "photos": "/nix/store/5aybr09f50iyc1wzklk6y03nzg4m3fn7-nixos-system-unnamed-lxc-proxmox-26.11pre-git.drv",
+    "plex": "/nix/store/nfdvd5j438jnsq1z2q1dng9zwkkvhnbr-nixos-system-unnamed-lxc-proxmox-26.11pre-git.drv",
+    "pve": "/nix/store/2mr26mczidh5ip5fz8h8ig8pgm31pd76-nixos-system-pve-26.11pre-git.drv",
+    "rss": "/nix/store/07pqm6vndyqcv5w8lpp0dm0kahlxx91h-nixos-system-unnamed-lxc-26.11pre-git.drv"
+  },
+  "revision": "5d0135c44e1a79b4aab21db0b5c519a1f00f6fb6",
+  "safety": {
+    "all_sample_processes_and_units_removed": true,
+    "builds_or_deploys_started_by_trial": false,
+    "daemon_cpu_unchanged": true,
+    "evaluation_lock_released": true,
+    "psi_averages_zero": true,
+    "sample_oom_events": 0
+  },
+  "samples": {
+    "jobs_4096_mib": {
+      "automatic_worker_kills": 10,
+      "error_hosts": [
+        "deck",
+        "desktop",
+        "macbook",
+        "mini"
+      ],
+      "metrics": {
+        "builder_min_available_gib": 43.87891387939453,
+        "cgroup_cpu_seconds": 129.75029,
+        "cgroup_peak_bytes": 4537925632,
+        "daemon_cpu_delta_s": 0.0,
+        "exit_status": 0,
+        "gnu_time_max_rss_kib": 4291440,
+        "pve_min_available_gib": 81.67939758300781,
+        "wall_seconds": 136.85
+      },
+      "successful_hosts": 18,
+      "successful_manifest_sha256": "234302dff4004bad16531bad858a02a8832c693c6faa38c72ad8eda5ef7e8332",
+      "workers": 1
+    },
+    "jobs_8192_mib": {
+      "automatic_worker_kills": 3,
+      "error_hosts": [],
+      "manifest_sha256": "0a45f8c7495c14e737cfd166aaf23c2e0e22f20aa27e817f6936ea5482bd1d4c",
+      "metrics": {
+        "builder_min_available_gib": 40.15267276763916,
+        "cgroup_cpu_seconds": 109.791519,
+        "cgroup_peak_bytes": 8668491776,
+        "daemon_cpu_delta_s": 0.0,
+        "exit_status": 0,
+        "gnu_time_max_rss_kib": 8372436,
+        "pve_min_available_gib": 77.88640975952148,
+        "wall_seconds": 115.44
+      },
+      "successful_hosts": 22,
+      "workers": 1
+    },
+    "plain": {
+      "error_hosts": [],
+      "manifest_sha256": "0a45f8c7495c14e737cfd166aaf23c2e0e22f20aa27e817f6936ea5482bd1d4c",
+      "metrics": {
+        "builder_min_available_gib": 35.31710147857666,
+        "cgroup_cpu_seconds": 153.258109,
+        "cgroup_peak_bytes": 13961084928,
+        "daemon_cpu_delta_s": 0.0,
+        "exit_status": 0,
+        "gnu_time_max_rss_kib": 13351956,
+        "pve_min_available_gib": 73.1648941040039,
+        "wall_seconds": 129.61
+      },
+      "successful_hosts": 22
+    }
+  },
+  "shared_4096_mib_paths_equal": true,
+  "source_nar_hash": "sha256-XwsZTDUMfy01479em49WZJX3P80BY3lRL5GBNXMcCfI=",
+  "tools": {
+    "git": "2.56.0",
+    "gnu_time": "1.10",
+    "nix": "2.34.9",
+    "nix_eval_jobs_linked_nix_libraries": "2.35.3",
+    "nix_eval_jobs_package": "2.35.4",
+    "nix_eval_jobs_version_caveat": "Version identified from existing store package/deriver and library references; --version is unsupported. Exact binary hashes retained.",
+    "python": "3.14.8",
+    "systemd": "262"
+  }
+}

@@ -158,7 +158,7 @@ take precedence. The synthesis above and gaps below reflect the final pass.
 ## Gaps
 
 - The exact tool Shane remembers has not been identified conclusively.
-- No candidate has been benchmarked against caboodle. Its maximum single-host evaluation cost is still unknown.
+- The external research itself ran no benchmarks. A [subsequent controlled trial](2026-10-28-nix-eval-jobs-trial.md) completed the hive with one 8192 MiB worker and matched all reference derivations. Maximum single-host cost and production concurrency remain open.
 - StepBro's inspected deployment timings do not establish an equivalent host set or hardware budget.
 - FlakeHub self-hosted upload eligibility and current pricing remain unverified. GitHub cache limits were checked, but caboodle's cache/storage requirement has not been measured.
 - Hydra and nixbot's enforcement of current-target evidence after target movement remains unconfirmed. nixbot's merged checkout itself was verified.
