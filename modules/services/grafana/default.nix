@@ -7,6 +7,9 @@
 }:
 let
   secrets = config.age.secrets;
+  incusHosts = lib.filterAttrs (
+    _: node: node.config.homelab.monitoring.enable && node.config.virtualisation.incus.enable or false
+  ) nodes;
   dashboards = {
     hosts = import ./dashboards/hosts.nix {
       inherit lib;
@@ -21,7 +24,7 @@ let
             && node.config.homelab.guest.host == host
           ) nodes
         )
-      ) (lib.filterAttrs (_: node: node.config.virtualisation.incus.enable or false) nodes);
+      ) incusHosts;
     };
     dns = import ./dashboards/dns.nix { inherit lib nodes; };
     logs = import ./dashboards/logs.nix { inherit lib; };

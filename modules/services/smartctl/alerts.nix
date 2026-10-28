@@ -6,7 +6,9 @@
 }:
 let
   monitored = lib.filterAttrs (
-    _: node: node.config.services.prometheus.exporters.smartctl.enable or false
+    _: node:
+    node.config.homelab.monitoring.enable
+    && node.config.services.prometheus.exporters.smartctl.enable or false
   ) nodes;
   hostMatcher = ''host=~"${lib.concatStringsSep "|" (lib.attrNames monitored)}"'';
   smartLog = "ssh root@{{ $labels.host }} smartctl -a /dev/disk/by-id/{{ $labels.device }}";

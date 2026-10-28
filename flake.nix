@@ -452,6 +452,11 @@
           imports = [ ./hosts/pve ];
           deployment.tags = [ ];
         };
+
+        cube = {
+          imports = [ ./hosts/cube ];
+          deployment.tags = [ ];
+        };
       };
     };
 

@@ -8,7 +8,9 @@
 let
   byThreshold = import ../prometheus/thresholds.nix { inherit lib nodes options; } "name";
   links = import ../grafana/links.nix;
-  incusHosts = lib.filterAttrs (_: node: node.config.virtualisation.incus.enable or false) nodes;
+  incusHosts = lib.filterAttrs (
+    _: node: node.config.homelab.monitoring.enable && node.config.virtualisation.incus.enable or false
+  ) nodes;
   hostMatcher = ''host=~"${lib.concatStringsSep "|" (lib.attrNames incusHosts)}"'';
   collector = "incus-thinpool-metrics";
 
