@@ -104,7 +104,6 @@
           ];
         }
         // settings;
-      lxc = guest ./modules/lxc.nix;
       incus = guest ./modules/incus.nix;
       systems = [
         "x86_64-linux"
@@ -332,7 +331,7 @@
           };
         };
 
-        monitoring = lxc "monitoring" {
+        monitoring = incus "monitoring" {
           homelab.lanAddress = "192.168.1.78";
           homelab.guest = {
             host = "cube";
@@ -340,7 +339,6 @@
             memory = 6144;
             disk = 40;
             mac = "BC:24:11:DD:65:EE";
-            running = false;
           };
         };
 
@@ -364,19 +362,18 @@
           };
         };
 
-        dns2 = lxc "dns" {
+        dns2 = incus "dns" {
           homelab.lanAddress = "192.168.1.236";
           homelab.guest = {
             host = "cube";
             cores = 1;
             memory = 1024;
             mac = "BC:24:11:B3:E3:C3";
-            running = false;
           };
           deployment.tags = [ "deploy-after-dns1" ];
         };
 
-        plex = lxc "plex" {
+        plex = incus "plex" {
           homelab.lanAddress = "192.168.1.237";
           homelab.guest = {
             host = "cube";
@@ -384,7 +381,6 @@
             memory = 8192;
             disk = 100;
             mac = "BC:24:11:AA:D1:7C";
-            running = false;
             mounts."/mnt/media" = "/mnt/media";
             devices = [
               {
@@ -395,7 +391,7 @@
           };
         };
 
-        arr = lxc "arr" {
+        arr = incus "arr" {
           homelab.lanAddress = "192.168.1.90";
           homelab.guest = {
             host = "cube";
@@ -403,19 +399,17 @@
             memory = 4096;
             disk = 40;
             mac = "BC:24:11:25:4D:73";
-            running = false;
             mounts."/mnt/media" = "/mnt/media";
           };
         };
 
-        dlna = lxc "dlna" {
+        dlna = incus "dlna" {
           homelab.lanAddress = "192.168.1.66";
           homelab.guest = {
             host = "cube";
             cores = 1;
             memory = 512;
             mac = "BC:24:11:77:AD:79";
-            running = false;
             mounts."/mnt/programs" = "/mnt/programs";
           };
         };
@@ -440,7 +434,7 @@
           };
         };
 
-        photos = lxc "photos" {
+        photos = incus "photos" {
           homelab.lanAddress = "192.168.1.154";
           homelab.guest = {
             host = "cube";
@@ -448,18 +442,16 @@
             memory = 8192;
             disk = 250;
             mac = "BC:24:11:CA:51:3A";
-            running = false;
           };
         };
 
-        paper = lxc "paper" {
+        paper = incus "paper" {
           homelab.lanAddress = "192.168.1.155";
           homelab.guest = {
             host = "cube";
             memory = 8192;
             disk = 32;
             mac = "BC:24:11:2A:A7:BB";
-            running = false;
           };
         };
 
