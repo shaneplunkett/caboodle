@@ -21,6 +21,11 @@ provider "incus" {
     name    = "pve"
     address = "https://${local.network.devices.pve.ip}:8443"
   }
+
+  remote {
+    name    = "cube"
+    address = "https://${local.network.devices.cube.ip}:8443"
+  }
 }
 
 provider "hcloud" {
