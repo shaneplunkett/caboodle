@@ -17,6 +17,9 @@ let
   retainFullscreen =
     enabled:
     "hyprctl eval 'hl.config({ misc = { exit_window_retains_fullscreen = ${lib.boolToString enabled} } })'";
+  mapInput =
+    touch: tablet:
+    "hyprctl eval 'hl.config({ input = { touchdevice = { output = \"${touch}\" }, tablet = { output = \"${tablet}\" } } })'";
   setMonitors =
     disabled:
     lib.concatMapStrings (monitor: ''
@@ -49,6 +52,7 @@ let
         ${setMonitors true}
         hyprctl dispatch 'hl.dsp.focus({ workspace = "${steamWorkspace}" })'
         ${retainFullscreen true}
+        ${mapInput "STREAM" "STREAM"}
 
         setsid -f steam steam://open/bigpicture >/dev/null 2>&1
         for _ in $(seq 100); do
@@ -63,6 +67,9 @@ let
         set +e
         setsid -f steam steam://close/bigpicture >/dev/null 2>&1
         ${retainFullscreen (hyprland.misc.exit_window_retains_fullscreen or false)}
+        ${mapInput (hyprland.input.touchdevice.output or "[[Auto]]") (
+          hyprland.input.tablet.output or "[[EMPTY]]"
+        )}
         ${setMonitors false}
         hyprctl output remove STREAM
         hyprctl workspaces -j \
