@@ -8,7 +8,9 @@
 let
   byThreshold = import ../prometheus/thresholds.nix { inherit lib nodes options; } "name";
   links = import ../grafana/links.nix;
-  incusHosts = lib.filterAttrs (_: node: node.config.virtualisation.incus.enable or false) nodes;
+  incusHosts = lib.filterAttrs (
+    _: node: node.config.homelab.monitoring.enable && node.config.virtualisation.incus.enable or false
+  ) nodes;
   hostMatcher = ''host=~"${lib.concatStringsSep "|" (lib.attrNames incusHosts)}"'';
   collector = "incus-thinpool-metrics";
 
@@ -168,6 +170,17 @@ in
                       summary = "{{ $labels.host }} has never published its thin pool reading";
                       condition = "Node exporter up but no thin pool metrics for 10m";
                       check = "ssh {{ $labels.host }} systemctl status ${collector}";
+                    };
+                  }
+                  {
+                    alert = "HardwareTooHot";
+                    expr = "node_hwmon_temp_celsius{${hostMatcher}} > node_hwmon_temp_crit_celsius{${hostMatcher}} - 5";
+                    for = "10m";
+                    labels.severity = "warning";
+                    annotations = {
+                      summary = "{{ $labels.chip }} {{ $labels.sensor }} on {{ $labels.host }} is at {{ $value }}°C";
+                      condition = "Within 5°C of its critical temperature for 10m";
+                      check = "ssh {{ $labels.host }} grep . /sys/class/hwmon/*/name /sys/class/hwmon/*/temp*_input";
                     };
                   }
                   {

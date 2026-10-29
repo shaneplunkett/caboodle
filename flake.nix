@@ -46,7 +46,7 @@
       url = "git+ssh://forgejo@forge/shane/vex-code?shallow=1";
       flake = false;
     };
-    llm-agents.url = "github:numtide/llm-agents.nix/91ff550fe42d4dd51dcf8b6bad87a0134fe7f314";
+    llm-agents.url = "github:numtide/llm-agents.nix/5b33e7b9df24e256c8559064d19e7246e12dd463";
     electron-nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     homebrew-core = {
@@ -74,6 +74,10 @@
     noctalia-greeter.url = "github:noctalia-dev/noctalia-greeter";
     noctalia-plugins = {
       url = "git+ssh://forgejo@forge/shane/noctalia-plugins";
+      flake = false;
+    };
+    wallpapers = {
+      url = "git+ssh://forgejo@forge/shane/wallpapers?shallow=1";
       flake = false;
     };
   };
@@ -104,7 +108,6 @@
           ];
         }
         // settings;
-      lxc = guest ./modules/lxc.nix;
       incus = guest ./modules/incus.nix;
       systems = [
         "x86_64-linux"
@@ -205,14 +208,6 @@
           _: node: node.config.deployment.systemType == "nixos"
         ) self.colmenaHive.nodes
         // {
-          base = nixpkgs.lib.nixosSystem {
-            modules = [
-              ./modules/homelab.nix
-              ./modules/nixos.nix
-              ./modules/lxc.nix
-              { homelab.monitoring.enable = false; }
-            ];
-          };
           incus-base = nixpkgs.lib.nixosSystem {
             modules = [
               ./modules/homelab.nix
@@ -332,7 +327,16 @@
           };
         };
 
-        monitoring = lxc "monitoring" { homelab.lanAddress = "192.168.1.78"; };
+        monitoring = incus "monitoring" {
+          homelab.lanAddress = "192.168.1.78";
+          homelab.guest = {
+            host = "cube";
+            cores = 4;
+            memory = 6144;
+            disk = 40;
+            mac = "BC:24:11:DD:65:EE";
+          };
+        };
 
         ingress = incus "ingress" {
           homelab.lanAddress = "192.168.1.149";
@@ -354,16 +358,57 @@
           };
         };
 
-        dns2 = lxc "dns" {
+        dns2 = incus "dns" {
           homelab.lanAddress = "192.168.1.236";
+          homelab.guest = {
+            host = "cube";
+            cores = 1;
+            memory = 1024;
+            mac = "BC:24:11:B3:E3:C3";
+          };
           deployment.tags = [ "deploy-after-dns1" ];
         };
 
-        plex = lxc "plex" { homelab.lanAddress = "192.168.1.237"; };
+        plex = incus "plex" {
+          homelab.lanAddress = "192.168.1.237";
+          homelab.guest = {
+            host = "cube";
+            cores = 4;
+            memory = 8192;
+            disk = 100;
+            mac = "BC:24:11:AA:D1:7C";
+            mounts."/mnt/media" = "/mnt/media";
+            devices = [
+              {
+                path = "/dev/dri/renderD128";
+                gid = 303;
+              }
+            ];
+          };
+        };
 
-        arr = lxc "arr" { homelab.lanAddress = "192.168.1.90"; };
+        arr = incus "arr" {
+          homelab.lanAddress = "192.168.1.90";
+          homelab.guest = {
+            host = "cube";
+            cores = 4;
+            memory = 4096;
+            disk = 40;
+            mac = "BC:24:11:25:4D:73";
+            mounts."/mnt/media" = "/mnt/media";
+          };
+        };
 
-        dlna = lxc "dlna" { homelab.lanAddress = "192.168.1.66"; };
+        dlna = incus "dlna" {
+          homelab.lanAddress = "192.168.1.66";
+          homelab.guest = {
+            host = "cube";
+            cores = 1;
+            memory = 512;
+            mac = "BC:24:11:77:AD:79";
+            mounts."/mnt/programs" = "/mnt/programs";
+          };
+        };
 
         gym = incus "gym" {
           homelab.lanAddress = "192.168.1.209";
@@ -385,9 +430,26 @@
           };
         };
 
-        photos = lxc "photos" { homelab.lanAddress = "192.168.1.154"; };
+        photos = incus "photos" {
+          homelab.lanAddress = "192.168.1.154";
+          homelab.guest = {
+            host = "cube";
+            cores = 4;
+            memory = 8192;
+            disk = 250;
+            mac = "BC:24:11:CA:51:3A";
+          };
+        };
 
-        paper = lxc "paper" { homelab.lanAddress = "192.168.1.155"; };
+        paper = incus "paper" {
+          homelab.lanAddress = "192.168.1.155";
+          homelab.guest = {
+            host = "cube";
+            memory = 8192;
+            disk = 32;
+            mac = "BC:24:11:2A:A7:BB";
+          };
+        };
 
         home = incus "home" {
           homelab.lanAddress = "192.168.1.117";
@@ -450,6 +512,11 @@
 
         pve = {
           imports = [ ./hosts/pve ];
+          deployment.tags = [ ];
+        };
+
+        cube = {
+          imports = [ ./hosts/cube ];
           deployment.tags = [ ];
         };
       };

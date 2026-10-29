@@ -2,7 +2,6 @@ on:
   pull_request:
     paths:
       - "terraform/**"
-      - "proxmox/**"
       - "flake.nix"
       - "modules/devices.nix"
       - "scripts/terraform-ci.sh"

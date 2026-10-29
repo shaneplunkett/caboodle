@@ -33,7 +33,6 @@ let
   };
 
   externalRoutes = {
-    proxmox = "https://${devices.cube.ip}:8006";
     unifi = "https://${config.homelab.gateway}:443";
     coffee = "http://${devices.gaggiuino.ip}:80";
   };

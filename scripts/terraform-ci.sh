@@ -13,13 +13,12 @@ mode="${1:-plan}"
 creds=/run/credentials/forgejo-runner-builder.service
 
 TF_TOKEN_app_terraform_io="$(<"$creds/terraform-cloud-token")"
-TF_VAR_pve_api_token="$(<"$creds/terraform-pve-token")"
 TF_VAR_hcloud_token="$(<"$creds/terraform-hcloud-token")"
 TF_VAR_cloudflare_api_token="$(<"$creds/terraform-cloudflare-token")"
 TF_VAR_access_editor_emails="$(<"$creds/terraform-access-emails")"
 TF_VAR_forgejo_api_token="$(<"$creds/terraform-forgejo-token")"
 TF_VAR_unifi_api_key="$(<"$creds/terraform-unifi-token")"
-export TF_TOKEN_app_terraform_io TF_VAR_pve_api_token TF_VAR_hcloud_token TF_VAR_cloudflare_api_token TF_VAR_access_editor_emails TF_VAR_forgejo_api_token TF_VAR_unifi_api_key
+export TF_TOKEN_app_terraform_io TF_VAR_hcloud_token TF_VAR_cloudflare_api_token TF_VAR_access_editor_emails TF_VAR_forgejo_api_token TF_VAR_unifi_api_key
 
 root="$(git rev-parse --show-toplevel)"
 

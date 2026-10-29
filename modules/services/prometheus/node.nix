@@ -1,5 +1,4 @@
 {
-  config,
   nodes,
   lib,
   options,
@@ -9,7 +8,6 @@
 let
   byThreshold = import ./thresholds.nix { inherit lib nodes options; } "host";
   monitored = lib.filterAttrs (_: node: node.config.homelab.monitoring.enable) nodes;
-  proxmox = config.homelab.proxmoxNodes;
   links = import ../grafana/links.nix;
   containers = lib.attrNames (lib.filterAttrs (_: node: node.config.boot.isContainer or false) nodes);
 in
@@ -107,15 +105,10 @@ in
     scrapeConfigs = [
       {
         job_name = "node";
-        static_configs =
-          lib.mapAttrsToList (name: node: {
-            targets = [ "${node.config.homelab.lanAddress}:9100" ];
-            labels.host = name;
-          }) monitored
-          ++ lib.mapAttrsToList (name: address: {
-            targets = [ "${address}:9100" ];
-            labels.host = name;
-          }) proxmox;
+        static_configs = lib.mapAttrsToList (name: node: {
+          targets = [ "${node.config.homelab.lanAddress}:9100" ];
+          labels.host = name;
+        }) monitored;
       }
     ];
   };

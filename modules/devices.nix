@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ lib, ... }:
 let
   inherit (lib) mkOption types;
 
@@ -21,12 +21,6 @@ let
           type = types.strMatching "([0-9a-f]{2}:){5}[0-9a-f]{2}";
           description = "The device's MAC address, in lowercase.";
         };
-
-        proxmox = mkOption {
-          type = types.bool;
-          default = false;
-          description = "Whether the device is a Proxmox node.";
-        };
       };
     };
 in
@@ -47,15 +41,6 @@ in
         devices;
       description = "Every device on the network that isn't a NixOS host, reserved in UniFi by Terraform.";
     };
-
-    proxmoxNodes = mkOption {
-      type = types.attrsOf types.str;
-      readOnly = true;
-      default = lib.mapAttrs (_: device: device.ip) (
-        lib.filterAttrs (_: device: device.proxmox) config.homelab.devices
-      );
-      description = "Each Proxmox node's address, keyed by its node name.";
-    };
   };
 
   config.homelab = {
@@ -71,7 +56,6 @@ in
         name = "Cube";
         ip = "192.168.1.238";
         mac = "e0:d5:5e:84:3e:48";
-        proxmox = true;
       };
       mini = {
         name = "Mini";

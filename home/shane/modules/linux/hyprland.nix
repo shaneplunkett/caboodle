@@ -33,102 +33,29 @@ let
   };
   exec = cmd: ''hl.dsp.exec_cmd("${cmd}")'';
 
-  workspaceKeys = [
-    {
-      key = "1";
-      ws = 1;
-    }
-    {
-      key = "2";
-      ws = 2;
-    }
-    {
-      key = "A";
-      ws = 3;
-    }
-    {
-      key = "B";
-      ws = 4;
-    }
-    {
-      key = "T";
-      ws = 5;
-    }
-    {
-      key = "I";
-      ws = 6;
-    }
-    {
-      key = "S";
-      ws = 7;
-    }
-    {
-      key = "M";
-      ws = 8;
-    }
-    {
-      key = "9";
-      ws = 9;
-    }
-    {
-      key = "O";
-      ws = 10;
-    }
-    {
-      key = "G";
-      ws = 11;
-    }
-    {
-      key = "E";
-      ws = 12;
-    }
-  ];
-
-  workspaceApps = {
-    "3" = [
-      "^t3code$"
-      "^chatgpt$"
-      "^claude(-desktop)?$"
-    ];
-    "4" = [ "^google-chrome$" ];
-    "5" = [ "^com\\.mitchellh\\.ghostty$" ];
-    "6" = [ "^linear$" ];
-    "7" = [
-      "^signal$"
-      "(?i)^slack$"
-      "^ferdium$"
-      "^vesktop$"
-      "^bluebubbles$"
-    ];
-    "8" = [
-      "^com\\.edde746\\.plezy$"
-      "^YouTube Music Desktop App$"
-    ];
-    "10" = [ "^md\\.Obsidian$" ];
-    "11" = [
-      "(?i)^steam$"
-      "^steam_app_.*$"
-    ];
-    "12" = [ "^mail$" ];
-  };
-
-  appWorkspaceRules = lib.concatLists (
-    lib.mapAttrsToList (
-      ws: classes:
-      map (class: {
-        match.class = class;
-        workspace = ws;
-      }) classes
-    ) workspaceApps
+  workspaces = lib.imap1 (ws: workspace: workspace // { inherit ws; }) (
+    import ../../../workspaces.nix
   );
 
+  appWorkspaceRules = lib.concatMap (
+    {
+      ws,
+      classes ? [ ],
+      ...
+    }:
+    map (class: {
+      match.class = class;
+      workspace = toString ws;
+    }) classes
+  ) workspaces;
+
   workspaceBinds = lib.concatMap (
-    { key, ws }:
+    { key, ws, ... }:
     [
       (bind "${mod} + ${key}" "hl.dsp.focus({ workspace = ${toString ws} })")
       (bind "${mod} + SHIFT + ${key}" "hl.dsp.window.move({ workspace = ${toString ws}, follow = true })")
     ]
-  ) workspaceKeys;
+  ) workspaces;
 
   directionBinds =
     lib.concatMap
@@ -324,29 +251,29 @@ in
         }
       ];
 
-      workspace_rule =
-        map
-          (ws: {
-            workspace = toString ws;
-            monitor = "DP-2";
-            gaps_out = primaryWorkspaceGaps;
-            default = ws == 1;
-          })
-          (
-            lib.range 1 8
-            ++ [
-              10
-              11
-              12
-            ]
-          )
-        ++ [
-          {
-            workspace = "9";
-            monitor = "HDMI-A-1";
-            default = true;
-          }
-        ];
+      workspace_rule = map (
+        {
+          ws,
+          secondary ? false,
+          ...
+        }:
+        {
+          workspace = toString ws;
+        }
+        // (
+          if secondary then
+            {
+              monitor = "HDMI-A-1";
+              default = true;
+            }
+          else
+            {
+              monitor = "DP-2";
+              gaps_out = primaryWorkspaceGaps;
+              default = ws == 1;
+            }
+        )
+      ) workspaces;
 
       env = [
         {

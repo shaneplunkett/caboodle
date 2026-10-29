@@ -14,7 +14,6 @@ in
   homelab = {
     secrets = [
       "discord-webhook"
-      "proxmox-token"
     ];
 
     routes.status = config.services.gatus.settings.web.port;
@@ -27,8 +26,6 @@ in
       '';
     };
   };
-
-  systemd.services.gatus.serviceConfig.EnvironmentFile = [ secrets.proxmox-token.path ];
 
   services.gatus = {
     enable = true;

@@ -1,6 +1,6 @@
 # Arr
 
-NixOS LXC on Cube running the media automation stack, one module file per
+Incus guest on Cube running the media automation stack, one module file per
 app.
 
 ## How the apps find each other
@@ -21,7 +21,7 @@ the host has to keep:
 
 ## Media
 
-The `unraid-media` pool is bind-mounted at `/mnt/media`, the same path as
+The NAS's Media share is passed in at `/mnt/media`, the same path as
 Plex, and the apps store their paths under it. The NAS's NFS export squashes
 every user to `nobody:users`, so the services run as their normal NixOS users
 and files still land as 99:100.

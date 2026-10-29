@@ -15,7 +15,6 @@ let
   // lib.genAttrs [
     "forge-bot-token"
     "terraform-cloud-token"
-    "terraform-pve-token"
     "terraform-hcloud-token"
     "terraform-cloudflare-token"
     "terraform-access-emails"
@@ -99,17 +98,11 @@ in
       ];
       inherit publicKey;
     }) (lib.filterAttrs (name: _: lib.elem name onLan) (import ../../agenix/host-keys.nix));
-    extraConfig =
-      lib.concatMapStrings (name: ''
-        Host ${name} ${lanAddress name}
-          HostName ${lanAddress name}
-          IdentityFile /run/credentials/${unit}.service/ssh-key
-      '') onLan
-      + ''
-        Host ${lib.concatStringsSep " " (lib.attrValues config.homelab.proxmoxNodes)}
-          User shane
-          IdentityFile /run/credentials/${unit}.service/ssh-key
-      '';
+    extraConfig = lib.concatMapStrings (name: ''
+      Host ${name} ${lanAddress name}
+        HostName ${lanAddress name}
+        IdentityFile /run/credentials/${unit}.service/ssh-key
+    '') onLan;
   };
 
   programs.nix-ld.enable = true;

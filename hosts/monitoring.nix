@@ -1,8 +1,6 @@
 {
   imports = [
     ../modules/services/prometheus
-    ../modules/services/pve-exporter
-    ../modules/services/proxmox-hosts
     ../modules/services/smartctl/alerts.nix
     ../modules/services/nas/alerts.nix
     ../modules/services/alertmanager
@@ -20,6 +18,7 @@
     ../modules/services/forgejo/alerts.nix
     ../modules/services/freshrss/alerts.nix
     ../modules/services/immich/alerts.nix
+    ../modules/services/plex/alerts.nix
     ../modules/services/paperless/alerts.nix
     ../modules/services/paperless-gpt/alerts.nix
   ];

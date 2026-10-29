@@ -1,5 +1,14 @@
-_:
-
+{ lib, palette, ... }:
+let
+  mauve =
+    lib.concatMapStringsSep " "
+      (offset: toString (lib.fromHexString (builtins.substring offset 2 palette.hex.mauve) / 255.0))
+      [
+        0
+        2
+        4
+      ];
+in
 {
 
   system = {
@@ -52,6 +61,9 @@ _:
       };
 
       NSGlobalDomain = {
+        AppleInterfaceStyle = "Dark";
+        AppleIconAppearanceTheme = "TintedDark";
+        AppleReduceDesktopTinting = true;
         AppleICUForce24HourTime = true;
         AppleKeyboardUIMode = 3;
         InitialKeyRepeat = 15;
@@ -67,6 +79,13 @@ _:
         NSNavPanelExpandedStateForSaveMode = true;
         NSNavPanelExpandedStateForSaveMode2 = true;
         "com.apple.swipescrolldirection" = false;
+      };
+
+      CustomUserPreferences.NSGlobalDomain = {
+        AppleAccentColor = 5;
+        AppleHighlightColor = "${mauve} Other";
+        AppleIconAppearanceTintColor = "Other";
+        AppleIconAppearanceCustomTintColor = "${mauve} 1.000000";
       };
 
       loginwindow = {

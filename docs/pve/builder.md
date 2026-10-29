@@ -144,12 +144,9 @@ outputs between each other. If an outage keeps blocking applies, split
 Cloudflare out first, since it shares the least.
 
 State is in Terraform Cloud. The tokens are agenix secrets the runner loads
-as credentials. Three have other names in Bitwarden: `homelab_tfc_token`,
-`homelab_pve_token` and `homelab_hcloud_token`. Setting a Cube LXC's devices
-and bind mounts runs `pct` over SSH as `shane`, so the builder's key is in
-`shane`'s authorized keys on Cube. Incus guests need none of that, since
-Terraform reaches Incus with its own client certificate
-([incus](../../modules/services/incus/README.md#terraforms-access)).
+as credentials. Two have other names in Bitwarden: `homelab_tfc_token` and
+`homelab_hcloud_token`. Terraform reaches Incus with its own client
+certificate ([incus](../../modules/services/incus/README.md#terraforms-access)).
 
 A changed secret restarts the runner the same graceful way. Its restart
 triggers hash the `.age` files, because their paths sit in the flake's

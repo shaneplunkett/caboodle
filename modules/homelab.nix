@@ -59,6 +59,38 @@
               default = [ ];
               description = "NICs on other VLANs, eth1 onwards, each untagged on its VLAN with a static address.";
             };
+            mounts = lib.mkOption {
+              type = lib.types.attrsOf lib.types.str;
+              default = { };
+              example = {
+                "/mnt/media" = "/mnt/media";
+              };
+              description = "Host directories bind-mounted into the container, keyed by their path inside it.";
+            };
+            devices = lib.mkOption {
+              type = lib.types.listOf (
+                lib.types.submodule {
+                  options = {
+                    path = lib.mkOption {
+                      type = lib.types.str;
+                    };
+                    gid = lib.mkOption {
+                      type = lib.types.nullOr lib.types.int;
+                      default = null;
+                      description = "The group that owns the device inside the container.";
+                    };
+                  };
+                }
+              );
+              default = [ ];
+              example = [
+                {
+                  path = "/dev/dri/renderD128";
+                  gid = 303;
+                }
+              ];
+              description = "Host character devices passed into the container at the same path.";
+            };
           };
         }
       );

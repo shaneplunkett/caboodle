@@ -53,6 +53,7 @@ in
         br0 = {
           matchConfig.Name = "br0";
           networkConfig.DHCP = "ipv4";
+          linkConfig.RequiredFamilyForOnline = "ipv4";
         };
       };
     };

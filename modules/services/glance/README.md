@@ -48,9 +48,6 @@ each as a YAML block in its `widgets/<name>/README.md`.
 3. Add `(import ../widgets/<name>)` to a page's `widgets` list.
 4. `git add` the new folder, since flakes can't see untracked files.
 
-Add it to this list of widgets adapted from community-widgets, so updates
-know where to look: `proxmox-ve-stats` (from `proxmox-ve-stats`).
-
 ### Why not `$include`?
 
 Glance's `$include` directive looks like the obvious way to pull in widget

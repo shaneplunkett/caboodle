@@ -99,6 +99,30 @@ resource "incus_instance" "guest" {
     }
   }
 
+  dynamic "device" {
+    for_each = each.value.mounts
+    content {
+      name = trim(replace(device.key, "/", "-"), "-")
+      type = "disk"
+      properties = {
+        source = device.value
+        path   = device.key
+      }
+    }
+  }
+
+  dynamic "device" {
+    for_each = { for d in each.value.devices : trim(replace(d.path, "/", "-"), "-") => d }
+    content {
+      name = device.key
+      type = "unix-char"
+      properties = merge(
+        { path = device.value.path },
+        device.value.gid == null ? {} : { gid = tostring(device.value.gid) },
+      )
+    }
+  }
+
   device {
     name = "root"
     type = "disk"
@@ -121,23 +145,9 @@ moved {
   to   = unifi_client.guest["builder"]
 }
 
-removed {
-  from = module.builder.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
-}
-
 moved {
   from = module.auth.unifi_client.this
   to   = unifi_client.guest["auth"]
-}
-
-removed {
-  from = module.auth.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
 }
 
 moved {
@@ -145,35 +155,14 @@ moved {
   to   = unifi_client.guest["ingress"]
 }
 
-removed {
-  from = module.ingress.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
-}
-
 moved {
   from = module.brain.unifi_client.this
   to   = unifi_client.guest["brain"]
 }
 
-removed {
-  from = module.brain.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
-}
-
 moved {
   from = module.forge.unifi_client.this
   to   = unifi_client.guest["forge"]
-}
-
-removed {
-  from = module.forge.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
 }
 
 moved {
@@ -186,9 +175,37 @@ moved {
   to   = unifi_client.guest_vlan["home-20"]
 }
 
-removed {
-  from = module.home.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
+moved {
+  from = unifi_client.cube_guest["plex"]
+  to   = unifi_client.guest["plex"]
+}
+
+moved {
+  from = unifi_client.cube_guest["arr"]
+  to   = unifi_client.guest["arr"]
+}
+
+moved {
+  from = unifi_client.cube_guest["dlna"]
+  to   = unifi_client.guest["dlna"]
+}
+
+moved {
+  from = unifi_client.cube_guest["monitoring"]
+  to   = unifi_client.guest["monitoring"]
+}
+
+moved {
+  from = unifi_client.cube_guest["dns2"]
+  to   = unifi_client.guest["dns2"]
+}
+
+moved {
+  from = unifi_client.cube_guest["photos"]
+  to   = unifi_client.guest["photos"]
+}
+
+moved {
+  from = unifi_client.cube_guest["paper"]
+  to   = unifi_client.guest["paper"]
 }

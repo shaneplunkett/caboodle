@@ -12,6 +12,10 @@
             valid_rcodes = [ "NOERROR" ];
           };
         };
+        modules.http_2xx = {
+          prober = "http";
+          http.preferred_ip_protocol = "ip4";
+        };
         modules.ssh_banner = {
           prober = "tcp";
           tcp = {

@@ -1,7 +1,7 @@
 # Paper
 
-NixOS LXC on cube running Paperless-ngx, for Shane's documents and receipts.
-It lives at `https://paper.shaneplunkett.com`.
+Incus guest on Cube running Paperless-ngx, for Shane's documents and
+receipts. It lives at `https://paper.shaneplunkett.com`.
 
 ## Sign-in
 

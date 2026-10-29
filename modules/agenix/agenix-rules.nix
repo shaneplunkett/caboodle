@@ -19,13 +19,10 @@ let
     photos
     paper
     pve
+    cube
     ;
 in
 {
-  "proxmox-token.age".publicKeys = [
-    shane
-    dashboard
-  ];
   "healthchecks-ping.age".publicKeys = [
     shane
     monitoring
@@ -33,11 +30,6 @@ in
   "discord-webhook.age".publicKeys = [
     shane
     dashboard
-    monitoring
-
-  ];
-  "pve-exporter.age".publicKeys = [
-    shane
     monitoring
 
   ];
@@ -124,6 +116,7 @@ in
     photos
     paper
     pve
+    cube
   ];
   "backup-brain.age".publicKeys = [
     shane
@@ -236,10 +229,6 @@ in
     builder
   ];
   "terraform-cloud-token.age".publicKeys = [
-    shane
-    builder
-  ];
-  "terraform-pve-token.age".publicKeys = [
     shane
     builder
   ];

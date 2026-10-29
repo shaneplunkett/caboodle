@@ -2,9 +2,10 @@
 
 ## Summary
 
-The one Proxmox node left, a cluster of one. Its guests are Proxmox LXCs
-from `terraform/cube-*.tf` until they move to Incus, the way PVE's did
-([incus](../../modules/services/incus/README.md#moving-a-guest-onto-incus)).
+NixOS host that runs the Incus guests that need Quick Sync or should stay
+off PVE: plex, arr and dlna beside it, monitoring and dns2 so they outlive
+PVE, and photos and paper. Its config is `hosts/cube`. Incus, and looking
+after a guest, is in [incus](../../modules/services/incus/README.md).
 
 Per-service docs:
 
@@ -14,26 +15,38 @@ Per-service docs:
 - [photos.md](photos.md)
 - [paper.md](paper.md)
 
+## Deploying
+
+Merging builds Cube but never deploys it, since a bad switch takes every
+guest on it down. Switch it by hand the way PVE is
+([pve](../pve/README.md#deploying)), with the rollback armed for anything
+that touches `br0` or the uplink. Its keyboard is the JetKVM.
+
 ## NAS storage
 
-The NAS's NFS shares are Proxmox storage pools (`terraform/storage.tf`), so Proxmox owns the mount lifecycle, reconnection, and health. You can see them in the web UI under Storage.
+Cube mounts PVE's Media and Programs shares over NFS at `/mnt/media` and
+`/mnt/programs`, and passes them to plex, arr and dlna as Incus `disk`
+devices. The mounts are `soft`, so a dead PVE gives errors rather than
+processes stuck in D state. Incus starts after them, so no guest comes up
+on an empty share.
 
-LXCs don't mount NFS themselves. They bind-mount the host path `/mnt/pve/<storage id>` instead.
+Immich's library stays on photos' own disk, on purpose: restic backs up
+guest disks and never the NAS, so a library on the NAS would have no offsite
+copy.
 
 ## Gotchas
 
-- **The storage IDs still say `unraid-`.** Renaming one moves its mount
-  path, which the containers' bind mounts would have to follow by hand.
-- **Shares that were down when Cube mounted them stay empty**, and Plex,
-  arr and dlna see an empty `/mnt/media` or `/mnt/programs` while Proxmox
-  shows the storage as inactive. Remount, then restart the containers with
-  bind mounts so they pick up the new mounts:
+- **A share that was down when Cube booted stays empty**, and plex, arr and
+  dlna see an empty folder. Mount it, then restart those guests so they
+  bind the real share:
 
   ```sh
-  ssh shane@<cube> 'for s in appdata media programs; do sudo umount -l /mnt/pve/unraid-$s; done; sudo pvesm status'
-  ssh shane@<cube>
-  sudo pct list | awk '$NF ~ /^(plex|arr|dlna)$/ {print $1}' | xargs -n1 sudo pct reboot
+  ssh root@<cube> 'systemctl restart mnt-media.mount mnt-programs.mount && incus restart plex arr dlna'
   ```
 
-  If a manual mount says `Operation not permitted`, the NAS isn't exporting
-  yet, usually because its pool hasn't mounted.
+  If a mount says `Operation not permitted`, the NAS isn't exporting yet,
+  usually because its pool hasn't mounted.
+- **The network port is gigabit.** Copying a guest's state off or back on
+  runs at about 110 MB/s, so photos' library alone takes about 17 minutes.
+- **The JetKVM's keyboard misses the boot menu.** To boot something else
+  once, set it from the running system with `efibootmgr --bootnext`.

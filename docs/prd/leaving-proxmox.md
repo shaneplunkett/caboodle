@@ -81,6 +81,9 @@ don't change.
    PVE get the pool as a bind mount instead of NFS.
 3. **Cube follows.** Its guests reach the pool over NFS from PVE.
 
+All three are done. PVE became NixOS and Incus on 27 Oct 2026 (SHA-250), and
+Cube on 29 Oct (SHA-254).
+
 Splitting it this way means storage is proven before the hypervisor changes,
 and nothing gets debugged twice at once.
 

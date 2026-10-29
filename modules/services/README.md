@@ -91,7 +91,7 @@ stays up. There's nothing to cluster or back up.
 
 Every Nix host joins as `tag:homelab` with the OAuth client secret, so keys
 don't expire. Incus guests get TUN from the `default` profile in
-`modules/services/incus`, and Cube's LXCs from the drop-in in `proxmox/`.
+`modules/services/incus`.
 
 - An OAuth secret used as an auth key makes ephemeral devices by default,
   which vanish when they go offline. `authKeyParameters` turns that off.
