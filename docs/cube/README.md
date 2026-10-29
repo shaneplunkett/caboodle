@@ -27,8 +27,10 @@ that touches `br0` or the uplink. Its keyboard is the JetKVM.
 Cube mounts PVE's Media and Programs shares over NFS at `/mnt/media` and
 `/mnt/programs`, and passes them to plex, arr and dlna as Incus `disk`
 devices. The mounts are `soft`, so a dead PVE gives errors rather than
-processes stuck in D state. Incus starts after them, so no guest comes up
-on an empty share.
+processes stuck in D state. Incus waits for both mounts to finish trying,
+for up to 30 seconds each, but they're `nofail`: if PVE is down at boot,
+Incus starts anyway so dns2 and monitoring come up, and plex, arr and dlna
+see an empty folder. The first gotcha below fixes that.
 
 Immich's library stays on photos' own disk, on purpose: restic backs up
 guest disks and never the NAS, so a library on the NAS would have no offsite

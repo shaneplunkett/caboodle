@@ -33,17 +33,14 @@
           "soft"
           "nofail"
           "_netdev"
+          "x-systemd.before=incus.service"
+          "x-systemd.mount-timeout=30s"
         ];
       })
       {
         "/mnt/media" = "Media";
         "/mnt/programs" = "Programs";
       };
-
-  systemd.services.incus = {
-    wants = [ "remote-fs.target" ];
-    after = [ "remote-fs.target" ];
-  };
 
   services.openssh.enable = true;
 

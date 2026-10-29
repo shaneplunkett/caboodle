@@ -104,7 +104,7 @@ Their final archives are on the box under `<service>-final-archives/`.
 - **List every host key type of the box** in known_hosts. rclone accepts
   whichever one the box offers, and a missing type is a "key mismatch".
 - **The SFTP probe is IPv4.** Blackbox prefers IPv6, the box has an AAAA
-  record, and the LXCs have no IPv6 route.
+  record, and the guests have no IPv6 route.
 - **Subaccount usernames come from Hetzner** (`<box>-subN`), so they live in
   each host's secret rather than in Nix.
 - **The usage API needs a token**, kept as the `hetzner-api-token` secret on

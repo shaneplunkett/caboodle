@@ -20,8 +20,7 @@ Glance has its own [README](glance/README.md).
 - Use `ruleFiles` with `pkgs.writeText`, one file per module. `rules` joins
   every module's strings into one file, so only the first group loads.
 - Inside a container, node exporter's CPU numbers come from the host's
-  counters and are wrong. CPU for Cube's guests comes from the PVE exporter,
-  and for PVE's Incus guests from Incus (see the
+  counters and are wrong. Guests' CPU comes from Incus instead (see the
   [Incus README](incus/README.md#metrics)).
 
 ## Loki

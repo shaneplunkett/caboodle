@@ -45,12 +45,12 @@ in
               rules = [
                 {
                   alert = "PlexUnreachable";
-                  expr = ''probe_success{job="plex"} == 0'';
+                  expr = ''probe_success{job="plex"} == 0 or up{job="plex"} == 0'';
                   for = "5m";
                   labels.severity = "critical";
                   annotations = {
                     summary = "Plex on {{ $labels.host }} isn't answering, so nobody can watch anything";
-                    condition = "Plex's web port failing for 5m";
+                    condition = "Plex's web port, or the probe of it, failing for 5m";
                     check = "ssh root@{{ $labels.host }} journalctl -u plex -n 50";
                     dashboard = links.logs "{{ $labels.host }}" [ "plex.service" ];
                   };

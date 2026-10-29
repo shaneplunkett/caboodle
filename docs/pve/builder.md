@@ -19,10 +19,8 @@ Nix store stays warm between runs. Whatever a job leaves behind stays too.
   that `uv sync` installs, run unpatched. Without it they fail with
   `Could not start dynamically linked executable`.
 - This bullet is `build.yml` from `shane/workflows` v1.7.0
-  ([workflows#19](https://git.shaneplunkett.com/shane/workflows/pulls/19)),
-  and until Renovate moves caboodle's pin there from v1.6.1, the `hosts`
-  job still evaluates base and head side by side with no cache. An
-  evaluation of every host's `hydraJobs` peaks around 14 GB. A pull
+  ([workflows#19](https://git.shaneplunkett.com/shane/workflows/pulls/19)).
+  An evaluation of every host's `hydraJobs` peaks around 14 GB. A pull
   request's `hosts` job evaluates its head once and compares it with the
   mapping `main` left for the merge base, in
   `/var/lib/forgejo-runner/builder/evals/<repo>/<sha>.json`. Each push to
@@ -32,9 +30,8 @@ Nix store stays warm between runs. Whatever a job leaves behind stays too.
   keeps it to one full evaluation on the box at a time, since Forgejo
   ignores `concurrency` on a job.
 - The runner is capped at 32 GB. That holds one full evaluation with room
-  for the per-host build jobs beside it, or the pair the v1.6.1 pin still
-  runs side by side. Builds happen in nix-daemon, outside the cap, and the
-  16 GB left is theirs and the OS's. Past the cap the kernel kills the
+  for the per-host build jobs beside it. Builds happen in nix-daemon,
+  outside the cap, and the 16 GB left is theirs and the OS's. Past the cap the kernel kills the
   biggest process in the runner, almost always an evaluation. The wedge
   test showed that kill. `OOMPolicy=continue` stops systemd taking the
   whole runner down over it, so the expected outcome is that the killed
