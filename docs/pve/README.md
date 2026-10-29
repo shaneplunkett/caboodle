@@ -13,6 +13,7 @@ Per-service docs:
 - [builder.md](builder.md)
 - [forge.md](forge.md)
 - [home.md](home.md)
+- [recipes.md](recipes.md)
 - [rss.md](rss.md)
 
 ## Deploying

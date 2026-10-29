@@ -462,6 +462,16 @@
           };
         };
 
+        recipes = incus "recipes" {
+          homelab.lanAddress = "192.168.1.157";
+          homelab.guest = {
+            host = "pve";
+            disk = 16;
+          };
+          homelab.monitoring.enable = false;
+          deployment.tags = [ ];
+        };
+
         home = incus "home" {
           homelab.lanAddress = "192.168.1.117";
           homelab.guest = {
