@@ -116,6 +116,7 @@ provider "registry.terraform.io/lxc/incus" {
   version     = "1.2.1"
   constraints = "~> 1.2"
   hashes = [
+    "h1:6BB9+vwDInIK9CpAq0dxgotDU/Vw6mxopFeK3RtGO9w=",
     "h1:Muu6DSPgMVGUSfKtlAYPYXcooZmrWJJgIOi0D/y8CYs=",
     "zh:23006091d2c6a06d8deeb7c1b4b97b07d316b03a72cf40d9f90034ea4e24aa96",
     "zh:37e1356759e440bdf40f894e133e18250b4b7b18812e86c8cbe192e6991427da",
