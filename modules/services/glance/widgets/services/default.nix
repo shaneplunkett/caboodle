@@ -64,6 +64,10 @@ let
       title = "paperless-gpt";
       icon = "di:paperless-gpt";
     };
+    recipes = {
+      title = "Norish";
+      icon = "mdi:chef-hat";
+    };
     rss = {
       title = "FreshRSS";
       icon = "di:freshrss";

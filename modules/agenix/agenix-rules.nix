@@ -19,6 +19,7 @@ let
     photos
     paper
     music
+    recipes
     pve
     cube
     ;
@@ -117,6 +118,7 @@ in
     photos
     paper
     music
+    recipes
     pve
     cube
   ];
@@ -322,5 +324,26 @@ in
   "aurral-env.age".publicKeys = [
     shane
     music
+  ];
+  "backup-recipes.age".publicKeys = [
+    shane
+    recipes
+  ];
+  "backup-r2-recipes.age".publicKeys = [
+    shane
+    recipes
+  ];
+  "norish-oidc-client-secret.age".publicKeys = [
+    shane
+    recipes
+    auth
+  ];
+  "norish-env.age".publicKeys = [
+    shane
+    recipes
+  ];
+  "norish-obscura-env.age".publicKeys = [
+    shane
+    recipes
   ];
 }
