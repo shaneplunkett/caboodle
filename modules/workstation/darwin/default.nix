@@ -6,4 +6,6 @@
     ./homebrew.nix
     ./packages.nix
   ];
+
+  _module.args.palette = import ../../../home/palette.nix;
 }
