@@ -392,7 +392,7 @@
           homelab.guest = {
             host = "cube";
             cores = 4;
-            memory = 4096;
+            memory = 8192;
             disk = 40;
             mac = "BC:24:11:25:4D:73";
             mounts."/mnt/media" = "/mnt/media";
