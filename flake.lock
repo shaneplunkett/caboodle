@@ -597,7 +597,8 @@
         "noctalia-plugins": "noctalia-plugins",
         "omniwm": "omniwm",
         "vex-brain": "vex-brain",
-        "vex-code": "vex-code"
+        "vex-code": "vex-code",
+        "wallpapers": "wallpapers"
       }
     },
     "systems": {
@@ -703,6 +704,23 @@
         "shallow": true,
         "type": "git",
         "url": "ssh://forgejo@forge/shane/vex-code"
+      }
+    },
+    "wallpapers": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793239719,
+        "narHash": "sha256-kXBq4MqRyDYr05CavUZCNDAOnEuePjlPnjUeqQxaf0Q=",
+        "ref": "refs/heads/main",
+        "rev": "74ba85cd8ba68d60de2b1057164a32ff1b2fe317",
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://forgejo@forge/shane/wallpapers"
+      },
+      "original": {
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://forgejo@forge/shane/wallpapers"
       }
     }
   },

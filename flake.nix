@@ -76,6 +76,10 @@
       url = "git+ssh://forgejo@forge/shane/noctalia-plugins";
       flake = false;
     };
+    wallpapers = {
+      url = "git+ssh://forgejo@forge/shane/wallpapers?shallow=1";
+      flake = false;
+    };
   };
   outputs =
     {

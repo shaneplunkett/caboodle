@@ -17,7 +17,7 @@ let
     + lib.concatMapStrings (word: lib.toUpper (lib.substring 0 1 word) + lib.substring 1 (-1) word) (
       lib.splitString "_" role
     );
-  wallpapers = "${config.home.homeDirectory}/wallpapers";
+  wallpapers = "${inputs.wallpapers}";
 in
 {
   programs.noctalia = {
