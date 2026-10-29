@@ -18,7 +18,7 @@ the machine identifier in `Preferences.xml`, and through the gateway's port
 forward to Plex's address. So anything that rebuilds or moves Plex has to
 keep both:
 
-- **The MAC address.** `mac_address` in the Terraform keeps the UniFi
+- **The MAC address.** `mac` in plex's `homelab.guest` keeps the UniFi
   reservation pointing at the same container.
 - **`Preferences.xml`.** Without it Plex starts as a new, unclaimed server and
   every share has to be redone.

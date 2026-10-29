@@ -9,8 +9,8 @@ Everything lives on the container's own disk, on cube's NVMe. Nothing is on
 the NAS, so the stale NFS mounts in [README.md](README.md) can't take it
 down.
 
-The disk alert is also the "library is filling up" alert. Grow the disk in
-the Terraform before it fills.
+The disk alert is also the "library is filling up" alert. Grow `disk` in
+photos' `homelab.guest` in `flake.nix` before it fills.
 
 ## Settings
 

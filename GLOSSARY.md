@@ -14,11 +14,11 @@ Something a server runs for Shane, like the forge, Pocket ID or Immich. It's her
 ## Machines
 
 **Host**:
-A machine Nix configures as a member of the colmena hive: PVE, a guest, the desktop, the Deck or a Mac.
+A machine Nix configures as a member of the colmena hive: PVE, Cube, a guest, the desktop, the Deck or a Mac.
 _Avoid_: node, hive node
 
 **Server**:
-A host that runs services: PVE, every guest, and the mini. All but PVE deploy when a pull request merges. The mini is a workstation too.
+A host that runs services: PVE, Cube, every guest, and the mini. All but PVE and Cube deploy when a pull request merges. The mini is a workstation too.
 
 **Workstation**:
 A host that carries Shane's own setup: home-manager, fish and fonts. The desktop, the MacBook and the mini.
@@ -28,7 +28,7 @@ _Avoid_: machine Shane sits at
 A host that runs in an Incus container on PVE or Cube.
 
 **Device**:
-Something on the LAN with a reserved address that isn't a host, like the gateway, Cube or a smart plug. Each one is listed in `modules/devices.nix`.
+Something on the LAN with a reserved address that isn't a host, like the gateway or a smart plug. Each one is listed in `modules/devices.nix`. PVE and Cube are listed there too, and their hosts read their address and MAC from it.
 
 ## Changes
 

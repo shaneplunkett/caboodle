@@ -39,10 +39,11 @@ A service that runs on both kinds of host keeps its options in an
 host, and the NixOS half and the darwin half each read the same facts.
 
 The mini is a server, deployed on merge like the containers; see
-[docs/mini](docs/mini/README.md). PVE, the MacBook, the desktop and the Deck
-are built by every pull request but switched by hand; see
-[docs/pve](docs/pve/README.md), [docs/macbook](docs/macbook/README.md),
-[docs/desktop](docs/desktop/README.md) and [docs/deck](docs/deck/README.md).
+[docs/mini](docs/mini/README.md). PVE, Cube, the MacBook, the desktop and the
+Deck are built by every pull request but switched by hand; see
+[docs/pve](docs/pve/README.md), [docs/cube](docs/cube/README.md),
+[docs/macbook](docs/macbook/README.md), [docs/desktop](docs/desktop/README.md)
+and [docs/deck](docs/deck/README.md).
 What the workstations share is in
 [docs/workstation](docs/workstation/README.md).
 
@@ -52,11 +53,12 @@ generated from the hive instead of kept as hand-written lists.
 
 Every address on the LAN is written once. A host's is its
 `homelab.lanAddress` in the hive. A laptop has none, and anything that walks
-the hive skips it. Everything else, from the gateway and
-Cube to the IoT devices, is in `modules/devices.nix`, and modules
-read it as `config.homelab.devices.<name>.ip`. Terraform reads both through
-`nix eval .#network` and reserves each address in UniFi, so adding a device is
-one entry there. Keep secrets out of it: whatever Terraform reads this way
+the hive skips it. Everything else, from the gateway to the IoT devices, is
+in `modules/devices.nix`, and modules read it as
+`config.homelab.devices.<name>.ip`. PVE and Cube are in there too, and their
+hosts take their address from it. Terraform reads both through
+`nix eval .#network` and reserves each address in UniFi, so adding a device
+is one entry there. Keep secrets out of it: whatever Terraform reads this way
 lands in its state and in the plan comments.
 
 A service backs up its data by listing it in `homelab.backup.paths`. See

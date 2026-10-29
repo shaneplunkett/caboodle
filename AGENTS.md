@@ -24,8 +24,8 @@ and the Mac mini. Read `README.md` for how it fits together.
   comment showing what you expect when `terraform/` changed.
 - **Merge:** Shane merges, except the `ai-skills` bumps that merge
   themselves once every host builds (`docs/pve/builder.md`). Merging applies
-  Terraform and deploys every host but PVE, the desktop, the Deck and the
-  MacBook. CI builds those too, and Shane switches each by hand per its doc
+  Terraform and deploys every host but PVE, Cube, the desktop, the Deck and
+  the MacBook. CI builds those too, and Shane switches each by hand per its doc
   under `docs/`.
 - **Derivation diff:** CI works out which hosts a pull request changes,
   against its merge base, and posts them as a `forge-bot` comment it edits on
