@@ -19,6 +19,7 @@ let
     photos
     paper
     pve
+    cube
     ;
 in
 {
@@ -124,6 +125,7 @@ in
     photos
     paper
     pve
+    cube
   ];
   "backup-brain.age".publicKeys = [
     shane
