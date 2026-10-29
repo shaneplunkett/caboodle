@@ -332,7 +332,17 @@
           };
         };
 
-        monitoring = lxc "monitoring" { homelab.lanAddress = "192.168.1.78"; };
+        monitoring = lxc "monitoring" {
+          homelab.lanAddress = "192.168.1.78";
+          homelab.guest = {
+            host = "cube";
+            cores = 4;
+            memory = 6144;
+            disk = 40;
+            mac = "BC:24:11:DD:65:EE";
+            running = false;
+          };
+        };
 
         ingress = incus "ingress" {
           homelab.lanAddress = "192.168.1.149";
@@ -356,14 +366,59 @@
 
         dns2 = lxc "dns" {
           homelab.lanAddress = "192.168.1.236";
+          homelab.guest = {
+            host = "cube";
+            cores = 1;
+            memory = 1024;
+            mac = "BC:24:11:B3:E3:C3";
+            running = false;
+          };
           deployment.tags = [ "deploy-after-dns1" ];
         };
 
-        plex = lxc "plex" { homelab.lanAddress = "192.168.1.237"; };
+        plex = lxc "plex" {
+          homelab.lanAddress = "192.168.1.237";
+          homelab.guest = {
+            host = "cube";
+            cores = 4;
+            memory = 8192;
+            disk = 100;
+            mac = "BC:24:11:AA:D1:7C";
+            running = false;
+            mounts."/mnt/media" = "/mnt/media";
+            devices = [
+              {
+                path = "/dev/dri/renderD128";
+                gid = 303;
+              }
+            ];
+          };
+        };
 
-        arr = lxc "arr" { homelab.lanAddress = "192.168.1.90"; };
+        arr = lxc "arr" {
+          homelab.lanAddress = "192.168.1.90";
+          homelab.guest = {
+            host = "cube";
+            cores = 4;
+            memory = 4096;
+            disk = 40;
+            mac = "BC:24:11:25:4D:73";
+            running = false;
+            mounts."/mnt/media" = "/mnt/media";
+          };
+        };
 
-        dlna = lxc "dlna" { homelab.lanAddress = "192.168.1.66"; };
+        dlna = lxc "dlna" {
+          homelab.lanAddress = "192.168.1.66";
+          homelab.guest = {
+            host = "cube";
+            cores = 1;
+            memory = 512;
+            mac = "BC:24:11:77:AD:79";
+            running = false;
+            mounts."/mnt/programs" = "/mnt/programs";
+          };
+        };
 
         gym = incus "gym" {
           homelab.lanAddress = "192.168.1.209";
@@ -385,9 +440,28 @@
           };
         };
 
-        photos = lxc "photos" { homelab.lanAddress = "192.168.1.154"; };
+        photos = lxc "photos" {
+          homelab.lanAddress = "192.168.1.154";
+          homelab.guest = {
+            host = "cube";
+            cores = 4;
+            memory = 8192;
+            disk = 250;
+            mac = "BC:24:11:CA:51:3A";
+            running = false;
+          };
+        };
 
-        paper = lxc "paper" { homelab.lanAddress = "192.168.1.155"; };
+        paper = lxc "paper" {
+          homelab.lanAddress = "192.168.1.155";
+          homelab.guest = {
+            host = "cube";
+            memory = 8192;
+            disk = 32;
+            mac = "BC:24:11:2A:A7:BB";
+            running = false;
+          };
+        };
 
         home = incus "home" {
           homelab.lanAddress = "192.168.1.117";

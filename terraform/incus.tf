@@ -216,3 +216,38 @@ removed {
     destroy = false
   }
 }
+
+moved {
+  from = unifi_client.cube_guest["plex"]
+  to   = unifi_client.guest["plex"]
+}
+
+moved {
+  from = unifi_client.cube_guest["arr"]
+  to   = unifi_client.guest["arr"]
+}
+
+moved {
+  from = unifi_client.cube_guest["dlna"]
+  to   = unifi_client.guest["dlna"]
+}
+
+moved {
+  from = unifi_client.cube_guest["monitoring"]
+  to   = unifi_client.guest["monitoring"]
+}
+
+moved {
+  from = unifi_client.cube_guest["dns2"]
+  to   = unifi_client.guest["dns2"]
+}
+
+moved {
+  from = unifi_client.cube_guest["photos"]
+  to   = unifi_client.guest["photos"]
+}
+
+moved {
+  from = unifi_client.cube_guest["paper"]
+  to   = unifi_client.guest["paper"]
+}
