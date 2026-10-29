@@ -16,7 +16,7 @@
   networking.hostName = "cube";
 
   homelab = {
-    monitoring.enable = false;
+    lanAddress = config.homelab.devices.cube.ip;
     incus = {
       uplink = "enp2s0";
       inherit (config.homelab.devices.cube) mac;

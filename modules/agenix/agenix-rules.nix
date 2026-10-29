@@ -37,11 +37,6 @@ in
     monitoring
 
   ];
-  "pve-exporter.age".publicKeys = [
-    shane
-    monitoring
-
-  ];
   "unpoller-api-key.age".publicKeys = [
     shane
     monitoring

@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   nodes,
   ...
@@ -18,13 +17,7 @@ let
     fish = node.config.programs.fish.enable;
   }) nodes;
 
-  proxmoxHosts = lib.mapAttrs (name: _: {
-    hostName = name;
-    user = "shane";
-    fish = false;
-  }) config.homelab.proxmoxNodes;
-
-  hosts = hiveHosts // proxmoxHosts;
+  hosts = hiveHosts;
 
   fishHosts = lib.attrNames (lib.filterAttrs (_: host: host.fish) hosts);
 in

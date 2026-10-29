@@ -1,6 +1,5 @@
 {
   lib,
-  proxmox,
   incus,
 }:
 let
@@ -18,10 +17,9 @@ let
     dashboard
     ;
 
-  hypervisors = proxmox ++ lib.attrNames incus;
+  hypervisors = lib.attrNames incus;
   notIncusGuest = ''host!~"${lib.concatStringsSep "|" (lib.concatLists (lib.attrValues incus))}"'';
   containers = ''job="node",host!~"${lib.concatStringsSep "|" hypervisors}"'';
-  guestStorage = "local-lvm";
 
   physicalNics = ''device=~"eth.*|en.*"'';
   realFilesystems = ''fstype=~"ext4|xfs|btrfs|zfs|vfat|nfs4",mountpoint!="/nix/store"'';
@@ -29,13 +27,11 @@ let
   cpuUsed =
     selector: window:
     ''100 * (1 - avg by (host) (rate(node_cpu_seconds_total{${selector},mode="idle"}[${window}])))'';
-  guestCpuUsed =
-    selector: "100 * pve_cpu_usage_ratio * on (id) group_left (name) pve_guest_info{${selector}}";
   incusCpuUsed =
     selector:
     "100 * sum without (cpu, mode) (rate(incus_cpu_seconds_total{${selector}}[$__rate_interval])) / incus_cpu_effective_total{${selector}}";
   byName = expr: ''label_replace(${expr}, "host", "$1", "name", "(.*)")'';
-  containerCpuUsed = "${byName (guestCpuUsed lxc)} or on (host) ${byName (incusCpuUsed ''job="incus"'')} or on (host) ${cpuUsed "${containers},${notIncusGuest}" "$__rate_interval"}";
+  containerCpuUsed = "${byName (incusCpuUsed ''job="incus"'')} or on (host) ${cpuUsed "${containers},${notIncusGuest}" "$__rate_interval"}";
   memory = import ../../prometheus/memory.nix;
   memoryUsed =
     selector:
@@ -54,20 +50,6 @@ let
     x: name:
     let
       node = ''host="${name}"'';
-      storage = ''id="storage/${name}/${guestStorage}"'';
-      guests =
-        if incus ? ${name} then
-          [
-            (query "Root disk" (rootUsed node))
-            (query "Guests up" ''count(up{job="node",host=~"${
-              lib.concatStringsSep "|" incus.${name}
-            }"} == 1) or vector(0)'')
-          ]
-        else
-          [
-            (query "Guest storage" "100 * pve_disk_usage_bytes{${storage}} / pve_disk_size_bytes{${storage}}")
-            (query "Guests up" ''count(pve_up * on (id) group_right () pve_guest_info{node="${name}"} == 1) or vector(0)'')
-          ];
     in
     stat {
       title = name;
@@ -76,15 +58,17 @@ let
       targets = [
         (query "CPU" (cpuUsed node "$__rate_interval"))
         (query "Memory" (memoryUsed node))
-      ]
-      ++ guests;
+        (query "Guest storage" "100 * sum(incus_storage_pool_used_bytes{${node}}) / sum(incus_storage_pool_size_bytes{${node}})")
+        (query "Guests up" ''count(up{job="node",host=~"${
+          lib.concatStringsSep "|" incus.${name}
+        }"} == 1) or vector(0)'')
+      ];
       defaults = removeAttrs percent [ "max" ];
       overrides = [ (byRefId "D" plainNumber) ];
     };
 
   host = ''host="$host"'';
   hostMemory = memory host;
-  lxc = ''type="lxc"'';
   guest = ''name="$host"'';
 in
 dashboard {
@@ -148,9 +132,8 @@ dashboard {
       stacked = true;
       defaults = removeAttrs percent [ "max" ];
       targets = [
-        (query "used" (guestCpuUsed guest))
         (query "used" (incusCpuUsed guest))
-        (query "{{mode}}" ''100 * avg by (mode) (rate(node_cpu_seconds_total{${host},${notIncusGuest},mode!="idle"}[$__rate_interval])) unless on () pve_guest_info{${guest}}'')
+        (query "{{mode}}" ''100 * avg by (mode) (rate(node_cpu_seconds_total{${host},${notIncusGuest},mode!="idle"}[$__rate_interval]))'')
       ];
     })
     (overTime {

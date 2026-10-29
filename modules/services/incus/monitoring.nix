@@ -173,6 +173,17 @@ in
                     };
                   }
                   {
+                    alert = "HardwareTooHot";
+                    expr = "node_hwmon_temp_celsius{${hostMatcher}} > node_hwmon_temp_crit_celsius{${hostMatcher}} - 5";
+                    for = "10m";
+                    labels.severity = "warning";
+                    annotations = {
+                      summary = "{{ $labels.chip }} {{ $labels.sensor }} on {{ $labels.host }} is at {{ $value }}°C";
+                      condition = "Within 5°C of its critical temperature for 10m";
+                      check = "ssh {{ $labels.host }} grep . /sys/class/hwmon/*/name /sys/class/hwmon/*/temp*_input";
+                    };
+                  }
+                  {
                     alert = "IncusMetricsDown";
                     expr = ''up{job="incus"} == 0'';
                     for = "5m";

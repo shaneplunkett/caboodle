@@ -13,7 +13,6 @@ let
   dashboards = {
     hosts = import ./dashboards/hosts.nix {
       inherit lib;
-      proxmox = lib.attrNames config.homelab.proxmoxNodes;
       incus = lib.mapAttrs (
         host: _:
         lib.attrNames (
