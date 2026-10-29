@@ -451,6 +451,19 @@
           };
         };
 
+        music = incus "music" {
+          homelab.lanAddress = "192.168.1.156";
+          homelab.guest = {
+            host = "cube";
+            cores = 2;
+            memory = 2048;
+            disk = 32;
+            mounts."/mnt/media" = "/mnt/media";
+          };
+          homelab.monitoring.enable = false;
+          deployment.tags = [ ];
+        };
+
         home = incus "home" {
           homelab.lanAddress = "192.168.1.117";
           homelab.guest = {
