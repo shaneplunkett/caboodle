@@ -204,14 +204,6 @@
           _: node: node.config.deployment.systemType == "nixos"
         ) self.colmenaHive.nodes
         // {
-          base = nixpkgs.lib.nixosSystem {
-            modules = [
-              ./modules/homelab.nix
-              ./modules/nixos.nix
-              ./modules/lxc.nix
-              { homelab.monitoring.enable = false; }
-            ];
-          };
           incus-base = nixpkgs.lib.nixosSystem {
             modules = [
               ./modules/homelab.nix

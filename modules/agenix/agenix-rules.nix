@@ -23,10 +23,6 @@ let
     ;
 in
 {
-  "proxmox-token.age".publicKeys = [
-    shane
-    dashboard
-  ];
   "healthchecks-ping.age".publicKeys = [
     shane
     monitoring
@@ -233,10 +229,6 @@ in
     builder
   ];
   "terraform-cloud-token.age".publicKeys = [
-    shane
-    builder
-  ];
-  "terraform-pve-token.age".publicKeys = [
     shane
     builder
   ];

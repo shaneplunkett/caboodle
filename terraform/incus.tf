@@ -145,23 +145,9 @@ moved {
   to   = unifi_client.guest["builder"]
 }
 
-removed {
-  from = module.builder.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
-}
-
 moved {
   from = module.auth.unifi_client.this
   to   = unifi_client.guest["auth"]
-}
-
-removed {
-  from = module.auth.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
 }
 
 moved {
@@ -169,35 +155,14 @@ moved {
   to   = unifi_client.guest["ingress"]
 }
 
-removed {
-  from = module.ingress.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
-}
-
 moved {
   from = module.brain.unifi_client.this
   to   = unifi_client.guest["brain"]
 }
 
-removed {
-  from = module.brain.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
-}
-
 moved {
   from = module.forge.unifi_client.this
   to   = unifi_client.guest["forge"]
-}
-
-removed {
-  from = module.forge.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
 }
 
 moved {
@@ -208,13 +173,6 @@ moved {
 moved {
   from = module.home.unifi_client.extra["BC:24:11:33:8D:CE"]
   to   = unifi_client.guest_vlan["home-20"]
-}
-
-removed {
-  from = module.home.proxmox_virtual_environment_container.this
-  lifecycle {
-    destroy = false
-  }
 }
 
 moved {

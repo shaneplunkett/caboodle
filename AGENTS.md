@@ -1,8 +1,8 @@
 # caboodle
 
-Every machine Shane runs, in one repo: PVE and its Incus containers, Cube
-and its Proxmox LXCs, Hetzner and Cloudflare, plus the desktop, the Deck,
-the MacBook and the Mac mini. Read `README.md` for how it fits together.
+Every machine Shane runs, in one repo: PVE and Cube and their Incus
+containers, Hetzner and Cloudflare, plus the desktop, the Deck, the MacBook
+and the Mac mini. Read `README.md` for how it fits together.
 
 ## Making a change
 

@@ -20,7 +20,6 @@
       size = "small";
       widgets = [
         (import ../widgets/alerts { inherit nodes; })
-        (import ../widgets/proxmox-ve-stats)
         (import ../widgets/releases)
         (import ../widgets/dns { inherit nodes; })
         (import ../widgets/blocked { inherit nodes; })

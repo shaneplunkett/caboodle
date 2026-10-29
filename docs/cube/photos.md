@@ -1,6 +1,6 @@
 # Photos
 
-NixOS LXC on cube running Immich, for Shane's photo library and iPhone
+Incus guest on Cube running Immich, for Shane's photo library and iPhone
 backup.
 
 ## Storage

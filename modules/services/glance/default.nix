@@ -10,7 +10,6 @@ let
 in
 {
   homelab.secrets = [
-    "proxmox-token"
     "linear-api-key"
     "immich-glance-api-key"
   ];
@@ -20,7 +19,6 @@ in
   services.glance = {
     enable = true;
     openFirewall = true;
-    environmentFile = secrets.proxmox-token.path;
     settings = {
       server = {
         host = "0.0.0.0";

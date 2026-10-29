@@ -1,6 +1,6 @@
 # caboodle
 
-Every machine Shane runs, configured from one repo: PVE and its Incus containers, Cube and its Proxmox LXCs, Hetzner and Cloudflare, plus the desktop, the Deck, the MacBook and the Mac mini.
+Every machine Shane runs, configured from one repo: PVE and Cube and their Incus containers, Hetzner and Cloudflare, plus the desktop, the Deck, the MacBook and the Mac mini.
 
 ## Language
 
@@ -25,11 +25,7 @@ A host that carries Shane's own setup: home-manager, fish and fonts. The desktop
 _Avoid_: machine Shane sits at
 
 **Guest**:
-A host that runs in a container on another machine: an Incus container on PVE, or a Proxmox LXC on Cube.
-
-**Proxmox node**:
-Cube, the one physical Proxmox machine left, which runs the LXCs. It's a device, not a host. PVE was one until it became a NixOS host.
-_Avoid_: bare "node"
+A host that runs in an Incus container on PVE or Cube.
 
 **Device**:
 Something on the LAN with a reserved address that isn't a host, like the gateway, Cube or a smart plug. Each one is listed in `modules/devices.nix`.

@@ -1,21 +1,20 @@
 # caboodle
 
-The whole kit and caboodle: every machine Shane runs, in one repo. That's PVE,
-a NixOS host running Incus, and Cube, a one-node Proxmox cluster, with a
-little Hetzner and Cloudflare, plus the desktop, the Steam Deck, the MacBook
-and the Mac mini. Terraform creates the containers, and Nix configures
-every machine. What's actually deployed is whatever the code says, so this
-README only covers how the pieces fit together.
+The whole kit and caboodle: every machine Shane runs, in one repo. That's PVE
+and Cube, two NixOS hosts running Incus, with a little Hetzner and
+Cloudflare, plus the desktop, the Steam Deck, the MacBook and the Mac mini.
+Terraform creates the containers, and Nix configures every machine. What's
+actually deployed is whatever the code says, so this README only covers how
+the pieces fit together.
 
 ## Layout
 
 ```
-flake.nix          colmena hive, dev shell, and the base LXC template and Incus image
+flake.nix          colmena hive, dev shell, and the Incus base image
 hosts/<host>.nix   what a host runs (the desktop's and the Deck's are folders)
 modules/           anything more than one host can import
   homelab.nix      the homelab.* options every host declares, whatever it runs
   nixos.nix        every NixOS host: Nix settings, nh's clean, node exporter
-  lxc.nix          every Proxmox LXC: Proxmox LXC support and guest.nix
   incus.nix        every Incus container: container support, networkd, and guest.nix
   guest.nix        every guest: the platform and root's keys
   darwin/          every Mac: Nix settings, the deploy user, node exporter
@@ -24,16 +23,15 @@ modules/           anything more than one host can import
   workstation/     every workstation: home-manager, fish, fonts, and a folder per class
 home/              Shane's home-manager configs, one per machine, and their modules
 pkgs/              packages the flake builds itself, and the overlays that add them for workstations
-terraform/         Incus containers, Cube's LXCs, Hetzner, Cloudflare
-proxmox/           config installed on Cube itself
+terraform/         Incus containers, Hetzner, Cloudflare
 docs/              notes that the code can't explain
 tools/             small helpers (minirack planner, Cloudflare MCP headers, Music Assistant's YouTube cookie)
 ```
 
 ## Nix hosts
 
-Every host is a node in the colmena hive in `flake.nix`: PVE, its Incus
-containers, Cube's LXCs, the desktop and the Macs. The hive's defaults only
+Every host is a node in the colmena hive in `flake.nix`: PVE, Cube, their
+Incus containers, the desktop and the Macs. The hive's defaults only
 hold options and data, since they have to evaluate on both systems.
 
 A service that runs on both kinds of host keeps its options in an
@@ -75,8 +73,7 @@ builds what a pull request changes, so the desktop needn't build at all.
 
 ### Adding a host
 
-New hosts are Incus containers. Cube's guests are still Proxmox LXCs from
-`terraform/modules/nixos-lxc` until they move.
+New hosts are Incus containers, on PVE or Cube.
 
 1. Add `hosts/<host>.nix` and an entry in the hive pointing at it, with its
    container in `homelab.guest` (`modules/services/incus/README.md`):
@@ -136,8 +133,7 @@ printf 'KEY=%s\n' "$(rbw get <entry>)" | agenix -e <name>.age
 
 Prometheus, Alertmanager, Loki and Grafana run on the monitoring host. Every
 NixOS host ships its journal to Loki, and every host is scraped unless it
-turns `homelab.monitoring` off, as the desktop does. Cube is
-scraped too (see [proxmox](proxmox/README.md)). Alert rules
+turns `homelab.monitoring` off, as the desktop does. Alert rules
 live next to the service they watch, and everything routes through
 Alertmanager to Discord. Gatus on the dashboard host watches the monitoring
 stack itself, so a dead Alertmanager still gets noticed.

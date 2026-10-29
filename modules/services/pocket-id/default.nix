@@ -45,16 +45,6 @@ in
     ]
     ++ clientSecrets;
     monitoring.units = [ "pocket-id-clients.service" ];
-
-    oidcClients = {
-      proxmox = {
-        name = "Proxmox";
-        callbackURLs = [ "https://proxmox.shaneplunkett.com" ];
-        launchURL = "https://proxmox.shaneplunkett.com";
-        pkce = false;
-        groups = [ "proxmox_admins" ];
-      };
-    };
   };
 
   assertions = [

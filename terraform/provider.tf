@@ -1,19 +1,3 @@
-provider "proxmox" {
-  endpoint  = local.cube.api_url
-  api_token = var.pve_api_token
-  insecure  = true
-
-  ssh {
-    agent    = false
-    username = "shane"
-
-    node {
-      name    = local.cube.name
-      address = local.cube.ip
-    }
-  }
-}
-
 provider "incus" {
   accept_remote_certificate = true
 

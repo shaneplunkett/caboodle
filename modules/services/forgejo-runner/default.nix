@@ -15,7 +15,6 @@ let
   // lib.genAttrs [
     "forge-bot-token"
     "terraform-cloud-token"
-    "terraform-pve-token"
     "terraform-hcloud-token"
     "terraform-cloudflare-token"
     "terraform-access-emails"

@@ -1,6 +1,6 @@
 # Plex
 
-NixOS LXC on Cube running Plex, with the Intel iGPU passed through for
+Incus guest on Cube running Plex, with the Intel iGPU passed through for
 hardware transcoding.
 
 ## iGPU and media
@@ -8,8 +8,8 @@ hardware transcoding.
 Only the render node is passed through. Plex downloads its own VA-API
 drivers into `Drivers/`, so the host needs nothing extra.
 
-Media is the `unraid-media` storage pool bind-mounted at `/mnt/media`, the
-same path the arr LXC uses, so library paths match.
+Media is the NAS's Media share passed in at `/mnt/media`, the same path arr
+uses, so library paths match.
 
 ## Remote access
 
