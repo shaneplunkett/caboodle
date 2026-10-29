@@ -18,6 +18,7 @@ let
     home
     photos
     paper
+    music
     pve
     cube
     ;
@@ -115,6 +116,7 @@ in
     home
     photos
     paper
+    music
     pve
     cube
   ];
@@ -303,5 +305,22 @@ in
   "cloudflare-r2-usage.age".publicKeys = [
     shane
     monitoring
+  ];
+  "backup-music.age".publicKeys = [
+    shane
+    music
+  ];
+  "backup-r2-music.age".publicKeys = [
+    shane
+    music
+  ];
+  "aurral-oidc-client-secret.age".publicKeys = [
+    shane
+    music
+    auth
+  ];
+  "aurral-env.age".publicKeys = [
+    shane
+    music
   ];
 }

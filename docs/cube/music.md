@@ -21,6 +21,26 @@ database, is `/var/lib/aurral`.
   Everything in the library can be found again, and a restored database
   re-searches whatever went missing.
 
+## Sign-in
+
+Aurral's own OIDC login with Pocket ID, at `https://aurral.shaneplunkett.com`.
+Anyone in `aurral_admins` signs in as an admin, and the group is checked on
+every sign-in. The local admin account from the desktop test box came over
+with the database, so link it once from **Settings > Account > Connect
+single sign-on** rather than letting SSO make a second account. Its password
+stays as the way in when Pocket ID is down.
+
+Subsonic players sign in with the Aurral username and password, not SSO.
+
+## Secrets
+
+`aurral-env` holds the OIDC client secret as an env file. From
+`modules/agenix`:
+
+```sh
+printf 'OIDC_CLIENT_SECRET=%s\n' "$(rbw get aurral-oidc-client-secret)" | agenix -e aurral-env.age
+```
+
 ## Gotchas
 
 - **yt-dlp breaks whenever YouTube changes.** The image bundles it, so a

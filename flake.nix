@@ -460,8 +460,6 @@
             disk = 32;
             mounts."/mnt/media" = "/mnt/media";
           };
-          homelab.monitoring.enable = false;
-          deployment.tags = [ ];
         };
 
         home = incus "home" {
