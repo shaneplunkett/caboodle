@@ -9,7 +9,7 @@
   lsof,
   patchelf,
   pkg-config,
-  pnpm_11,
+  pnpm_12,
   rustPlatform,
   src,
   stdenv,
@@ -23,11 +23,6 @@ let
       aarch64 = "arm64";
     }
     .${stdenv.hostPlatform.parsed.cpu.name};
-
-  pnpm = pnpm_11.override {
-    version = "11.10.0";
-    hash = "sha256-YgtmBepPYvxWptCphzP0eQcdAyHgPkhrUix+mnRhdDE=";
-  };
 
   # nixpkgs' resource-monitor sidecar derives its sourceRoot from src.name.
   # Flake-input source trees carry no name attribute, so pin the "source"
@@ -73,7 +68,7 @@ let
     meta.mainProgram = "t3-hyprland-snap-shot";
   };
 
-  unwrapped = (t3code.unwrapped.override { pnpm_11 = pnpm; }).overrideAttrs (
+  unwrapped = t3code.unwrapped.overrideAttrs (
     finalAttrs: previousAttrs: {
       pname = "vex-code-unwrapped";
       version = "0.1.2-vex.1";
@@ -100,7 +95,7 @@ let
         ];
 
       pnpmDeps = fetchPnpmDeps {
-        inherit pnpm;
+        pnpm = pnpm_12;
         inherit (finalAttrs)
           pname
           version
@@ -108,7 +103,7 @@ let
           pnpmWorkspaces
           ;
         fetcherVersion = 4;
-        hash = "sha256-xRmOrOZbBljaF1IJr0JFUFzdhkld6+ehLIlpVOg/J3E=";
+        hash = "sha256-ghijoQR/74bSYiR8roQ3JV3sCT4WLHiuU+uY8j+1j5k=";
       };
 
       postPatch = ''
