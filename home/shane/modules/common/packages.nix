@@ -9,7 +9,6 @@
     lazydocker
     terraform
     tflint
-    tftui
     terraform-docs
     ripgrep
     fzf
