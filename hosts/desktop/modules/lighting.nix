@@ -15,7 +15,6 @@ in
   };
 
   systemd.services.openrgb = {
-    after = [ "usb-hub-reset.service" ];
     serviceConfig.ExecStart = lib.mkForce (
       lib.escapeShellArgs [
         (lib.getExe cfg.package)
