@@ -157,7 +157,7 @@
         pkgs:
         let
           cf = pkgs.writeShellScriptBin "cf" ''
-            exec ${pkgs.nodejs_22}/bin/npx --yes cf@1.0.0-beta.21 "$@"
+            exec ${pkgs.nodejs_22}/bin/npx --yes cf@1.0.0-beta.26 "$@"
           '';
         in
         {
