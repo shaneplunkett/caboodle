@@ -56,12 +56,22 @@ tailnet name, which it joins anyway. The cache's upstream filter keeps
 paths cache.nixos.org already has out of it. Garbage collection is
 retention per cache. Nothing backs it up: a lost cache is a slow week.
 
-**Tailscale** is joined from the job with `tailscale/github-action`, as an
-ephemeral node tagged `tag:ci`, using workload identity federation: a
-federated identity in Tailscale trusts GitHub's OIDC issuer for this repo
-and grants `auth_keys` for the tag, so GitHub holds a client id and an
-audience and no Tailscale secret. One ACL rule lets `tag:ci` reach every
-host on 22 and the cache on 8080. What a job may do is decided by which
+**Tailscale** is joined from the job with workflows' `tailnet` action,
+which pins `tailscale/github-action`, as an ephemeral node tagged `tag:ci`,
+using workload identity federation: a federated identity in Tailscale
+trusts GitHub's OIDC issuer for this repo and grants `auth_keys` for the
+tag, so GitHub holds a client id and an audience and no Tailscale secret.
+The identity has no name; it's client id
+`TFs2XEmZQ321CNTRL-krgzEHAvjw11CNTRL`, audience
+`api.tailscale.com/TFs2XEmZQ321CNTRL-krgzEHAvjw11CNTRL`, in the repository
+variables `TAILSCALE_CLIENT_ID` and `TAILSCALE_AUDIENCE`. Its subject is
+`repo:shaneplunkett@113661103/caboodle@1175054018:*`, because the repo uses
+GitHub's immutable subjects, with the account and repo ids in; the
+name-only `repo:shaneplunkett/caboodle:*` never matches. Two grants let
+`tag:ci` reach `tag:homelab` on 22 and the cache's tailnet address on
+8080. Grants only add access, so the default allow-all grant's source is
+narrowed to `autogroup:member` and `tag:homelab`; left as `*`, it would
+let `tag:ci` reach everything. What a job may do is decided by which
 GitHub Environment it runs in, not by a second tag.
 
 **Identity** is one GitHub App installed on Shane's account. It posts the
