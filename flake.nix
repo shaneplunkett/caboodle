@@ -521,6 +521,7 @@
           homelab.lanAddress = "192.168.1.158";
           homelab.guest = {
             host = "pve";
+            cores = 4;
             disk = 100;
           };
         };
