@@ -1,0 +1,42 @@
+on:
+  schedule:
+    - cron: "30 19 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app
+        with:
+          client-id: ${{ secrets.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - uses: renovatebot/github-action@43b963bf5dd5e57f1f95c59765a018d782870211 # v46.3.11
+        with:
+          token: ${{ steps.app.outputs.token }}
+        env:
+          RENOVATE_CONFIG: |
+            {
+              "autodiscover": true,
+              "onboarding": false,
+              "forkProcessing": "enabled",
+              "platformCommit": "enabled",
+              "branchPrefix": "renovate-github/",
+              "minimumReleaseAge": "1 day",
+              "lockFileMaintenance": { "minimumReleaseAge": null },
+              "schedule": ["before 9am on sunday"],
+              "timezone": "Australia/Melbourne",
+              "force": {
+                "reviewers": ["shaneplunkett"],
+                "platformAutomerge": false
+              }
+            }

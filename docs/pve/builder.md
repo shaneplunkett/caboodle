@@ -202,6 +202,10 @@ run it now:
 ssh root@builder systemctl start renovate
 ```
 
+The same rules also run on GitHub as the App ([On GitHub](#on-github)). The
+builder's timer stays only until cutover, when GitHub's pull requests become
+the real ones.
+
 ### Flake inputs
 
 Renovate only updates an input whose commit is written into `flake.nix`. One
@@ -221,6 +225,11 @@ leaves every pull request pending until the contexts follow. `/ hosts` is
 required because the per-host builds don't exist until it finishes, and
 `/ check*` has its wildcard because Forgejo calls one of the two jobs named
 `check` `check-1`. Shane can still merge past a failed check.
+
+On GitHub, Renovate merges them itself rather than asking GitHub to, since
+nothing there requires a check yet and GitHub won't auto-merge without one.
+It merges on its next run once every check on the branch has passed, so a
+pinned input lands the morning after its pull request goes green.
 
 `minimumReleaseAge` is off for them, because `git-refs` has no release dates
 and the wait would hold every input forever.
@@ -250,13 +259,49 @@ latest commit.
 - `renovate-github-token` is a read-only GitHub token, because GitHub won't
   list tags and releases without one.
 
+### On GitHub
+
+`.github/workflows/renovate.yml` runs Renovate as the App from a hosted
+runner, every day at 19:30 UTC: 06:30 in Melbourne's summer, 05:30 in
+winter, so inside the Sunday batch either way. Run workflow on its Actions
+page runs it now. Its global config is the `RENOVATE_CONFIG` in the
+workflow, the builder's `settings` with these differences:
+
+- It only runs on repos that already have a Renovate config, and onboards
+  nothing, since most of the account never had Renovate. To add a repo,
+  commit a `renovate.json` to it. Forks count, which takes in `vex-code`.
+- A config has to extend `github>shaneplunkett/workflows`, which resolves on
+  both forges. `local>shane/workflows` looks for `shane` on GitHub, which is
+  someone else, so Renovate rejects the repo's config.
+- `force` makes `shaneplunkett` the reviewer, since `metrokitten` on GitHub
+  is also someone else, and turns off `platformAutomerge`.
+- Commits go through GitHub's API (`platformCommit`), so GitHub signs them
+  and authors them as `caboodle-agent[bot]`. The App's token also covers
+  github.com's tags and releases, so `renovate-github-token` isn't needed.
+- Renovate's container installs `nix`, `uv`, `pnpm`, Go and Node when a
+  lock file needs them, the same tools `runtimePackages` gives the builder.
+- The App can't read check runs on private repos, since it has no Checks
+  permission, so Renovate sees a private repo's branch as pending forever
+  and never merges there. Public repos are readable without it. Grant
+  Checks read before automerging anything private.
+
+Until cutover the forge's push mirror runs `git push --mirror`, which
+deletes any GitHub branch the forge doesn't have. So every pull request
+Renovate opens on GitHub closes at the forge's next push, and these are
+only a preview. Its branches start with `renovate-github/` so the forge's
+own `renovate/` branches can't overwrite them, which would leave Renovate
+treating the pull request as edited by someone else. The prefix also keeps
+the closed ones away from cutover: Renovate skips any update whose pull
+request was closed unmerged, and it matches them by branch name, so
+dropping the prefix at cutover starts GitHub clean.
+
 ## GitHub App and inputs token
 
 Two secrets for [the move to GitHub](../prd/forge-and-builder.md) are in
 Bitwarden, in caboodle's Actions secrets on GitHub, and in agenix for the
 builder. The runner reads the inputs token to fetch the private flake
-inputs. Nothing reads the App yet; the plan's identity step moves Renovate
-onto it.
+inputs. Renovate's GitHub workflow runs as the App, and the rest of the
+plan's identity step moves the other bots onto it.
 
 - **The App** is `github-app-client-id` and `github-app-private-key`
   (`APP_CLIENT_ID` and `APP_PRIVATE_KEY` in Actions). It's installed on every

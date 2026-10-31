@@ -2,7 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended",
-    "local>shane/workflows"
+    "github>shaneplunkett/workflows"
   ],
   "reviewers": [
     "metrokitten"
@@ -95,7 +95,7 @@
       "groupName": "workflow actions"
     },
     {
-      "description": "One PR per pinned flake input, merged by Forgejo as soon as CI builds it. git-refs has no release dates, so minimumReleaseAge would hold every input forever.",
+      "description": "One PR per pinned flake input, merged as soon as CI builds it. git-refs has no release dates, so minimumReleaseAge would hold every input forever.",
       "matchManagers": [
         "nix"
       ],
