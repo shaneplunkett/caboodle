@@ -61,7 +61,7 @@ ephemeral node tagged `tag:ci`, using workload identity federation: a
 federated identity in Tailscale trusts GitHub's OIDC issuer for this repo
 and grants `auth_keys` for the tag, so GitHub holds a client id and an
 audience and no Tailscale secret. One ACL rule lets `tag:ci` reach every
-host on 22 and the cache on 443. What a job may do is decided by which
+host on 22 and the cache on 8080. What a job may do is decided by which
 GitHub Environment it runs in, not by a second tag.
 
 **Identity** is one GitHub App installed on Shane's account. It posts the

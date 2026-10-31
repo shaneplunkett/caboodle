@@ -4,6 +4,7 @@ let
 in
 {
   homelab.secrets = [ "attic-env" ];
+  homelab.monitoring.units = [ "atticd.service" ];
 
   services.atticd = {
     enable = true;

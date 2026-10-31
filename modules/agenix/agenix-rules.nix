@@ -20,6 +20,7 @@ let
     paper
     music
     recipes
+    cache
     pve
     cube
     ;
@@ -119,6 +120,7 @@ in
     paper
     music
     recipes
+    cache
     pve
     cube
   ];
@@ -346,5 +348,8 @@ in
     shane
     recipes
   ];
-  "attic-env.age".publicKeys = [ shane ];
+  "attic-env.age".publicKeys = [
+    shane
+    cache
+  ];
 }

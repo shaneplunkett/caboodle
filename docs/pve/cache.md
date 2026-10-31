@@ -14,20 +14,21 @@ reachable on port 8080.
 Attic serves each cache under its own name, so the substituter is
 `https://cache.shaneplunkett.com/shane`, not the bare hostname.
 
-Pushes never go through the hostname. Attic sends each NAR as one request,
-and Cloudflare refuses a body over 100 MB, so a push goes straight to port
-8080: at the guest's LAN address from home, and at
-`cache.tail1d49f8.ts.net:8080` from the tailnet.
+The hostname is only answered by Blocky, like Harmonia's, so nothing
+outside the LAN and the tailnet can reach the cache. A GitHub runner on the
+tailnet doesn't use Blocky, so it pulls and pushes by the guest's tailnet
+name, `cache.tail1d49f8.ts.net:8080`. The builder pushes straight to port
+8080 at the guest's LAN address.
 
 - **`api-endpoint` is unset on purpose.** A push first asks the server for
   the cache's config, then sends everything to the `api-endpoint` that
-  comes back. Set to the public name, every push would quietly go through
-  Cloudflare. Unset, Attic builds it from the request's `Host`, so each
+  comes back. Set to the hostname, a runner would be sent to a name it
+  can't resolve. Unset, Attic builds it from the request's `Host`, so each
   pusher keeps the address it logged in with.
 - **`allowed-hosts` lists the three names it answers to**, so a forged
   `Host` is refused instead of echoed back as the endpoint. Reaching it by
   `localhost` fails with `Bad Host`; use the LAN address, even on the guest.
-- **`substituter-endpoint` is the public name**, which is what `attic use`
+- **`substituter-endpoint` is the hostname**, which is what `attic use`
   writes into a client's `nix.conf`.
 
 ## Tokens

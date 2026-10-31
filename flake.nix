@@ -523,8 +523,6 @@
             host = "pve";
             disk = 100;
           };
-          homelab.monitoring.enable = false;
-          deployment.tags = [ ];
         };
 
         builder = incus "builder" {
