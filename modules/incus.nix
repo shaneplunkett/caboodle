@@ -18,6 +18,8 @@
     useNetworkd = true;
   };
 
+  systemd.network.wait-online.ignoredInterfaces = [ "tailscale0" ];
+
   systemd.network.networks = {
     "50-eth0" = {
       matchConfig.Name = "eth0";
