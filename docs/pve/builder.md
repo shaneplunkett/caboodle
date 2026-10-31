@@ -100,6 +100,19 @@ no host changes the one build job is a placeholder whose steps skip,
 because Forgejo leaves a job with an empty matrix blocked for good. The
 `build.yml` section of `shane/workflows`' README has the details.
 
+On GitHub, `.github/workflows/hosts.yml` posts the same comment from the
+`caboodle-agent` App, with the same `<!-- derivation-diff -->` marker, so
+each push edits it. Each host is evaluated on its own hosted runner (see
+below), and the `hosts` job gathers them and compares the head with the
+mapping `main` left for the merge base. Each push to `main` uploads that
+mapping as the artifact `hosts-<sha>`, kept 90 days, the most a public repo
+allows. A merge base without one, older than that or from before this
+landed, is evaluated in a second matrix once the head's finishes. `hosts`
+will be the required check at cutover, so it runs and fails when an
+evaluation fails, rather than being skipped, which GitHub counts as a pass.
+Nothing is built there yet. The `hosts.yml` section of the workflows README
+has the details.
+
 `main` won't merge a pull request that's behind it. Use Update Branch's
 rebase option, since the button merges `main` in by default, or rebase it
 yourself. A behind branch's diff is against an older `main`, so it can miss
@@ -342,10 +355,9 @@ printf '%s' "$(rbw get github-inputs-token)" | gh secret set INPUTS_TOKEN --repo
 ## One host per hosted runner
 
 The whole hive's 14 GB has no room on a 16 GB hosted runner, so on GitHub
-each host is evaluated alone. `.github/workflows/hosts.yml` calls
-`hosts.yml` from `shaneplunkett/workflows` on every push the mirror sends,
-and each job's summary has the host's derivation path, peak memory, elapsed
-time and free disk. On 31 October
+each host is evaluated alone, in the `evaluate` jobs of
+`.github/workflows/hosts.yml`, and each job's summary has the host's
+derivation path, peak memory and elapsed time. On 31 October
 2026, at `0fe52d23`, on `ubuntu-24.04`:
 
 | Host | Peak memory | Elapsed |
@@ -377,7 +389,8 @@ paths and memory within 0.01 GiB.
 The runner's `/` has 86 GiB free before anything is deleted, not the 14 GB
 GitHub documents. Deleting the Android, .NET, Haskell and tool caches and
 the Docker images takes it to 114 GiB, in 74 to 316 seconds, about two
-minutes on average. Evaluating needs none of that; builds will.
+minutes on average. Evaluating needs none of that, so the `evaluate` jobs
+skip it; builds will need it.
 
 ## Registration
 
