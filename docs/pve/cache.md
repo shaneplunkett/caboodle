@@ -99,3 +99,23 @@ once it was both pushed and last pulled more than six weeks ago
 update replaces nearly every closure, so six weeks keeps about six
 generations of each host to roll back to, or to switch a machine that's
 fallen behind, and the disk only has to hold that many.
+
+## Chunking is off
+
+`nar-size-threshold = 0` stores each NAR whole, as one file and a few rows.
+Attic's default cuts every NAR into 64 KiB chunks so versions of a package
+can share the parts that didn't change, and it only ever saves disk: pushes
+and pulls still move whole NARs. It cost more than it saved here:
+
+- **Every chunk is three separately committed SQLite writes**, each an
+  fsync, and SQLite has one writer. The NVMe under PVE takes about 6 ms per
+  fsync, so the first seed crawled at 2 to 3 MB/s, and a nixpkgs bump would
+  push about as much again every week.
+- **Nix scatters store hashes through its outputs.** A new dependency
+  rewrites its path into every file that refers to it, so an unchanged
+  package still differs all through, and few chunks match between versions.
+  At 9.4 GB into the first seed, the unique chunks added up to more than the
+  NARs; the 3x saving on disk was all zstd, which stays on.
+
+Identical NARs are still stored once. The chunks from before the change
+stay valid and are collected like anything else.

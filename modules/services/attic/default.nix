@@ -18,6 +18,12 @@ in
       ];
       substituter-endpoint = "https://cache.shaneplunkett.com/";
       garbage-collection.default-retention-period = "6 weeks";
+      chunking = {
+        nar-size-threshold = 0;
+        min-size = 16384;
+        avg-size = 65536;
+        max-size = 262144;
+      };
     };
   };
 
