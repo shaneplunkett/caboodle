@@ -269,7 +269,8 @@ the builder.
 
 ## Binary cache
 
-Harmonia serves the builder's own store at `cache.shaneplunkett.com`, so
+Attic on the cache guest is taking this over; [cache.md](cache.md) covers
+it. Until then, Harmonia serves the builder's own store at `cache.shaneplunkett.com`, so
 anything a job builds can be downloaded instead of built again. Nothing is
 pushed to it: building something is what caches it. The name only resolves
 through Blocky, so the cache is reachable on the LAN and the tailnet and

@@ -517,6 +517,16 @@
           };
         };
 
+        cache = incus "cache" {
+          homelab.lanAddress = "192.168.1.158";
+          homelab.guest = {
+            host = "pve";
+            disk = 100;
+          };
+          homelab.monitoring.enable = false;
+          deployment.tags = [ ];
+        };
+
         builder = incus "builder" {
           homelab.lanAddress = "192.168.1.224";
           homelab.guest = {

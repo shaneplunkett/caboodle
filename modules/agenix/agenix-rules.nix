@@ -346,4 +346,5 @@ in
     shane
     recipes
   ];
+  "attic-env.age".publicKeys = [ shane ];
 }
