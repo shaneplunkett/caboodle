@@ -5,6 +5,11 @@ is `homelab.guest` in `flake.nix`, `terraform/incus.tf` makes it, and the
 service is in `modules/services/forgejo-runner`. It keeps no state worth backing up, so a
 dead builder is rebuilt from code.
 
+Shane chose on 31 October 2026 to move CI to GitHub-hosted runners and
+retire the builder. [The migration plan](../prd/forge-and-builder.md)
+tracks that work; until cutover the builder runs every job, and this doc
+describes it.
+
 ## How jobs run
 
 Jobs with `runs-on: nix` run straight on the host, not in containers, so the

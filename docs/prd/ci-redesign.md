@@ -5,20 +5,24 @@ Working notes from the design conversation begun on 28 October 2026.
 ## Status, 31 October 2026
 
 The concurrency fix below is implemented. PVE and Cube have both moved to
-NixOS and Incus. Shane has now chosen GitHub as the primary forge, with a
-homelab mirror, because the Forgejo integration work is too much upkeep.
-[Moving back to GitHub](forge-and-builder.md) records that decision and the
-remaining migration work. Forgejo still runs CI until cutover.
+NixOS and Incus. Shane has now chosen GitHub as the primary forge with
+GitHub-hosted runners and no builder, keeping a cache and a cold mirror at
+home. [ADR 0003](../adr/0003-github-with-hosted-runners-and-no-builder.md)
+records the trade-off and [Moving back to GitHub](forge-and-builder.md) the
+plan. Forgejo still runs CI until cutover.
 
-Disposable runners, credential isolation, a separate cache and changes to
-evaluation remain design work. The requirements below describe the intended
-behaviour, not guarantees the current builder already provides.
+That decision overrides three of the starting points below: evaluation,
+builds and deployment move to GitHub's runners rather than staying on the
+existing machines; disposable job environments and scoped credentials come
+from hosted runners and GitHub Environments rather than from Incus; and the
+evaluation redesign is settled as a per-host matrix rather than deferred.
+The rest of the requirements stand, and the findings and proposed
+measurements are the 28 October record, not a fresh inspection.
 
 The [external research](../research/2026-10-28-nix-ci-patterns.md) records
-the evaluation options with source dates and remaining gaps. It did not
-establish that cross-host configuration needs to change. The implementation
-findings and proposed experiments later in this document are the 28 October
-record, not a fresh inspection or an instruction to restart those experiments.
+the evaluation options with source dates and remaining gaps, and the
+[31 October research](../research/2026-10-31-nix-ci-on-github-hosted-runners.md)
+the hosted-runner tooling.
 
 ## Decision, 28 October 2026
 
@@ -40,11 +44,10 @@ is a step on each push to `main` that calls Forgejo's
 requests scheduled to merge.
 
 That fix deferred the forge move, ephemeral runners and nix-eval-jobs.
-The 31 October decision reopens the forge move. The evaluation redesign
-remains deferred; revisit it if a single full evaluation nears 25 GB, or if the
-rebuild after each merge leaves Renovate's pull requests queueing for long
-enough to hurt. The requirements and findings below stay as the brief for
-that redesign.
+The 31 October decision takes all three: GitHub with hosted runners, and
+the derivation diff evaluated per host, since one evaluation of the hive
+has no headroom on a 16 GB runner. The requirements and findings below
+stay as the brief that decision was made against.
 
 ## Why revisit it
 
