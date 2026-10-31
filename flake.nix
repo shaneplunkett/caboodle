@@ -538,8 +538,6 @@
             host = "pve";
             mounts."/var/lib/mirror" = "/mnt/user/mirror";
           };
-          homelab.monitoring.enable = false;
-          deployment.tags = [ ];
         };
 
         builder = incus "builder" {

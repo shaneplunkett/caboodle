@@ -21,6 +21,7 @@ let
     music
     recipes
     cache
+    mirror
     pve
     cube
     deck
@@ -125,6 +126,7 @@ in
     music
     recipes
     cache
+    mirror
     pve
     cube
   ];
@@ -237,10 +239,12 @@ in
   "github-app-client-id.age".publicKeys = [
     shane
     builder
+    mirror
   ];
   "github-app-private-key.age".publicKeys = [
     shane
     builder
+    mirror
   ];
   "github-inputs-token.age".publicKeys = [
     shane
@@ -347,6 +351,14 @@ in
     shane
     recipes
   ];
+  "backup-mirror.age".publicKeys = [
+    shane
+    mirror
+  ];
+  "backup-r2-mirror.age".publicKeys = [
+    shane
+    mirror
+  ];
   "norish-oidc-client-secret.age".publicKeys = [
     shane
     recipes
@@ -386,6 +398,7 @@ in
     music
     recipes
     cache
+    mirror
     pve
     cube
     deck

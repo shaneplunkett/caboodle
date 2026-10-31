@@ -95,7 +95,10 @@ New hosts are Incus containers, on PVE or Cube.
    container from the base image. Leave `mac` out and Terraform makes one.
    Never copy one from another host: a duplicated MAC once had two
    containers fighting over one DHCP lease. A rebuilt host can keep its own
-   old MAC, and Terraform takes over its old UniFi client.
+   old MAC, and Terraform takes over its old UniFi client. A new MAC can
+   boot onto a dynamic address before UniFi applies its reservation, and
+   renewing keeps that lease; `incus exec <host> -- networkctl reconfigure
+   eth0` on its Incus host asks afresh.
 3. Add the host's key to `modules/agenix/host-keys.nix`
    (`ssh-keyscan -t ed25519 <ip>`), name it in `agenix-rules.nix`, add it to
    the secrets it needs, and `agenix -r` to rekey. The builder trusts hosts
@@ -105,13 +108,16 @@ New hosts are Incus containers, on PVE or Cube.
    doesn't evaluate the hive. Build the host on the builder, and have the
    host fetch it through the cache. The host has neither the cache's key
    nor its pull token yet, so pass the key from
-   `modules/services/attic/client.nix` and hand it a netrc for the copy:
+   `modules/services/attic/client.nix` and hand it a netrc for the fetch.
+   The cache leaves out whatever cache.nixos.org has, so the host
+   substitutes from both rather than `nix copy`ing from the cache alone:
 
    ```sh
    path=$(nix build --no-link --print-out-paths --store ssh-ng://root@builder .#hydraJobs.<host>)
    printf 'machine cache.shaneplunkett.com\npassword %s\n' "$(rbw get attic-pull-token)" \
      | ssh root@<ip> 'umask 077; cat > /root/attic-netrc'
-   ssh root@<ip> "nix copy --from https://cache.shaneplunkett.com/shane $path \
+   ssh root@<ip> "nix-store --realise $path \
+     --option extra-substituters https://cache.shaneplunkett.com/shane \
      --option extra-trusted-public-keys <key> --option netrc-file /root/attic-netrc \
      && rm /root/attic-netrc \
      && nix-env -p /nix/var/nix/profiles/system --set $path \

@@ -69,7 +69,7 @@ A restore drill for one repo, on the guest:
 
 ```sh
 restic-homelab restore latest --target /tmp/drill --include /var/lib/mirror/claws.git
-git clone /tmp/drill/var/lib/mirror/claws.git /tmp/drill/claws
+git -c safe.directory='*' clone /tmp/drill/var/lib/mirror/claws.git /tmp/drill/claws
 rm -rf /tmp/drill
 ```
 
@@ -122,6 +122,11 @@ so the dump is the forge's final state.
 - **A half-finished clone is `<repo>.git.partial`.** A clone goes there
   first and moves into place when it completes, so a failed one is retried
   from scratch on the next run instead of being treated as a mirror.
+- **Root trusts the folder by config.** The repos belong to `mirror`, and
+  git refuses to read a repo another user owns. The module sets
+  `safe.directory` to `/var/lib/mirror/*` system-wide, so root clones from
+  the folder as is. A restored copy elsewhere keeps the `mirror` owner, hence
+  the `-c safe.directory='*'` in the drill.
 - **No LFS.** `git clone --mirror` doesn't fetch LFS objects. No repo on the
   account used LFS in October 2026; one that starts needs `git lfs fetch
   --all` added.

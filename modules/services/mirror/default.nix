@@ -27,6 +27,7 @@ in
       "github-app-private-key"
     ];
     monitoring.units = [ "mirror.service" ];
+    backup.paths = [ dir ];
   };
 
   users.users.mirror = {
@@ -37,7 +38,10 @@ in
   };
   users.groups.mirror.gid = 900;
 
-  environment.systemPackages = [ pkgs.git ];
+  programs.git = {
+    enable = true;
+    config.safe.directory = "${dir}/*";
+  };
 
   systemd.tmpfiles.rules = [ "f ${lock} 0644 root root -" ];
 
