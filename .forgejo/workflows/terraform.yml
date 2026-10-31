@@ -19,7 +19,7 @@ jobs:
       run:
         working-directory: terraform
     steps:
-      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.7.0
+      - uses: https://git.shaneplunkett.com/shane/workflows/checkout@v1.9.0
 
       - name: Plan
         run: ../scripts/terraform-ci.sh plan
