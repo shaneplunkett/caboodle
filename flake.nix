@@ -20,7 +20,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     vex-brain = {
-      url = "git+ssh://forgejo@forge/shane/vex-brain";
+      url = "github:shaneplunkett/vex-brain";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
@@ -36,14 +36,14 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nix-config-private.url = "git+ssh://forgejo@forge/shane/nix-config-private";
+    nix-config-private.url = "github:shaneplunkett/nix-config-private";
     ai-skills = {
-      url = "git+ssh://forgejo@forge/shane/ai-skills";
+      url = "github:shaneplunkett/ai-skills";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.vex-brain.follows = "vex-brain";
     };
     vex-code = {
-      url = "git+ssh://forgejo@forge/shane/vex-code?shallow=1";
+      url = "github:shaneplunkett/vex-code";
       flake = false;
     };
     llm-agents.url = "github:numtide/llm-agents.nix/467c27cb367fa1059583bcadf28390611f66550b";
@@ -73,11 +73,11 @@
     noctalia.url = "git+https://github.com/noctalia-dev/noctalia?ref=cachix&shallow=1";
     noctalia-greeter.url = "github:noctalia-dev/noctalia-greeter";
     noctalia-plugins = {
-      url = "git+ssh://forgejo@forge/shane/noctalia-plugins";
+      url = "github:shaneplunkett/noctalia-plugins";
       flake = false;
     };
     wallpapers = {
-      url = "git+ssh://forgejo@forge/shane/wallpapers?shallow=1";
+      url = "github:shaneplunkett/wallpapers";
       flake = false;
     };
   };

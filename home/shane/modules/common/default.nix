@@ -8,6 +8,7 @@
     ./git.nix
     ./lazygit.nix
     ./nh.nix
+    ./nix.nix
     ./nix-index.nix
     ./nixvim
     ./packages.nix

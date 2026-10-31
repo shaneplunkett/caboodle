@@ -33,15 +33,15 @@
       "locked": {
         "lastModified": 1793183313,
         "narHash": "sha256-sp2lMB5sNwmZ9KNyhexnSnrxUCYVXbeWkLqgVXtOpeA=",
-        "ref": "refs/heads/main",
+        "owner": "shaneplunkett",
+        "repo": "ai-skills",
         "rev": "5272edc19b915fec65efc71e9b9149f3bdb41e93",
-        "revCount": 178,
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/ai-skills"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/ai-skills"
+        "owner": "shaneplunkett",
+        "repo": "ai-skills",
+        "type": "github"
       }
     },
     "brew-src": {
@@ -336,15 +336,15 @@
       "locked": {
         "lastModified": 1791705893,
         "narHash": "sha256-5VyriNBNsTb1iBqnhPV1BQla2zuEYnl3Wa+YR8ynk1s=",
-        "ref": "refs/heads/main",
+        "owner": "shaneplunkett",
+        "repo": "nix-config-private",
         "rev": "b93e8df85a0882106eb9bb023b3e9e1027842f22",
-        "revCount": 19,
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/nix-config-private"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/nix-config-private"
+        "owner": "shaneplunkett",
+        "repo": "nix-config-private",
+        "type": "github"
       }
     },
     "nix-darwin": {
@@ -542,15 +542,15 @@
       "locked": {
         "lastModified": 1791196031,
         "narHash": "sha256-cLCWBpZ5tYK94JQ6z9ZziOO9dtDFq7mE9rrDUpP8OrQ=",
-        "ref": "refs/heads/main",
+        "owner": "shaneplunkett",
+        "repo": "noctalia-plugins",
         "rev": "f5d0a68013b9173ab163d4898ea7aa2ffbc9b348",
-        "revCount": 46,
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/noctalia-plugins"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/noctalia-plugins"
+        "owner": "shaneplunkett",
+        "repo": "noctalia-plugins",
+        "type": "github"
       }
     },
     "omniwm": {
@@ -678,15 +678,15 @@
       "locked": {
         "lastModified": 1793183310,
         "narHash": "sha256-eL7Qqbdil53M3/tuG5p89Qg7yPcE+AwW2COuB5j4x9k=",
-        "ref": "refs/heads/main",
+        "owner": "shaneplunkett",
+        "repo": "vex-brain",
         "rev": "baa7e58121bb51a8b36eae23e1b567f2fb0ff26a",
-        "revCount": 184,
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/vex-brain"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/vex-brain"
+        "owner": "shaneplunkett",
+        "repo": "vex-brain",
+        "type": "github"
       }
     },
     "vex-code": {
@@ -694,16 +694,15 @@
       "locked": {
         "lastModified": 1793414312,
         "narHash": "sha256-EYJzvofGIXJT/1mSudiKOfZyk1SVCrf+EvQKrrXDNTA=",
-        "ref": "refs/heads/main",
+        "owner": "shaneplunkett",
+        "repo": "vex-code",
         "rev": "06ddf666b0adf5b9545c3065b7a906f4feaed13a",
-        "shallow": true,
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/vex-code"
+        "type": "github"
       },
       "original": {
-        "shallow": true,
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/vex-code"
+        "owner": "shaneplunkett",
+        "repo": "vex-code",
+        "type": "github"
       }
     },
     "wallpapers": {
@@ -711,16 +710,15 @@
       "locked": {
         "lastModified": 1793239719,
         "narHash": "sha256-kXBq4MqRyDYr05CavUZCNDAOnEuePjlPnjUeqQxaf0Q=",
-        "ref": "refs/heads/main",
+        "owner": "shaneplunkett",
+        "repo": "wallpapers",
         "rev": "74ba85cd8ba68d60de2b1057164a32ff1b2fe317",
-        "shallow": true,
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/wallpapers"
+        "type": "github"
       },
       "original": {
-        "shallow": true,
-        "type": "git",
-        "url": "ssh://forgejo@forge/shane/wallpapers"
+        "owner": "shaneplunkett",
+        "repo": "wallpapers",
+        "type": "github"
       }
     }
   },

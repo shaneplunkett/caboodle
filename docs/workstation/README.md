@@ -22,12 +22,25 @@ files, so `git add` new ones first.
 `nrs`'s list of Macs is generated from the hive, so adding a Mac changes
 every workstation's home-manager generation.
 
+### The inputs token
+
+The private flake inputs come from GitHub, and Nix reads the token for them
+from `~/.config/nix/access-tokens.conf`, which Home Manager's `nix.conf`
+includes. The file is plain text that only you can read, the way `gh` keeps
+its login. Without it, a switch fails with a 404 on the first private input.
+On a new machine, or the Deck:
+
+```sh
+(umask 077; mkdir -p ~/.config/nix
+ printf 'access-tokens = github.com=%s\n' "$(rbw get github-inputs-token)" > ~/.config/nix/access-tokens.conf)
+```
+
 ## Switching a Mac
 
 The MacBook's switches, and a new Mac's first one, happen on the Mac. Build
-as `shane` and only elevate for the switch. Root has no key for the forge,
-so `sudo darwin-rebuild switch` stalls on a password for `forgejo@forge`
-when it fetches the private inputs.
+as `shane` and only elevate for the switch. Root has no key for the forge
+and no inputs token, so `sudo darwin-rebuild switch` stalls on a password
+for `forgejo@forge` when it fetches caboodle.
 
 ```sh
 nh darwin switch git+ssh://forgejo@forge/shane/caboodle -H <host>

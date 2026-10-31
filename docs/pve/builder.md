@@ -231,7 +231,7 @@ weekly update, and these couldn't go to Renovate anyway:
 
 - nixpkgs, because another input locks its own `nixpkgs` node.
 - electron-nixpkgs, which a pin would turn into a clone of nixpkgs.
-- The inputs on the forge, which Renovate can't reach without an SSH key.
+- The private inputs, since `renovate-github-token` can't read them.
 
 Moving an input between the two without moving its lock means editing its
 `original` in `flake.lock` to match the new URL, adding or dropping the
@@ -254,8 +254,9 @@ latest commit.
 
 Two secrets for [the move to GitHub](../prd/forge-and-builder.md) are in
 Bitwarden, in caboodle's Actions secrets on GitHub, and in agenix for the
-builder. Nothing reads them yet; the plan's identity step moves Renovate
-onto the App and the flake inputs onto the token.
+builder. The runner reads the inputs token to fetch the private flake
+inputs. Nothing reads the App yet; the plan's identity step moves Renovate
+onto it.
 
 - **The App** is `github-app-client-id` and `github-app-private-key`
   (`APP_CLIENT_ID` and `APP_PRIVATE_KEY` in Actions). It's installed on every
@@ -326,15 +327,13 @@ builds stop connecting, check its DHCP reservation first.
 
 ## Fetching other repos
 
-The forge needs a sign-in to see anything, and a job's own token only reaches
-the repo it's running for. So flake inputs from other forge repos, like
-`vex-brain`, come over SSH with the builder's own key, `builder-ssh-key`. It's
-added to each repo the builder fetches as a read-only deploy key. To print
-the public half for a new repo:
-
-```sh
-ssh root@builder ssh-keygen -y -f /run/agenix/builder-ssh-key
-```
+The private flake inputs, like `vex-brain`, come from GitHub with the
+inputs token. The runner loads `github-inputs-token` as a credential, and a
+step before it starts writes the token as Nix's `access-tokens` into
+`/run/forgejo-runner-builder/nix.conf`, which `NIX_USER_CONF_FILES` points
+every job's Nix at. The folder is in RAM and only the runner's user can open
+it. A new private input has to be added to the token's repositories on
+GitHub, or its fetch fails with a 404.
 
 ## Gotchas
 
@@ -364,7 +363,9 @@ ssh root@builder ssh-keygen -y -f /run/agenix/builder-ssh-key
 - **`rbw add` and `rbw edit` read from stdin** when it isn't a terminal, and
   only the first line becomes the password. A multi-line value like an SSH
   key can't live in Bitwarden that way, so `builder-ssh-key` exists only in
-  agenix. If it's lost, make a new one and replace the deploy keys.
+  agenix. If it's lost, make a new one and swap its public half in wherever
+  the hosts authorize it: `modules/guest.nix`, `modules/darwin`, and PVE's
+  and Cube's host files.
 - **Registering without `--keep-labels` wipes the runner's labels.**
   `forgejo-runner-register` re-runs whenever Forgejo restarts, and the
   runner only declares its labels when it starts itself. Without the flag,

@@ -14,6 +14,7 @@ let
   }
   // lib.genAttrs [
     "forge-bot-token"
+    "github-inputs-token"
     "terraform-cloud-token"
     "terraform-hcloud-token"
     "terraform-cloudflare-token"
@@ -68,7 +69,10 @@ in
   };
 
   systemd.services.${unit} = {
-    environment.TMPDIR = "/var/lib/forgejo-runner/builder/tmp";
+    environment = {
+      TMPDIR = "/var/lib/forgejo-runner/builder/tmp";
+      NIX_USER_CONF_FILES = "/run/${unit}/nix.conf";
+    };
     reloadIfChanged = true;
     restartTriggers = map (name: builtins.hashFile "sha256" config.age.secrets.${name}.file) secrets;
     serviceConfig = {
@@ -80,6 +84,11 @@ in
       ManagedOOMMemoryPressureLimit = "50%";
       ManagedOOMMemoryPressureDurationSec = "20s";
       OOMPolicy = "continue";
+      RuntimeDirectory = unit;
+      RuntimeDirectoryMode = "0700";
+      ExecStartPre = pkgs.writeShellScript "nix-access-tokens" ''
+        printf 'access-tokens = github.com=%s\n' "$(<"$CREDENTIALS_DIRECTORY/github-inputs-token")" >"$RUNTIME_DIRECTORY/nix.conf"
+      '';
       StateDirectory = lib.mkForce [
         "forgejo-runner/builder"
         "forgejo-runner/builder/tmp"
