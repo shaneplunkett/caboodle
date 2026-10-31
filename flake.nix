@@ -299,9 +299,15 @@
           ./modules/services/backup
           ./modules/services/alloy
           ./modules/services/tailscale
+          ./modules/services/attic/client.nix
         ];
 
-        darwinDefaults.imports = [ ./modules/darwin ];
+        darwinDefaults.imports = [
+          ./modules/darwin
+          agenix.darwinModules.default
+          ./modules/agenix
+          ./modules/services/attic/client.nix
+        ];
 
         mini = {
           imports = [ ./hosts/mini.nix ];

@@ -5,6 +5,7 @@ in
 {
   homelab.secrets = [ "attic-env" ];
   homelab.monitoring.units = [ "atticd.service" ];
+  homelab.routes.cache = port;
 
   services.atticd = {
     enable = true;

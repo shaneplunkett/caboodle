@@ -23,6 +23,10 @@ let
     cache
     pve
     cube
+    deck
+    desktop
+    mini
+    macbook
     ;
 in
 {
@@ -363,5 +367,38 @@ in
   "attic-env.age".publicKeys = [
     shane
     cache
+  ];
+  "attic-netrc.age".publicKeys = [
+    shane
+    dashboard
+    monitoring
+    ingress
+    dns1
+    dns2
+    plex
+    arr
+    brain
+    auth
+    forge
+    builder
+    dlna
+    gym
+    rss
+    home
+    photos
+    paper
+    music
+    recipes
+    cache
+    pve
+    cube
+    deck
+    desktop
+    mini
+    macbook
+  ];
+  "attic-push-token.age".publicKeys = [
+    shane
+    builder
   ];
 }

@@ -1,24 +1,21 @@
 # Cache
 
-Incus guest on PVE running Attic, the Nix binary cache taking over
-`cache.shaneplunkett.com` from Harmonia on the [builder](builder.md). The
-service is `modules/services/attic`, from nixpkgs' `services.atticd`, with
-chunks on local disk and SQLite beside them in `/var/lib/atticd`. Nothing
-backs it up: a lost cache is a slow week of rebuilding, not lost data.
-
-Until the swap lands, Harmonia still answers the hostname and Attic is only
-reachable on port 8080.
+Incus guest on PVE running Attic, the Nix binary cache at
+`cache.shaneplunkett.com`. The service is `modules/services/attic`, from
+nixpkgs' `services.atticd`, with chunks on local disk and SQLite beside
+them in `/var/lib/atticd`. Nothing backs it up: a lost cache is a slow week
+of rebuilding, not lost data.
 
 ## Pulls and pushes
 
 Attic serves each cache under its own name, so the substituter is
 `https://cache.shaneplunkett.com/shane`, not the bare hostname.
 
-The hostname is only answered by Blocky, like Harmonia's, so nothing
-outside the LAN and the tailnet can reach the cache. A GitHub runner on the
-tailnet doesn't use Blocky, so it pulls and pushes by the guest's tailnet
-name, `cache.tail1d49f8.ts.net:8080`. The builder pushes straight to port
-8080 at the guest's LAN address.
+The hostname is only answered by Blocky, so nothing outside the LAN and the
+tailnet can reach the cache. A GitHub runner on the tailnet doesn't use
+Blocky, so it pulls and pushes by the guest's tailnet name,
+`cache.tail1d49f8.ts.net:8080`. The builder pushes straight to port 8080 at
+the guest's LAN address.
 
 - **`api-endpoint` is unset on purpose.** A push first asks the server for
   the cache's config, then sends everything to the `api-endpoint` that
@@ -30,6 +27,31 @@ name, `cache.tail1d49f8.ts.net:8080`. The builder pushes straight to port
   `localhost` fails with `Bad Host`; use the LAN address, even on the guest.
 - **`substituter-endpoint` is the hostname**, which is what `attic use`
   writes into a client's `nix.conf`.
+
+### Every machine pulls
+
+`modules/services/attic/client.nix` is in every NixOS host and every Mac: it
+adds the substituter, trusts the cache's key, and points Nix's
+`netrc-file` at `attic-netrc`, which holds the pull token for all three
+names. Nix matches a netrc entry by host alone, so the LAN address and the
+tailnet name need their own lines.
+
+The netrc is readable by `wheel`, or `admin` on a Mac, because `nix copy
+--from` fetches in the client, not the daemon, so a by-hand fetch as
+Shane needs the token too.
+
+The Macs run agenix for this, and decrypt with
+`/etc/ssh/ssh_host_ed25519_key`.
+
+### The builder pushes
+
+`attic-watch-store` on the builder pushes every path that lands in its
+store, so every job's build and every by-hand build is cached a few seconds
+later. That includes everything the builder substitutes, so the cache
+lists the keys of the caches the builder pulls from as upstream:
+cache.nixos.org, nix-community, noctalia and numtide. A push leaves out
+anything one of them signed. `--ignore-upstream-cache-filter` overrides
+that for one push.
 
 ## Tokens
 
@@ -45,11 +67,15 @@ nix shell nixpkgs#openssl -c sh -c 'printf "ATTIC_SERVER_TOKEN_RS256_SECRET_BASE
 ```
 
 Mint tokens on the guest with the module's wrapper, which runs `atticadm`
-with the server's config and secret:
+with the server's config and secret. They live in Bitwarden as
+`attic-push-token` and `attic-pull-token`, and in agenix as
+`attic-push-token` and `attic-netrc`:
 
 ```sh
-ssh root@cache atticd-atticadm make-token --sub push --validity '10y' --pull shane --push shane
-ssh root@cache atticd-atticadm make-token --sub pull --validity '10y' --pull shane
+ssh root@cache atticd-atticadm make-token --sub push --validity 10y --pull shane --push shane \
+  | tail -1 | rbw add attic-push-token
+ssh root@cache atticd-atticadm make-token --sub pull --validity 10y --pull shane \
+  | tail -1 | rbw add attic-pull-token
 ```
 
 They last ten years because nothing alerts on an expired token: CI would
@@ -61,34 +87,54 @@ The cache itself is database state, not config, so a rebuilt guest needs it
 made again. From the guest, with a short-lived admin token:
 
 ```sh
-admin=$(atticd-atticadm make-token --sub shane --validity '1h' \
-  --pull shane --push shane --create-cache shane --configure-cache shane)
+admin=$(atticd-atticadm make-token --sub shane --validity 1h --pull shane --push shane \
+  --create-cache shane --configure-cache shane --configure-cache-retention shane)
 nix shell nixpkgs#attic-client -c sh -c "
   attic login home http://192.168.1.158:8080 $admin
   attic cache create home:shane
+  attic cache configure home:shane \
+    --upstream-cache-key-name cache.nixos.org-1 \
+    --upstream-cache-key-name nix-community.cachix.org-1 \
+    --upstream-cache-key-name noctalia.cachix.org-1 \
+    --upstream-cache-key-name niks3.numtide.com-1
   attic cache info home:shane"
 ```
 
-`cache info` prints the public key every machine trusts. A new cache
-names `cache.nixos.org-1` as its upstream key, so a push leaves out
-anything signed by it. `--ignore-upstream-cache-filter` overrides that for
-one push.
+`cache info` prints the public key every machine trusts, which goes in
+`client.nix`. A new cache gets a new key.
 
-The cache is private, so a pull needs the pull token as well. Closures
-hold builds of the private repos, and a public cache would hand any of them
-to whoever knows the store path.
+- **`cache configure` needs `--configure-cache-retention`** even when it
+  leaves retention alone, because the client always sends the retention
+  setting. Without it the server says `User does not have permission`.
+- **The cache is private**, so a pull needs the pull token as well.
+  Closures hold builds of the private repos, and a public cache would hand
+  any of them to whoever knows the store path.
 
 ## Seeding from the builder
 
 Every host's latest build is rooted on the builder, so one push warms the
-cache with all of them:
+cache with all of them. The token goes in through stdin, so it never sits
+in a process list:
 
 ```sh
-ssh root@builder
-nix shell nixpkgs#attic-client -c sh -c '
-  attic login home http://192.168.1.158:8080 <push token>
-  attic push home:shane $(readlink -f /var/lib/forgejo-runner/builder/roots/caboodle/*)'
+rbw get attic-push-token | ssh root@builder 'set -e
+  d=/root/attic-seed; mkdir -p -m 700 $d/.config/attic
+  printf "default-server = \"home\"\n[servers.home]\nendpoint = \"http://192.168.1.158:8080/\"\ntoken = \"%s\"\n" \
+    "$(cat)" > $d/.config/attic/config.toml
+  attic=$(nix build --no-link --print-out-paths nixpkgs#attic-client)/bin/attic
+  systemd-run --unit attic-seed -p Environment=HOME=$d --collect sh -c \
+    "$attic push shane -j 8 $(readlink -f /var/lib/forgejo-runner/builder/roots/caboodle/* | tr "\n" " "); $(command -v rm) -rf $d"'
 ```
+
+Follow it with `journalctl -fu attic-seed` on the builder.
+
+- **The unit has no `rm` on its `PATH`**, so the command passes the
+  outer shell's. Not through `readlink -f`: that lands on coreutils'
+  multi-call binary, which doesn't know it was called as `rm`.
+- **Restarting `atticd` fails every upload in flight**, and the push
+  exits with them. Run it again; it skips whatever's already cached. A
+  deploy changes `atticd`'s unit before the old process has stopped, so
+  wait for `ActiveEnterTimestamp` to move, not for the new config.
 
 ## Garbage collection
 

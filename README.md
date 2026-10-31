@@ -66,7 +66,7 @@ A service backs up its data by listing it in `homelab.backup.paths`. See
 
 ```sh
 nix build --store ssh-ng://root@builder .#hydraJobs.<host>   # build on the builder
-nix copy --from https://cache.shaneplunkett.com <path>       # fetch a result, signed
+nix copy --from https://cache.shaneplunkett.com/shane <path> # fetch a result, signed
 colmena apply --on <host>                                     # deploy over SSH
 ```
 
@@ -103,14 +103,17 @@ New hosts are Incus containers, on PVE or Cube.
 4. Deploy it once by hand to join Tailscale and start its services. The
    builder's Colmena SSH config reaches hosts over the LAN, and the desktop
    doesn't evaluate the hive. Build the host on the builder, and have the
-   host fetch it through the cache, passing the cache's key from
-   `modules/workstation/nix-settings.nix` since the host doesn't trust it
-   yet:
+   host fetch it through the cache. The host has neither the cache's key
+   nor its pull token yet, so pass the key from
+   `modules/services/attic/client.nix` and hand it a netrc for the copy:
 
    ```sh
    path=$(nix build --no-link --print-out-paths --store ssh-ng://root@builder .#hydraJobs.<host>)
-   ssh root@<ip> "nix copy --from https://cache.shaneplunkett.com $path \
-     --option extra-trusted-public-keys <key> \
+   printf 'machine cache.shaneplunkett.com\npassword %s\n' "$(rbw get attic-pull-token)" \
+     | ssh root@<ip> 'umask 077; cat > /root/attic-netrc'
+   ssh root@<ip> "nix copy --from https://cache.shaneplunkett.com/shane $path \
+     --option extra-trusted-public-keys <key> --option netrc-file /root/attic-netrc \
+     && rm /root/attic-netrc \
      && nix-env -p /nix/var/nix/profiles/system --set $path \
      && $path/bin/switch-to-configuration switch"
    ```

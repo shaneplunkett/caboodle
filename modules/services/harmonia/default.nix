@@ -3,10 +3,7 @@ let
   port = 5000;
 in
 {
-  homelab = {
-    secrets = [ "nix-cache-signing-key" ];
-    routes.cache = port;
-  };
+  homelab.secrets = [ "nix-cache-signing-key" ];
 
   services.harmonia.cache = {
     enable = true;

@@ -6,6 +6,7 @@ in
 {
   imports = [
     ../modules/services/forgejo-runner
+    ../modules/services/attic/watch-store.nix
     ../modules/services/harmonia
     ../modules/services/renovate
   ];

@@ -12,7 +12,7 @@ and the Mac mini. Read `README.md` for how it fits together.
   gate is `scripts/check.sh`. For one host's answer before filing,
   `nix build --store ssh-ng://root@builder .#hydraJobs.<host>` builds it on
   the builder and leaves nothing here. To run a result here, fetch it
-  through the cache, `nix copy --from https://cache.shaneplunkett.com
+  through the cache, `nix copy --from https://cache.shaneplunkett.com/shane
   <path>`, since the builder signs nothing itself and a copy over SSH is
   refused as unsigned. `docs/pve/builder.md` has the by-hand gotchas.
   Flakes ignore untracked files, so `git add` new files first. Nix code

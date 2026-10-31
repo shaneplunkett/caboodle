@@ -114,12 +114,14 @@ rebases its own the next time it runs.
 builds there, and is the way to try one host or package before filing.
 
 - **Fetch a result through the cache, never over SSH.** The builder signs
-  nothing when it builds; Harmonia signs each path as it serves it. So the
+  nothing when it builds; Attic signs each path as it's pushed. So the
   path sits unsigned in the builder's store, `nix copy --from
   ssh-ng://root@builder` hands over that unsigned copy, and a workstation
   refuses it with `lacks a signature by a trusted key`. The same path from
-  `nix copy --from https://cache.shaneplunkett.com <path>` arrives signed
-  by the key every workstation already trusts.
+  `nix copy --from https://cache.shaneplunkett.com/shane <path>` arrives
+  signed by the key every machine already trusts. The builder pushes a
+  build a few seconds after it lands, so a fetch straight after the build
+  can miss it once.
 - **An overlay package needs `--eval-store auto`.** The repo's own packages
   are overlays with no flake output, so building one means `--impure
   --expr` with `builtins.getFlake`. That route serves the inputs from the
@@ -296,27 +298,24 @@ the builder.
 
 ## Binary cache
 
-Attic on the cache guest is taking this over; [cache.md](cache.md) covers
-it. Until then, Harmonia serves the builder's own store at `cache.shaneplunkett.com`, so
-anything a job builds can be downloaded instead of built again. Nothing is
-pushed to it: building something is what caches it. The name only resolves
-through Blocky, so the cache is reachable on the LAN and the tailnet and
-nowhere else. A machine trusts it by the public half of
-`nix-cache-signing-key`:
+The cache is Attic on its own guest; [cache.md](cache.md) covers it.
+`attic-watch-store` on the builder pushes every path that lands in the
+builder's store, as it lands, so anything a job builds can be downloaded
+instead of built again. Paths another cache already signed stay out.
 
-```sh
-rbw get nix-cache-signing-key | nix key convert-secret-to-public
-```
+Harmonia still serves the builder's store on port 5000, with no route,
+only for the by-hand switches of PVE and Cube until those move to Attic.
 
-A build only stays cached while something roots it, because the store is
-collected weekly and whenever free space drops below `min-free`. Jobs root
-a build with `--out-link` into the runner's state directory. The builder's
+The builder's own store only keeps a build while something roots it,
+because it's collected weekly and whenever free space drops below
+`min-free`. Jobs root a build with `--out-link` into the runner's state
+directory. The builder's
 disk alert is worked out from `min-free` in `hosts/builder.nix`, set 5 GiB
 past it, so Discord only hears about a full disk when collection can't keep
 up.
 
 The build workflow also runs on pushes to `main` only to root each host's
-latest build, so the desktop and MacBook stay cached until they're switched.
+latest build, which is what the cache was seeded from.
 
 ## Darwin builds
 
