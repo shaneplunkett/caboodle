@@ -95,7 +95,7 @@ in
       panelAnimationDurationMs = 25;
       timestampFormat = "12-hour";
       notificationMode = "notifications";
-      followUpBehavior = "queue";
+      followUpBehavior = "steer";
       contextWindowMeterEnabled = true;
       proactivePanelsEnabled = false;
       diffFilesCollapsed = false;

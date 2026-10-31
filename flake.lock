@@ -692,10 +692,10 @@
     "vex-code": {
       "flake": false,
       "locked": {
-        "lastModified": 1793183326,
-        "narHash": "sha256-5gz8BwQsOQrfrBMDV1gTMOwCiuiNGhli2ZkbvPEDue0=",
+        "lastModified": 1793414312,
+        "narHash": "sha256-EYJzvofGIXJT/1mSudiKOfZyk1SVCrf+EvQKrrXDNTA=",
         "ref": "refs/heads/main",
-        "rev": "cef7ee63d6c84e6cbe567b9d11c1fedf47394c64",
+        "rev": "06ddf666b0adf5b9545c3065b7a906f4feaed13a",
         "shallow": true,
         "type": "git",
         "url": "ssh://forgejo@forge/shane/vex-code"

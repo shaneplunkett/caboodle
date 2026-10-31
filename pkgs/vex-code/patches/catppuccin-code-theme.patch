@@ -1,18 +1,18 @@
 diff --git a/apps/web/src/components/DiffWorkerPoolProvider.tsx b/apps/web/src/components/DiffWorkerPoolProvider.tsx
-index bbc96dd7..9297261b 100644
+index a40d8e20c7..8720f48c06 100644
 --- a/apps/web/src/components/DiffWorkerPoolProvider.tsx
 +++ b/apps/web/src/components/DiffWorkerPoolProvider.tsx
-@@ -10,7 +10,7 @@ import { PREFERRED_HIGHLIGHTER } from "../lib/syntaxHighlighting";
+@@ -9,7 +9,7 @@ import { PREFERRED_HIGHLIGHTER } from "../lib/syntaxHighlighting";
  
  export class DiffWorkerError extends Schema.TaggedError<DiffWorkerError>()("DiffWorkerError", {
    operation: Schema.Literals(["create-worker", "get-render-options", "set-render-options"]),
--  themeName: Schema.Literals(["pierre-light", "pierre-dark"]),
+-  themeName: Schema.Literals(["pierre-dark", "t3-light"]),
 +  themeName: Schema.Literals(["catppuccin-latte", "catppuccin-mocha"]),
    cause: Schema.Defect(),
  }) {
    override get message(): string {
 diff --git a/apps/web/src/components/composerCodeBlockHighlight.test.ts b/apps/web/src/components/composerCodeBlockHighlight.test.ts
-index de3236be..78f675f5 100644
+index de3236be7a..78f675f554 100644
 --- a/apps/web/src/components/composerCodeBlockHighlight.test.ts
 +++ b/apps/web/src/components/composerCodeBlockHighlight.test.ts
 @@ -12,7 +12,7 @@ import { composerCodeBlockHighlight, tokenizeBlock } from "./composerCodeBlockHi
@@ -25,73 +25,21 @@ index de3236be..78f675f5 100644
  function fakeHighlighter(colorFor: (content: string) => string | undefined) {
    return {
 diff --git a/apps/web/src/lib/diffRendering.ts b/apps/web/src/lib/diffRendering.ts
-index 1b75c70b..3e39cff3 100644
+index 2add48cad5..f0c079cc3f 100644
 --- a/apps/web/src/lib/diffRendering.ts
 +++ b/apps/web/src/lib/diffRendering.ts
-@@ -3,8 +3,8 @@ import { parseDiffFromFile } from "@pierre/diffs";
+@@ -1,12 +1,10 @@
+ import { parsePatchFiles } from "@pierre/diffs/utils/parsePatchFiles";
+ import { parseDiffFromFile } from "@pierre/diffs";
  import type { FileDiffMetadata } from "@pierre/diffs/types";
+-import { READABLE_LIGHT_THEME_NAME } from "./readableSyntaxTheme";
  
- const DIFF_THEME_NAMES = {
--  light: "pierre-light",
+-// Light mode uses a darker pierre-light so syntax stays readable on every code surface.
+ export const DIFF_THEME_NAMES = {
+-  light: READABLE_LIGHT_THEME_NAME,
 -  dark: "pierre-dark",
 +  light: "catppuccin-latte",
 +  dark: "catppuccin-mocha",
  } as const;
  
  export type DiffThemeName = (typeof DIFF_THEME_NAMES)[keyof typeof DIFF_THEME_NAMES];
-diff --git a/apps/web/src/lib/incrementalHighlighting.test.ts b/apps/web/src/lib/incrementalHighlighting.test.ts
-index 5a97ec08..fb71e749 100644
---- a/apps/web/src/lib/incrementalHighlighting.test.ts
-+++ b/apps/web/src/lib/incrementalHighlighting.test.ts
-@@ -20,7 +20,7 @@ const samples = {
- 
- const highlighterPromise = getSharedHighlighter({
-   langs: Object.keys(samples) as Array<keyof typeof samples>,
--  themes: ["pierre-dark", "pierre-light"],
-+  themes: ["catppuccin-mocha", "catppuccin-latte"],
-   preferredHighlighter: "shiki-wasm",
- });
- 
-@@ -29,7 +29,7 @@ describe("incremental code highlighting", () => {
-     "matches full HTML at every streaming prefix in %s",
-     async (language, code) => {
-       const highlighter = await highlighterPromise;
--      for (const theme of ["pierre-dark", "pierre-light"] as const) {
-+      for (const theme of ["catppuccin-mocha", "catppuccin-latte"] as const) {
-         const highlight = createIncrementalHighlightedDocument(highlighter, language, theme);
-         for (let end = 0; end <= code.length; end++) {
-           const text = code.slice(0, end);
-@@ -46,7 +46,7 @@ describe("incremental code highlighting", () => {
-     const highlight = createIncrementalHighlightedDocument(
-       highlighter,
-       "typescript",
--      "pierre-dark",
-+      "catppuccin-mocha",
-     );
-     const inputs = [
-       "/* open\ncomment\n",
-@@ -59,7 +59,7 @@ describe("incremental code highlighting", () => {
-     ];
-     for (const text of inputs) {
-       expect(toHtml(highlight(text))).toBe(
--        highlighter.codeToHtml(text, { lang: "typescript", theme: "pierre-dark" }),
-+        highlighter.codeToHtml(text, { lang: "typescript", theme: "catppuccin-mocha" }),
-       );
-     }
-   });
-@@ -69,13 +69,13 @@ describe("incremental code highlighting", () => {
-     const highlight = createIncrementalHighlightedDocument(
-       highlighter,
-       "typescript",
--      "pierre-dark",
-+      "catppuccin-mocha",
-     );
-     const code = "/* multi\r\nline */\r\nconst x = 1;\r\n";
-     for (let end = 0; end <= code.length; end++) {
-       const text = code.slice(0, end);
-       expect(toHtml(highlight(text))).toBe(
--        highlighter.codeToHtml(text, { lang: "typescript", theme: "pierre-dark" }),
-+        highlighter.codeToHtml(text, { lang: "typescript", theme: "catppuccin-mocha" }),
-       );
-     }
-   });
