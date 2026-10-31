@@ -281,9 +281,10 @@ printf '%s' "$(rbw get github-inputs-token)" | gh secret set INPUTS_TOKEN --repo
 ## One host per hosted runner
 
 The whole hive's 14 GB has no room on a 16 GB hosted runner, so on GitHub
-each host is evaluated alone. `.github/workflows/hosts.yml` does that on
-every push the mirror sends, and each job's summary has the host's
-derivation path, peak memory, elapsed time and free disk. On 31 October
+each host is evaluated alone. `.github/workflows/hosts.yml` calls
+`hosts.yml` from `shaneplunkett/workflows` on every push the mirror sends,
+and each job's summary has the host's derivation path, peak memory, elapsed
+time and free disk. On 31 October
 2026, at `0fe52d23`, on `ubuntu-24.04`:
 
 | Host | Peak memory | Elapsed |
@@ -303,17 +304,19 @@ derivation path, peak memory, elapsed time and free disk. On 31 October
 | cube | 1.02 GiB | 39 s |
 | every other guest | 0.91 to 0.98 GiB | 30 to 45 s |
 
-The four machines with Home Manager are the heavy ones, and the desktop
-leaves about 10 GiB of the runner spare. Reading other hosts costs the
-dashboard and ingress little. Elapsed includes fetching the inputs on a
-cold runner. Every derivation path matched the builder's evaluation of
-the whole hive at the same commit, which peaked at 14.8 GB in 2 minutes
-43 seconds.
+The four machines with Home Manager are the heavy ones. Peak memory is the
+evaluator's own resident set, so the desktop leaves about 10 GiB of the
+runner's 16 before the Nix daemon and the OS take their share. Reading
+other hosts costs the dashboard and ingress little. Elapsed includes
+fetching the inputs on a cold runner. Every derivation path matched the
+builder's evaluation of the whole hive at the same commit, which peaked at
+14.8 GB in 2 minutes 43 seconds. A second run at `3a60f434` gave the same
+paths and memory within 0.01 GiB.
 
-The runner's `/` had 86 GB free before nothing-but-nix ran, not the 14 GB
-GitHub documents. Its `/nix` starts at 84 GB and reaches 114 GB once the
-background purge finishes, which was partway through most jobs, so only
-the longer ones saw the bigger figure. Evaluating needs neither; builds will.
+The runner's `/` has 86 GiB free before anything is deleted, not the 14 GB
+GitHub documents. Deleting the Android, .NET, Haskell and tool caches and
+the Docker images takes it to 114 GiB, in 74 to 316 seconds, about two
+minutes on average. Evaluating needs none of that; builds will.
 
 ## Registration
 
