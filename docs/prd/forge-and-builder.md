@@ -45,13 +45,16 @@ pull request job holds the inputs token and a push token for the cache,
 and nothing else. A pull request from a fork gets no secrets at all.
 
 **The cache** is Attic on a `cache` guest on PVE, chunks on local disk,
-SQLite, from nixpkgs' `services.atticd`. `cache.shaneplunkett.com` is
-proxied through Cloudflare for pulls, which caches the NARs at the edge,
-and Blocky still answers it locally so hosts pull over the LAN. Pushes go
-over Tailscale, which sidesteps Attic's one-request-per-path upload and
-Cloudflare's 100 MB body cap. The cache's upstream filter keeps paths
-cache.nixos.org already has out of it. Garbage collection is retention
-per cache. Nothing backs it up: a lost cache is a slow week.
+SQLite, from nixpkgs' `services.atticd`. It is reachable only on the LAN
+and the tailnet, as Harmonia is today: `cache.shaneplunkett.com` resolves
+through Blocky and nowhere else, there is no Cloudflare record and no
+route in from the internet. Closures carry builds of the private repos, so
+the cache is never public; pulls need a pull token too, one agenix secret
+every host reads. Hosts and the desktop pull by the Blocky name over the
+LAN. A hosted runner pulls and pushes over the tailnet, by the guest's
+tailnet name, which it joins anyway. The cache's upstream filter keeps
+paths cache.nixos.org already has out of it. Garbage collection is
+retention per cache. Nothing backs it up: a lost cache is a slow week.
 
 **Tailscale** is joined from the job with `tailscale/github-action`, as an
 ephemeral node tagged `tag:ci`, using workload identity federation: a
@@ -91,9 +94,10 @@ pushes before it holds any deploy rights.
    the runner, and records peak memory for the fattest hosts (the desktop
    and the dashboard read other hosts' configuration). Nobody publishes a
    per-host figure, so this is the first thing we learn.
-2. **Cache.** Add the `cache` guest and its Attic, the Cloudflare record,
-   the Blocky answer, the push token in agenix, and the workstations'
-   substituter. Seed it from the builder's store with `nix copy`.
+2. **Cache.** Add the `cache` guest and its Attic, the Blocky answer, the
+   push and pull tokens in agenix, and the workstations' substituter. No
+   Cloudflare record: the name stays LAN and tailnet only. Seed it from the
+   builder's store.
 3. **Build and push.** Add Atelier with its diff job beside it, pushing to
    the cache from pull request jobs. Run both CIs for a few real changes,
    including a nixpkgs bump, until the GitHub diff matches Forgejo's every
