@@ -4,6 +4,11 @@ NixOS Incus container on PVE running Forgejo, Shane's git forge. Its size
 is `homelab.guest` in `flake.nix`, `terraform/incus.tf` makes it, and the
 service is `modules/services/forgejo`.
 
+Shane chose to move the primary forge to GitHub on 31 October 2026 and keep
+a homelab mirror. [The migration plan](../prd/forge-and-builder.md) tracks
+that work. Forgejo is still primary until cutover, so the instructions here
+describe the current setup.
+
 The web UI is `https://git.shaneplunkett.com`, through ingress. SSH clones
 go straight to the host over the tailnet, as
 `forgejo@forge:<owner>/<repo>.git`.

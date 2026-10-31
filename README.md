@@ -100,9 +100,9 @@ New hosts are Incus containers, on PVE or Cube.
    (`ssh-keyscan -t ed25519 <ip>`), name it in `agenix-rules.nix`, add it to
    the secrets it needs, and `agenix -r` to rekey. The builder trusts hosts
    from the same file, so this is also what lets it deploy there.
-4. Deploy it once by hand. Colmena reaches hosts by their tailnet name,
-   which doesn't exist until this first deploy joins it, and the desktop
-   doesn't evaluate the hive. So build the host on the builder, and have the
+4. Deploy it once by hand to join Tailscale and start its services. The
+   builder's Colmena SSH config reaches hosts over the LAN, and the desktop
+   doesn't evaluate the hive. Build the host on the builder, and have the
    host fetch it through the cache, passing the cache's key from
    `modules/workstation/nix-settings.nix` since the host doesn't trust it
    yet:

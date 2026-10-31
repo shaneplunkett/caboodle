@@ -1,28 +1,24 @@
 # CI redesign
 
 Working notes from the design conversation begun on 28 October 2026.
-These notes record agreed requirements and questions as the conversation
-progresses.
 
-The interview is paused for external research at Shane's request. Examine
-StepBro's own setup and Colmena work, the Nix evaluation GitHub tooling
-she recalls from Determinate Systems, and established Nix CI systems before
-asking her to choose implementation mechanisms. Full reuse of evaluated
-results across comparison, build and deployment remains undecided.
+## Status, 31 October 2026
 
-The [external research](../research/2026-10-28-nix-ci-patterns.md) is now
-recorded with source dates, verdicts and remaining gaps. It supports testing
-bounded nix-eval-jobs evaluation or explicit Colmena batches before changing
-the hive's configuration model. StepBro's Atelier retains repeated
-attribute evaluations and Colmena deployment; Hestia and Hydra demonstrate
-evaluated-derivation reuse. Both approaches have precedent.
+The concurrency fix below is implemented. PVE and Cube have both moved to
+NixOS and Incus. Shane has now chosen GitHub as the primary forge, with a
+homelab mirror, because the Forgejo integration work is too much upkeep.
+[Moving back to GitHub](forge-and-builder.md) records that decision and the
+remaining migration work. Forgejo still runs CI until cutover.
 
-The proposed next step is a comparison on one frozen caboodle revision,
-checking identical complete derivation mappings and measuring memory,
-CPU and elapsed time. Keep the existing deployment interface while testing
-those options. This is a research recommendation, not a selected
-implementation. No benchmarks have run. The research has not established
-that the current cross-host configuration needs to change.
+Disposable runners, credential isolation, a separate cache and changes to
+evaluation remain design work. The requirements below describe the intended
+behaviour, not guarantees the current builder already provides.
+
+The [external research](../research/2026-10-28-nix-ci-patterns.md) records
+the evaluation options with source dates and remaining gaps. It did not
+establish that cross-host configuration needs to change. The implementation
+findings and proposed experiments later in this document are the 28 October
+record, not a fresh inspection or an instruction to restart those experiments.
 
 ## Decision, 28 October 2026
 
@@ -43,8 +39,9 @@ is a step on each push to `main` that calls Forgejo's
 `POST /repos/{owner}/{repo}/pulls/{index}/update` on the open pull
 requests scheduled to merge.
 
-The forge move, ephemeral runners and nix-eval-jobs are deferred, not
-rejected. Reopen them if a single full evaluation nears 25 GB, or if the
+That fix deferred the forge move, ephemeral runners and nix-eval-jobs.
+The 31 October decision reopens the forge move. The evaluation redesign
+remains deferred; revisit it if a single full evaluation nears 25 GB, or if the
 rebuild after each merge leaves Renovate's pull requests queueing for long
 enough to hurt. The requirements and findings below stay as the brief for
 that redesign.
@@ -72,7 +69,7 @@ a lock helped, but did not address the cost of evaluating a larger hive.
   must not require Shane to maintain duplicate host lists or wiring by
   hand. An explicit shared-data boundary is a candidate to investigate,
   not an accepted restriction on access to host configuration.
-- Design for Incus. Shane intends Cube to follow PVE onto Incus.
+- Design for Incus. PVE and Cube have both completed the move.
 - Fit within the existing physical machines. Additional hardware or paid
   compute capacity is not an option. Resource allocation and scheduling
   within the existing machines can change. The design must address both
@@ -83,18 +80,16 @@ a lock helped, but did not address the cost of evaluating a larger hive.
   boundaries within the repo remain open to redesign.
 - Reopen the previous implementation choices rather than treating them as
   requirements for this design.
-- The forge choice is open. Shane is not committed to Forgejo and has
-  encountered tooling friction. Assess the human and agent workflows as
-  part of choosing a forge. Carry forward the existing forge plan's
-  requirements: reliable PR and check status for Shane and agents,
-  cancellation distinguished from failure, and Linear and CodeRabbit
-  integration.
-- An externally hosted forge is acceptable to consider. GitHub is an
-  explicit candidate, with evaluation, builds and deployment staying on
-  existing machines. No forge has been selected. A small fixed forge
-  subscription is acceptable to consider, with the actual total checked
-  before choosing. No exact spending limit has been set. This does not
-  reopen the constraint against additional build capacity.
+- GitHub is the chosen primary forge, with a homelab mirror. Carry forward
+  the forge plan's requirements: reliable PR and check status for Shane
+  and agents, cancellation distinguished from failure, and Linear and
+  CodeRabbit integration. Verify the human and agent workflows during
+  migration.
+- Evaluation, builds and deployment stay on existing machines. A small
+  fixed forge subscription is acceptable to consider, with the actual
+  account requirements and total still to check. No exact spending limit
+  has been set. Choosing GitHub does not reopen the constraint against
+  additional build capacity.
 - Merging is implicit deployment approval. Routine deployment follows
   merge without a separate approval step. The existing manual-switch
   boundary for selected hosts remains in place unless explicitly revisited.
@@ -130,15 +125,15 @@ a lock helped, but did not address the cost of evaluating a larger hive.
 ## Existing plans to reconcile
 
 [Ephemeral CI jobs on Proxmox](https://linear.app/metrokitten/project/ephemeral-ci-jobs-on-proxmox-4d5adbf3de4c)
-proposes disposable job containers and a persistent builder and cache.
+is the older project title. Its proposal was disposable job containers and
+a persistent builder and cache; the implementation now needs to target Incus.
 [SHA-187](https://linear.app/metrokitten/issue/SHA-187) is its initial
 manual spike. [SHA-197](https://linear.app/metrokitten/issue/SHA-197)
 adds per-repo CI secrets.
 
-[Leaving Forgejo and splitting up builder](forge-and-builder.md)
-also considers a forge migration, a separate Attic cache and replacing
-builder. Forge selection is part of this redesign; those proposals remain
-options to assess against the requirements we settle here.
+[Moving back to GitHub](forge-and-builder.md) now records the forge choice
+and the completed Incus migration. A separate Attic cache and replacing
+builder remain proposals to assess against these requirements.
 
 [Terraform reads the hive directly](../adr/0001-terraform-reads-the-hive.md)
 records why Nix owns host data and Terraform reads it without a generated
@@ -252,8 +247,10 @@ that an experiment cannot disrupt other work.
 
 ## Forge findings
 
-Checked against official documentation on 28 October 2026. These findings
-keep candidates open; they do not select a forge.
+Checked against official documentation on 28 October 2026. These are the
+findings used while the choice was open. Shane chose GitHub on 31 October;
+plan eligibility, pricing and integrations still need checking for the
+destination accounts before cutover.
 
 GitHub's ordinary PR workflows can test a synthetic merge of target and
 PR. Strict required checks must also enforce freshness when the target
@@ -288,7 +285,7 @@ the personal-repository installation flow, so that remains to verify.
 CodeRabbit integration support alone does not establish entitlement to
 ongoing reviews; account plans and eligibility need checking separately.
 
-Self-managed GitLab remains a candidate. Its native
+Self-managed GitLab was the alternative considered. Its native
 [merged-results pipelines](https://docs.gitlab.com/ci/pipelines/merged_results_pipelines/)
 and [merge trains](https://docs.gitlab.com/ci/pipelines/merge_trains/)
 require Premium or Ultimate. Implementing equivalent current-target

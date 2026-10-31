@@ -5,6 +5,10 @@
   what has to be reachable from the internet?
 - **Researched:** 2026-10-17, against GitLab CE 19.5.0.
 
+Shane chose GitHub with a homelab mirror on 31 October. See the
+[migration plan](../prd/forge-and-builder.md). These findings record the
+GitLab investigation at the time; they are not a pending implementation.
+
 GitLab ran in Docker on the desktop, capped at 4GB of RAM, with a GitLab
 runner using the Docker executor. Outside services reached it through a
 Cloudflare quick tunnel and a Caddy proxy that logged every request. The web
