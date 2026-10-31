@@ -152,6 +152,22 @@ as credentials. Two have other names in Bitwarden: `homelab_tfc_token` and
 `homelab_hcloud_token`. Terraform reaches Incus with its own client
 certificate ([incus](../../modules/services/incus/README.md#terraforms-access)).
 
+GitHub plans too, ahead of [the move](../prd/forge-and-builder.md):
+`.github/workflows/terraform.yml` runs the same script on the same paths, on
+a hosted runner, and posts the plan as a comment it edits on each push. Run
+workflow on its Actions page plans and posts nothing. Pull requests from a
+fork get no secrets, so the job skips them. The runner joins the tailnet as
+`tag:ci` and reaches Incus, UniFi and the forge by their LAN addresses
+through PVE's subnet route, and resolves names through Blocky, so the
+tailnet policy grants `tag:ci` those addresses and dns1 and dns2 on 53. It
+reads `INPUTS_TOKEN` for the flake's private inputs and these Actions
+secrets, each the agenix secret of the same name:
+`TERRAFORM_CLOUD_TOKEN`, `TERRAFORM_HCLOUD_TOKEN`,
+`TERRAFORM_CLOUDFLARE_TOKEN`, `TERRAFORM_ACCESS_EMAILS`,
+`TERRAFORM_FORGEJO_TOKEN`, `TERRAFORM_UNIFI_TOKEN` and
+`TERRAFORM_INCUS_KEY`. A changed `terraform-*.age` needs its Actions secret
+set again too. Apply still runs on the forge until cutover.
+
 A changed secret restarts the runner the same graceful way. Its restart
 triggers hash the `.age` files, because their paths sit in the flake's
 source, which changes every commit. That restart lands after the first

@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Terraform on the builder's runner, for the pull request plan and the
 # deploy's apply alike, so both see the same tokens and flags. Writes the
-# plan to terraform/plan.txt for the pull request comment.
+# plan to terraform/plan.txt for the pull request comment. A GitHub job
+# writes the same files from its Actions secrets and points
+# TERRAFORM_CREDENTIALS at them.
 #
 #   scripts/terraform-ci.sh [plan|apply]   # default: plan
 #
@@ -10,7 +12,7 @@
 set -euo pipefail
 
 mode="${1:-plan}"
-creds=/run/credentials/forgejo-runner-builder.service
+creds="${TERRAFORM_CREDENTIALS:-/run/credentials/forgejo-runner-builder.service}"
 
 TF_TOKEN_app_terraform_io="$(<"$creds/terraform-cloud-token")"
 TF_VAR_hcloud_token="$(<"$creds/terraform-hcloud-token")"
