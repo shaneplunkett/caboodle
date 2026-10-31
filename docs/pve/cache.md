@@ -64,7 +64,7 @@ admin=$(atticd-atticadm make-token --sub shane --validity '1h' \
   --pull shane --push shane --create-cache shane --configure-cache shane)
 nix shell nixpkgs#attic-client -c sh -c "
   attic login home http://192.168.1.158:8080 $admin
-  attic cache create home:shane --public
+  attic cache create home:shane
   attic cache info home:shane"
 ```
 
@@ -73,9 +73,9 @@ names `cache.nixos.org-1` as its upstream key, so a push leaves out
 anything signed by it. `--ignore-upstream-cache-filter` overrides that for
 one push.
 
-The cache is public because Cloudflare only caches what it can hand to
-anyone. A store path's hash isn't guessable without the derivation, but
-treat anything pushed as readable by whoever knows its path.
+The cache is private, so a pull needs the pull token as well. Closures
+hold builds of the private repos, and a public cache would hand any of them
+to whoever knows the store path.
 
 ## Seeding from the builder
 
