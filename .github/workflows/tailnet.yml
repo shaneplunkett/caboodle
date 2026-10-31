@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: shaneplunkett/workflows/tailnet@tailnet-action
+      - uses: shaneplunkett/workflows/tailnet@v1.9.0
         with:
           client-id: ${{ vars.TAILSCALE_CLIENT_ID }}
           audience: ${{ vars.TAILSCALE_AUDIENCE }}
