@@ -280,10 +280,9 @@ workflow, the builder's `settings` with these differences:
   github.com's tags and releases, so `renovate-github-token` isn't needed.
 - Renovate's container installs `nix`, `uv`, `pnpm`, Go and Node when a
   lock file needs them, the same tools `runtimePackages` gives the builder.
-- The App can't read check runs on private repos, since it has no Checks
-  permission, so Renovate sees a private repo's branch as pending forever
-  and never merges there. Public repos are readable without it. Grant
-  Checks read before automerging anything private.
+- Renovate reads a branch's Actions results as check runs, which needs the
+  App's Checks permission on private repos. Without it a private branch
+  looks pending forever and never automerges.
 
 Until cutover the forge's push mirror runs `git push --mirror`, which
 deletes any GitHub branch the forge doesn't have. So every pull request
@@ -306,7 +305,8 @@ plan's identity step moves the other bots onto it.
 - **The App** is `github-app-client-id` and `github-app-private-key`
   (`APP_CLIENT_ID` and `APP_PRIVATE_KEY` in Actions). It's installed on every
   repo on Shane's account, with read and write on contents, pull requests,
-  issues, actions, workflows and commit statuses. Jobs and Renovate mint an
+  issues, actions, workflows and commit statuses, and read on checks and
+  Dependabot alerts. Jobs and Renovate mint an
   hour-long installation token from it. Bitwarden holds the key base64'd,
   since `rbw` keeps one line: `rbw get github-app-private-key | base64 -d`.
 - **The inputs token** is `github-inputs-token` (`INPUTS_TOKEN` in Actions),
