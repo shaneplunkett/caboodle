@@ -68,9 +68,13 @@ GitHub Environment it runs in, not by a second tag.
 diff and plan comments, opens the flake update pull requests so Shane can
 review them, runs Renovate from a scheduled workflow, dispatches the
 `ai-skills` bump into this repo, and fetches for the mirror. Its tokens
-last an hour and are minted in the job. The six inputs on the forge move
-to `github:` URLs; the runner and the workstations read the private ones
-with a read-only fine-grained token in `access-tokens`.
+last an hour and are minted in the job from `APP_CLIENT_ID` and
+`APP_PRIVATE_KEY` (`github-app-client-id` and `github-app-private-key` in
+Bitwarden). The six inputs on the forge move to `github:` URLs; the runner
+and the workstations read the private ones with a read-only fine-grained
+token in `access-tokens`, `INPUTS_TOKEN` (`github-inputs-token`). The
+[builder doc](../pve/builder.md#github-app-and-inputs-token) has their
+permissions and how to renew the token.
 
 **The mirror** is a `mirror` guest on PVE with a bare clone of every repo
 on the account under the NAS pool, refreshed by a short script on a timer

@@ -234,6 +234,18 @@ in
     shane
     builder
   ];
+  "github-app-client-id.age".publicKeys = [
+    shane
+    builder
+  ];
+  "github-app-private-key.age".publicKeys = [
+    shane
+    builder
+  ];
+  "github-inputs-token.age".publicKeys = [
+    shane
+    builder
+  ];
   "terraform-cloud-token.age".publicKeys = [
     shane
     builder

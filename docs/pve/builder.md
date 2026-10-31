@@ -248,6 +248,33 @@ latest commit.
 - `renovate-github-token` is a read-only GitHub token, because GitHub won't
   list tags and releases without one.
 
+## GitHub App and inputs token
+
+Two secrets for [the move to GitHub](../prd/forge-and-builder.md) are in
+Bitwarden, in caboodle's Actions secrets on GitHub, and in agenix for the
+builder. Nothing reads them yet; the plan's identity step moves Renovate
+onto the App and the flake inputs onto the token.
+
+- **The App** is `github-app-client-id` and `github-app-private-key`
+  (`APP_CLIENT_ID` and `APP_PRIVATE_KEY` in Actions). It's installed on every
+  repo on Shane's account, with read and write on contents, pull requests,
+  issues, actions, workflows and commit statuses. Jobs and Renovate mint an
+  hour-long installation token from it. Bitwarden holds the key base64'd,
+  since `rbw` keeps one line: `rbw get github-app-private-key | base64 -d`.
+- **The inputs token** is `github-inputs-token` (`INPUTS_TOKEN` in Actions),
+  a fine-grained token with contents read on vex-brain, nix-config-private,
+  ai-skills, noctalia-plugins and wallpapers, for fetching those inputs. It
+  never expires, since it can only read.
+
+To replace the token, regenerate it on GitHub's fine-grained tokens page,
+then from `modules/agenix`:
+
+```sh
+rbw edit github-inputs-token
+printf '%s' "$(rbw get github-inputs-token)" | agenix -e github-inputs-token.age
+printf '%s' "$(rbw get github-inputs-token)" | gh secret set INPUTS_TOKEN --repo shaneplunkett/caboodle
+```
+
 ## Registration
 
 The forge and the builder share the `forgejo-runner-secret` secret, 40 hex
