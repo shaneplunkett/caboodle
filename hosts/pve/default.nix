@@ -7,6 +7,7 @@
     ./smartctl.nix
     ../../modules/services/incus
     ../../modules/services/nas
+    ../../modules/services/mirror/pool.nix
   ];
 
   boot.loader = {

@@ -14,6 +14,7 @@ Per-service docs:
 - [cache.md](cache.md)
 - [forge.md](forge.md)
 - [home.md](home.md)
+- [mirror.md](mirror.md)
 - [recipes.md](recipes.md)
 - [rss.md](rss.md)
 

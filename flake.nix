@@ -532,6 +532,16 @@
           };
         };
 
+        mirror = incus "mirror" {
+          homelab.lanAddress = "192.168.1.159";
+          homelab.guest = {
+            host = "pve";
+            mounts."/var/lib/mirror" = "/mnt/user/mirror";
+          };
+          homelab.monitoring.enable = false;
+          deployment.tags = [ ];
+        };
+
         builder = incus "builder" {
           homelab.lanAddress = "192.168.1.224";
           homelab.guest = {
