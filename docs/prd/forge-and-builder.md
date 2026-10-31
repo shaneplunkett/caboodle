@@ -46,7 +46,7 @@ and nothing else. A pull request from a fork gets no secrets at all.
 
 **The cache** is Attic on a `cache` guest on PVE, chunks on local disk,
 SQLite, from nixpkgs' `services.atticd`. It is reachable only on the LAN
-and the tailnet, as Harmonia is today: `cache.shaneplunkett.com` resolves
+and the tailnet, as Harmonia's was: `cache.shaneplunkett.com` resolves
 through Blocky and nowhere else, there is no Cloudflare record and no
 route in from the internet. Closures carry builds of the private repos, so
 the cache is never public; pulls need a pull token too, one agenix secret

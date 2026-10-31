@@ -103,9 +103,8 @@ reinstalled. It suits a guest whose state all lives in `/var/lib`. Its
 mounts' sources before the guest starts. It takes two pull requests, and
 nothing else merges between them.
 
-The builder can't move this way, since the restore fetches from its
-Harmonia. It moved by taking only its host keys and `/var/lib/tailscale`,
-then building its own system once it was up.
+The cache can't move this way, since the restore fetches from it. Rebuild
+it from code and seed it again ([cache.md](../../../docs/pve/cache.md)).
 
 1. On the guest's host, stop the guest's apps, alloy and tailscaled with
    `incus exec`, then tar its host keys and `/var/lib`. When the host itself
@@ -127,14 +126,18 @@ then building its own system once it was up.
    MAC and `running = false`. Merging creates the container, stopped.
 3. Build the second pull request's system on the builder before it merges
    (`.#hydraJobs.<guest>`). On the new host, restore the tar and switch the
-   guest to that system, with the cache's key from
-   `modules/workstation/nix-settings.nix`:
+   guest to that system. The restored guest has no `/run/agenix` yet, so
+   hand it the pull token for the copy, and the cache's key from
+   `modules/services/attic/client.nix`:
 
    ```sh
    incus start <guest>
    incus exec <guest> -- tar -C / --numeric-owner -xpf - < <dir>/<guest>.tar
-   incus exec <guest> -- bash -lc "nix copy --from http://<builder>:5000 $path \
-     --option extra-trusted-public-keys <key> \
+   printf 'machine 192.168.1.158\npassword %s\n' "$(rbw get attic-pull-token)" \
+     | incus exec <guest> -- bash -c 'umask 077; cat > /root/attic-netrc'
+   incus exec <guest> -- bash -lc "nix copy --from http://192.168.1.158:8080/shane $path \
+     --option extra-trusted-public-keys <key> --option netrc-file /root/attic-netrc \
+     && rm /root/attic-netrc \
      && nix-env -p /nix/var/nix/profiles/system --set $path \
      && $path/bin/switch-to-configuration switch"
    ```
@@ -162,7 +165,8 @@ Gotchas:
   `/run/current-system/sw/bin`, so give it one.
 - **Never fetch from `cache.shaneplunkett.com` while moving ingress.** The
   cache is served through ingress, and fetching from it mid-move took
-  everything web down for 4 minutes. Go to Harmonia on the builder directly.
+  everything web down for 4 minutes. Go to Attic at the cache guest's LAN
+  address directly.
 - **Don't SSH over Tailscale to a host and stop its tailscaled.** Use the
   LAN address.
 - **Podman images pinned by tag can be left out.** They pull again on

@@ -304,14 +304,10 @@ The cache is Attic on its own guest; [cache.md](cache.md) covers it.
 builder's store, as it lands, so anything a job builds can be downloaded
 instead of built again. Paths another cache already signed stay out.
 
-Harmonia still serves the builder's store on port 5000, with no route,
-only for the by-hand switches of PVE and Cube until those move to Attic.
-
 The builder's own store only keeps a build while something roots it,
 because it's collected weekly and whenever free space drops below
 `min-free`. Jobs root a build with `--out-link` into the runner's state
-directory. The builder's
-disk alert is worked out from `min-free` in `hosts/builder.nix`, set 5 GiB
+directory. The builder's disk alert is worked out from `min-free` in `hosts/builder.nix`, set 5 GiB
 past it, so Discord only hears about a full disk when collection can't keep
 up.
 
