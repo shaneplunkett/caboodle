@@ -113,6 +113,10 @@ pushes to the cache ([Building on GitHub](#building-on-github)), and the
 the required check at cutover, so it runs and fails when an evaluation,
 build or push fails, rather than being skipped, which GitHub counts as a
 pass. The `hosts.yml` section of the workflows README has the details.
+`.github/workflows/check.yml` runs `scripts/check.sh` there too, through
+the shared `check.yml`, with the dev shell pulled from the cache over the
+tailnet: Terraform is unfree and colmena is a fork, so without the cache a
+hosted runner would compile both on every run.
 
 `main` won't merge a pull request that's behind it. Use Update Branch's
 rebase option, since the button merges `main` in by default, or rebase it
@@ -203,6 +207,19 @@ the pull request. Those inputs stay out of Renovate, because a merge on
 green would skip the news and new evaluation warnings that only the weekly
 pull request shows. A warning doesn't fail a build, so nothing else would
 surface it.
+
+On GitHub, `.github/workflows/update.yml` calls the GitHub
+`flake-update.yml` half an hour after the forge's, as the `caboodle-agent`
+App, which commits the lock, opens the pull request and asks Shane to
+review it. Its description has the same changelogs and input changes, and
+not the package changes or new evaluation warnings: that run builds
+nothing, and the pull request's own `hosts` run builds the changed hosts.
+Surfacing the warnings there again is still to do. The branch is
+`update-github/flake-lock`, so the forge's `update/flake-lock` can't mirror
+over it, and until cutover the pull request is a preview like Renovate's,
+closed at the forge's next push; the half-hour offset keeps the forge's own
+update from closing it the moment it opens. At cutover the branch drops
+its prefix and the forge's caller goes.
 
 `ai-skills` doesn't wait for Friday. Each push to its `main` dispatches
 `ai-skills.yml` here with forge-bot's token, which runs the same workflow

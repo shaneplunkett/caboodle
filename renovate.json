@@ -88,11 +88,14 @@
       "groupName": "flake tools"
     },
     {
-      "description": "One PR for workflow actions",
+      "description": "One PR for workflow actions, apart from the shared workflows' pins, which land on their own as soon as a release is tagged",
       "matchManagers": [
         "github-actions"
       ],
-      "groupName": "workflow actions"
+      "groupName": "workflow actions",
+      "matchPackageNames": [
+        "!shaneplunkett/workflows"
+      ]
     },
     {
       "description": "One PR per pinned flake input, merged as soon as CI builds it. git-refs has no release dates, so minimumReleaseAge would hold every input forever.",
