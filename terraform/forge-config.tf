@@ -56,10 +56,6 @@ resource "forgejo_branch_protection" "caboodle_main" {
   branch_name              = "main"
   enable_push              = true
   enable_status_check      = true
-  block_on_outdated_branch = true
-  status_check_contexts = [
-    "/ hosts (pull_request)",
-    "/ build (*) (pull_request)",
-    "/ check* (pull_request)",
-  ]
+  block_on_outdated_branch = false
+  status_check_contexts    = ["/ check* (pull_request)"]
 }

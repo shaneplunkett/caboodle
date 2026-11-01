@@ -38,9 +38,9 @@ A service that runs on both kinds of host keeps its options in an
 `options.nix` next to its `default.nix`, so the hive can read them from any
 host, and the NixOS half and the darwin half each read the same facts.
 
-The mini is a server, deployed on merge like the containers; see
+The mini is a server, deployed with `scripts/deploy.sh` like the containers; see
 [docs/mini](docs/mini/README.md). PVE, Cube, the MacBook, the desktop and the
-Deck are built by every pull request but switched by hand; see
+Deck are switched by hand; see
 [docs/pve](docs/pve/README.md), [docs/cube](docs/cube/README.md),
 [docs/macbook](docs/macbook/README.md), [docs/desktop](docs/desktop/README.md)
 and [docs/deck](docs/deck/README.md).
