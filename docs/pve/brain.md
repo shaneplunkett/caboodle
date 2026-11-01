@@ -14,9 +14,9 @@ as they are, so it needs no nix-ld.
 
 ## Deploying a new version
 
-The weekly flake update moves the `vex-brain` input. For a new version
-sooner, run it from the Actions tab, or `nix flake update vex-brain` on a
-branch, and merging deploys it.
+Renovate's weekly lock file update moves the `vex-brain` input. For a new
+version sooner, run `nix flake update vex-brain` on a branch. Once it's on
+`main`, `scripts/deploy.sh` deploys it.
 
 The app runs its migrations on startup. If the update brings new files in
 `app/migrations/`, take a backup first with

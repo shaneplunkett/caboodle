@@ -232,10 +232,6 @@ in
     shane
     builder
   ];
-  "renovate-github-token.age".publicKeys = [
-    shane
-    builder
-  ];
   "github-app-client-id.age".publicKeys = [
     shane
     builder

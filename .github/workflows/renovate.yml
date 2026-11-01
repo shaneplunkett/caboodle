@@ -27,6 +27,7 @@ jobs:
           RENOVATE_CONFIG: |
             {
               "autodiscover": true,
+              "autodiscoverFilter": ["shaneplunkett/caboodle"],
               "onboarding": false,
               "forkProcessing": "enabled",
               "platformCommit": "enabled",
