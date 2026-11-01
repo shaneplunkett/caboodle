@@ -38,6 +38,9 @@ build the host that changed. Two at once is what used to take the box down.
 `nrs` isn't wrapped: it's Shane's own switch, and the daemon's idle
 priority already covers the build half of it.
 
+What the desktop builds, it signs and serves to the Deck; see
+[the store as the cache](../workstation/README.md#the-store-as-the-cache).
+
 ## Switching
 
 Wait for the PR's `build (desktop)` check to go green first, so the switch

@@ -410,4 +410,12 @@ in
     shane
     builder
   ];
+  "nix-store-key-desktop.age".publicKeys = [
+    shane
+    desktop
+  ];
+  "nix-store-key-mini.age".publicKeys = [
+    shane
+    mini
+  ];
 }

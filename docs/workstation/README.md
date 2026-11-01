@@ -62,6 +62,30 @@ rule arrives with it.
 also why `colmena apply-local` doesn't work on a Mac: it matches the node
 name against the hostname.
 
+## The store as the cache
+
+The machine that compiled something serves it, so nothing builds twice for
+the same architecture. The desktop signs every path it builds with
+`desktop-1` and serves its store over `ssh-ng` through `nix.sshServe`, and
+the Deck lists it as a substituter. The mini signs with `mini-1` and the
+MacBook pulls from it the same way, as `shane`, through a key whose only
+allowed command is `nix-daemon --stdio`. Both signing keys are agenix
+secrets, and every workstation trusts both public keys. The puller's
+`nix-daemon` runs as root and signs in with the machine's own SSH host key,
+which is already in `modules/agenix/host-keys.nix`, so there are no new
+keys to hand around.
+
+Paths the desktop or mini built before the key existed carry no signature,
+so a puller rebuilds those once. To sign what's already there:
+
+```sh
+sudo nix store sign --all -k /run/agenix/nix-store-key-desktop
+```
+
+A puller away from the LAN just builds locally; `ConnectTimeout 5` keeps
+the wait short. If a path is in neither store it compiles where it's
+needed, as before.
+
 ## Homebrew on the Macs
 
 nix-homebrew owns `/opt/homebrew`, and `onActivation.cleanup = "uninstall"`

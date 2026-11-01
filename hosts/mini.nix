@@ -1,4 +1,7 @@
 { config, inputs, ... }:
+let
+  hostKeys = import ../modules/agenix/host-keys.nix;
+in
 {
   imports = [
     ../modules/workstation
@@ -12,10 +15,16 @@
   };
 
   homelab = {
+    secrets = [ "nix-store-key-mini" ];
     lanAddress = config.homelab.devices.mini.ip;
     routes.bubbles = 1234;
     tailscale.enable = false;
   };
+
+  nix.settings.secret-key-files = [ config.age.secrets.nix-store-key-mini.path ];
+  users.users.shane.openssh.authorizedKeys.keys = [
+    "command=\"/run/current-system/sw/bin/nix-daemon --stdio\",restrict ${hostKeys.macbook} macbook"
+  ];
 
   networking = {
     hostName = "mini-server";

@@ -10,6 +10,9 @@ desktop and the MacBook.
 vex-brain's vex-sync runs as daemons rather than home-manager agents, so
 sync runs from boot with nobody logged in.
 
+What the mini builds, it signs and serves to the MacBook; see
+[the store as the cache](../workstation/README.md#the-store-as-the-cache).
+
 ## BlueBubbles
 
 BlueBubbles Server is how Shane uses iMessage from NixOS. Homebrew disabled

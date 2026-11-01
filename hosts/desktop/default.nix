@@ -5,6 +5,7 @@
 }:
 let
   shell = "noctalia";
+  hostKeys = import ../../modules/agenix/host-keys.nix;
 in
 {
   imports = [
@@ -27,6 +28,16 @@ in
   };
 
   networking.hostName = "desktop";
+
+  homelab.secrets = [ "nix-store-key-desktop" ];
+  nix = {
+    settings.secret-key-files = [ config.age.secrets.nix-store-key-desktop.path ];
+    sshServe = {
+      enable = true;
+      protocol = "ssh-ng";
+      keys = [ hostKeys.deck ];
+    };
+  };
 
   _module.args = { inherit shell; };
 
