@@ -9,7 +9,7 @@ concurrency:
 
 jobs:
   update:
-    uses: shane/workflows/.forgejo/workflows/flake-update.yml@v2.1.0
+    uses: shane/workflows/.forgejo/workflows/flake-update.yml@v2.3.0
     with:
       title: "flake.lock: update every unpinned input"
       notes: scripts/flake-update-notes.sh
