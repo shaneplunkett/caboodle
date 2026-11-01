@@ -1,0 +1,38 @@
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/fetch-proof.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OUT: /nix/store/yvd8p6cn9zz2rs6h3ywnjjd6wv90hkkz-nixos-system-unnamed-lxc-26.11pre-git
+    steps:
+      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
+      - uses: shaneplunkett/workflows/tailnet@v2.0.0
+        with:
+          client-id: ${{ vars.TAILSCALE_CLIENT_ID }}
+          audience: ${{ vars.TAILSCALE_AUDIENCE }}
+      - name: Pull from the cache
+        env:
+          TOKEN: ${{ secrets.ATTIC_PULL_TOKEN }}
+        run: |
+          netrc="$RUNNER_TEMP/netrc"
+          (umask 077 && printf 'machine cache.tail1d49f8.ts.net\npassword %s\n' "$TOKEN" > "$netrc")
+          printf 'extra-substituters = http://cache.tail1d49f8.ts.net:8080/shane\nextra-trusted-public-keys = shane:T+Jq4M4cvkVyJwM7k5/zbOevaD1vfXzoqVX9a2hXCZI=\nnetrc-file = %s\n' "$netrc" \
+            | sudo tee -a /etc/nix/nix.conf
+          sudo systemctl restart nix-daemon
+      - name: Fetch gym's whole closure, building nothing
+        run: |
+          nix-store --realise "$OUT" --max-jobs 0 2>&1 | tee "$RUNNER_TEMP/fetch.log"
+          echo "Fetched from the cache: $(grep -c "from 'http://cache.tail1d49f8" "$RUNNER_TEMP/fetch.log")"
+          echo "Fetched from cache.nixos.org: $(grep -c "from 'https://cache.nixos.org" "$RUNNER_TEMP/fetch.log")"
+          echo "Built: $(grep -c "^building '" "$RUNNER_TEMP/fetch.log" || true)"
+          nix-store --query --requisites "$OUT" | xargs nix-store --check-validity
+          echo "Every one of $(nix-store --query --requisites "$OUT" | wc -l) paths in the closure is valid."

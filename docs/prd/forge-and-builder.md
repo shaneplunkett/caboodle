@@ -12,6 +12,13 @@ the tooling behind it, with dates. The
 [GitLab spike](../research/2026-10-17-gitlab-spike.md) stays as research
 into the alternative.
 
+On 1 November 2026 Shane replaced Atelier, the plan's first choice for
+building, with builds in the diff's own per-host jobs. Atelier evaluates
+every host again in its build jobs, and its secrets and permissions can't
+carry the private inputs, the tailnet join or a private cache, so the
+evaluate-once rule and the private cache would both have had to give. The
+cost is that the diff comment waits for the builds.
+
 The choice is made; the migration has not happened. Until cutover, changes
 still go through Forgejo and its runner, and the [forge](../pve/forge.md)
 and [builder](../pve/builder.md) docs describe what runs today.
@@ -20,19 +27,21 @@ and [builder](../pve/builder.md) docs describe what runs today.
 
 **On a pull request:**
 
-1. A `hosts` job of ours evaluates each host's derivation path in its own
-   matrix job, gathers them, compares with the mapping `main` uploaded as
-   an artifact for the merge base, and posts the derivation diff as a
-   comment. It is the required check. If the merge base has no artifact,
-   the job evaluates it too. The hive is never evaluated in one process:
-   that peaked at 14 GB on the builder and a hosted runner has 16 GB.
-2. [Atelier](https://github.com/stepbrobd/atelier), pinned by commit since
-   it has no releases, discovers outputs with nix-eval-jobs, builds one
-   derivation per job, skips anything a substituter already has, and
-   pushes the results to the cache. Darwin hosts build on hosted macOS
-   runners. If a closure outgrows their 14 GB disk, the mini registers as
-   a darwin-only runner; nothing else at home runs jobs.
-3. A Terraform plan comment when `terraform/`, `flake.nix` or
+1. workflows' `hosts.yml` evaluates each host in its own matrix job, once,
+   and compares it with the mapping `main` uploaded as an artifact for the
+   merge base. If the merge base has none, a matrix of its own evaluates it
+   first. The hive is never evaluated in one process: that peaked at 14 GB
+   on the builder and a hosted runner has 16 GB.
+2. The same job then builds its host if it changed, from the derivation it
+   just evaluated, and pushes the closure to the cache, so nothing is
+   evaluated twice. A rerun builds again, but with the closure cached that
+   only fetches. Darwin hosts build on hosted macOS runners. If a closure
+   outgrows their 14 GB disk, the mini registers as a darwin-only runner;
+   nothing else at home runs jobs.
+3. A `hosts` job gathers them all and posts the derivation diff as a
+   comment, after the slowest build, with what built and what failed. It
+   is the required check, and fails on a failed evaluation, build or push.
+4. A Terraform plan comment when `terraform/`, `flake.nix` or
    `modules/devices.nix` changed, as now.
 
 **On a push to `main`:** Terraform applies, then colmena deploys the
@@ -112,8 +121,8 @@ pushes before it holds any deploy rights.
    push and pull tokens in agenix, and the workstations' substituter. No
    Cloudflare record: the name stays LAN and tailnet only. Seed it from the
    builder's store.
-3. **Build and push.** Add Atelier with its diff job beside it, pushing to
-   the cache from pull request jobs. Run both CIs for a few real changes,
+3. **Build and push.** Build the changed hosts in the diff's own jobs,
+   pushing to the cache from pull request jobs and pushes to `main`. Run both CIs for a few real changes,
    including a nixpkgs bump, until the GitHub diff matches Forgejo's every
    time and the cache is warm.
 4. **Identity and integrations.** Create the App, install it, port Renovate

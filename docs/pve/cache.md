@@ -53,6 +53,16 @@ cache.nixos.org, nix-community, noctalia and numtide. A push leaves out
 anything one of them signed. `--ignore-upstream-cache-filter` overrides
 that for one push.
 
+### GitHub runners push
+
+A GitHub job that builds a host, in workflows' `hosts.yml`, pushes the
+closure with `attic push` straight after the build, because the runner's
+store is gone when the job ends. It reaches the guest by its tailnet name,
+pulls with the pull token in Nix's netrc, and keeps the push token in the
+push step alone. The push leaves out anything an upstream signed, as the
+builder's does. The builder doc's [Building on GitHub](builder.md#building-on-github)
+has the rest.
+
 ## Tokens
 
 Tokens are JWTs signed with the RS256 key in `attic-env`. That key lives only
@@ -80,6 +90,14 @@ ssh root@cache atticd-atticadm make-token --sub pull --validity 10y --pull shane
 
 They last ten years because nothing alerts on an expired token: CI would
 just start failing its pushes one day.
+
+caboodle's GitHub Actions secrets hold them as `ATTIC_PULL_TOKEN` and
+`ATTIC_PUSH_TOKEN`, for the runners. A new token goes there too:
+
+```sh
+printf '%s' "$(rbw get attic-pull-token)" | gh secret set ATTIC_PULL_TOKEN --repo shaneplunkett/caboodle
+printf '%s' "$(rbw get attic-push-token)" | gh secret set ATTIC_PUSH_TOKEN --repo shaneplunkett/caboodle
+```
 
 ## Setting it up
 
