@@ -415,8 +415,8 @@ token, from the `ATTIC_PULL_TOKEN` and `ATTIC_PUSH_TOKEN` Actions secrets
 derivations, fetches M paths, and can't place K`, so a log tells fetching
 from compiling at a glance. The K are paths no cache has that Nix builds
 anyway, and they get a warning, and the build's own lines say which cache each path came from. The
-Macs only evaluate there until they build on macOS runners. A pull request
-from a fork builds nothing: it gets no secrets and no OIDC token.
+summary also has the closure's size and the build's peak disk use. A pull
+request from a fork builds nothing: it gets no secrets and no OIDC token.
 
 A rerun builds every changed host again. With the closure in the cache,
 that's all fetching and the dry run counts 0 derivations to build, but the
@@ -449,6 +449,32 @@ runners didn't yet pull from nix-community and numtide, the only caches
 with it. The rest of their builds took 7 and 9 minutes, mostly fetching
 the desktop's 8.3 GiB, and its push 1.5 minutes. The longest a build can
 take is whatever no cache has, compiled on 4 vCPUs.
+
+## Building the Macs
+
+The MacBook's and the mini's jobs run on `macos-latest`, which the caller's
+`runners` input names, so they evaluate and build there, the same as a Linux
+host on Linux. A new Mac goes in that list too, or it evaluates on Linux and
+the comment says it wasn't built here. The baseline still evaluates on Linux,
+since a derivation path doesn't depend on where it's evaluated. With the
+Macs unchanged, their macOS evaluations matched main's Linux mapping.
+
+A hosted macOS runner has 3 cores and 7 GB of memory, but the disk isn't the
+documented 14 GB. On 1 November 2026, on `macos-26-arm64`, a runner had 93 to
+94 GiB free, and 264 to 265 GiB after the job deleted every Xcode but the
+selected one, the simulator runtimes, the Android SDK, .NET and the tool
+cache, which took 2 to 3 minutes. Nix builds with its own SDK, so it doesn't
+need the others. A change to both Macs' settings gave:
+
+| Host | Evaluation peak | Evaluation | Built, fetched | Peak disk use | Whole job |
+| --- | --- | --- | --- | --- | --- |
+| macbook | 3.17 GiB | 242 s | 2, 1380 paths | 17.32 GiB | 11 minutes |
+| mini | 4.62 GiB | 121 s | 6, 1325 paths | 17.27 GiB | 8 minutes |
+
+Peak disk use is the whole closure fetched into an empty store, with room to
+spare, so the mini doesn't need to register as a runner. The mini then
+substituted both systems from the cache in a dry run, with nothing to
+build. The builder still hands darwin builds to the mini until the cutover.
 
 ## Registration
 

@@ -35,9 +35,9 @@ and [builder](../pve/builder.md) docs describe what runs today.
 2. The same job then builds its host if it changed, from the derivation it
    just evaluated, and pushes the closure to the cache, so nothing is
    evaluated twice. A rerun builds again, but with the closure cached that
-   only fetches. Darwin hosts build on hosted macOS runners. If a closure
-   outgrows their 14 GB disk, the mini registers as a darwin-only runner;
-   nothing else at home runs jobs.
+   only fetches. Darwin hosts evaluate and build on hosted macOS runners,
+   which have about 94 GiB free rather than the documented 14 GB, so the
+   mini doesn't register as a runner, and nothing at home runs jobs.
 3. A `hosts` job gathers them all and posts the derivation diff as a
    comment, after the slowest build, with what built and what failed. It
    is the required check, and fails on a failed evaluation, build or push.
