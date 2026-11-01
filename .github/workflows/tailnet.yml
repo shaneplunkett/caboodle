@@ -19,7 +19,7 @@ jobs:
     with:
       title: "throwaway: SHA-275 flake update proof (do not merge)"
       branch: update-github/throwaway-sha-275
-      reviewer: ""
+      reviewer: shaneplunkett
       notes: scripts/flake-update-notes.sh
     secrets:
       INPUTS_TOKEN: ${{ secrets.INPUTS_TOKEN }}
