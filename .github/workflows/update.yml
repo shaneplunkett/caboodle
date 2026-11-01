@@ -1,0 +1,26 @@
+on:
+  schedule:
+    # Friday 22:30 Melbourne (21:30 outside daylight saving), ready for
+    # Saturday, and half an hour after the forge's own update, whose push
+    # would otherwise mirror over and close this one straight away.
+    - cron: "30 11 * * 5"
+  workflow_dispatch:
+
+concurrency:
+  group: flake-update
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    uses: shaneplunkett/workflows/.github/workflows/flake-update.yml@v2.3.0
+    with:
+      title: "flake.lock: update every unpinned input"
+      branch: update-github/flake-lock
+      notes: scripts/flake-update-notes.sh
+    secrets:
+      INPUTS_TOKEN: ${{ secrets.INPUTS_TOKEN }}
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
