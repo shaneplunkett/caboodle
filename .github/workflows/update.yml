@@ -15,10 +15,11 @@ permissions:
 
 jobs:
   update:
-    uses: shaneplunkett/workflows/.github/workflows/flake-update.yml@v2.3.0
+    uses: shaneplunkett/workflows/.github/workflows/flake-update.yml@sha-275
     with:
-      title: "flake.lock: update every unpinned input"
-      branch: update-github/flake-lock
+      title: "throwaway: SHA-275 flake update proof (do not merge)"
+      branch: update-github/throwaway-sha-275
+      reviewer: ""
       notes: scripts/flake-update-notes.sh
     secrets:
       INPUTS_TOKEN: ${{ secrets.INPUTS_TOKEN }}

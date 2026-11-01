@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   check:
-    uses: shaneplunkett/workflows/.github/workflows/check.yml@v2.3.0
+    uses: shaneplunkett/workflows/.github/workflows/check.yml@sha-275
     with:
       tailnet-client-id: ${{ vars.TAILSCALE_CLIENT_ID }}
       tailnet-audience: ${{ vars.TAILSCALE_AUDIENCE }}
