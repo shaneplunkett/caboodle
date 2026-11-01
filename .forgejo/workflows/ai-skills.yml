@@ -7,7 +7,7 @@ concurrency:
 
 jobs:
   update:
-    uses: shane/workflows/.forgejo/workflows/flake-update.yml@v1.9.0
+    uses: shane/workflows/.forgejo/workflows/flake-update.yml@v2.1.0
     with:
       title: "flake.lock: update ai-skills"
       only: ai-skills
