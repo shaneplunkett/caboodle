@@ -1,9 +1,7 @@
 # The desktop
 
 The NixOS desktop is a host in the hive like the servers and the mini, but
-merging never deploys it. The PR build check builds it on the builder,
-which fills the cache, and Shane switches it on the desktop when she's
-ready. [docs/workstation](../workstation/README.md) covers what it shares
+nothing deploys it. Shane switches it herself, when she's ready. [docs/workstation](../workstation/README.md) covers what it shares
 with the Macs.
 
 Monitoring is off, so a powered-off desktop doesn't page anyone. Its logs
@@ -43,9 +41,7 @@ What the desktop builds, it signs and serves to the Deck; see
 
 ## Switching
 
-Wait for the PR's `build (desktop)` check to go green first, so the switch
-downloads what the builder made instead of compiling it here. Then run
-`nrs`, which switches to the forge's `main`. To switch to unmerged work,
+Run `nrs`, which builds here and switches to the forge's `main`. To switch to unmerged work,
 `git add` any new files in the caboodle checkout and run either of:
 
 ```sh

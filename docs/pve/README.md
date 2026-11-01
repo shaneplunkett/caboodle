@@ -20,30 +20,21 @@ Per-service docs:
 
 ## Deploying
 
-Merging builds PVE but never deploys it. It's the hypervisor and the NAS,
-so a bad switch takes every guest down with it, the builder doing the
-deploy included. Shane switches it by hand.
+Nothing deploys PVE. It's the hypervisor and the NAS, so a bad switch takes
+every guest down with it. Shane switches it by hand.
 
-Build it on the builder, then have PVE fetch it from Attic on the cache
-guest and switch:
+Build it on the desktop, push the closure to PVE over SSH, and switch:
 
 ```sh
-path=$(nix build --no-link --print-out-paths --store ssh-ng://root@builder .#hydraJobs.pve)
-ssh root@<pve> "nix copy --from http://192.168.1.158:8080/shane $path \
-  && nix-env -p /nix/var/nix/profiles/system --set $path \
+path=$(scripts/quietly.sh nix build --no-link --print-out-paths .#hydraJobs.pve)
+nix copy --to ssh://root@<pve> "$path"
+ssh root@<pve> "nix-env -p /nix/var/nix/profiles/system --set $path \
   && $path/bin/switch-to-configuration switch"
 ```
 
-`<pve>` is its LAN address. The builder pushes the build to the cache a few
-seconds after it lands.
+`<pve>` is its LAN address. Nothing in the path depends on a guest, so this
+works with PVE's networking half up.
 
-- **Skip `cache.shaneplunkett.com`.** It's served through ingress, a guest
-  on PVE, so it's gone whenever PVE's networking is. The cache guest's own
-  address only needs the cache.
-- **A host that hasn't switched since the cache moved to Attic** has
-  neither its key nor its pull token. Pass both, as step 4 of adding a host
-  in the [README](../../README.md#adding-a-host) does, with
-  `machine 192.168.1.158` in the netrc.
 - **SSH in over the LAN, not Tailscale.** A switch can restart tailscaled
   and drop the session halfway.
 

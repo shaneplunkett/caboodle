@@ -1,8 +1,9 @@
 # The MacBook
 
-The MacBook is a host in the hive, evaluated with nix-darwin like the mini.
-Every pull request builds it on the mini, but nothing deploys it. Shane
-switches it by hand on the laptop.
+The MacBook is a host in the hive, evaluated with nix-darwin like the mini,
+but nothing deploys it. Shane switches it by hand on the laptop, and it
+pulls what the mini has already built
+([the store as the cache](../workstation/README.md#the-store-as-the-cache)).
 [docs/workstation](../workstation/README.md) covers what it shares with the
 mini and the desktop.
 
@@ -10,7 +11,7 @@ mini and the desktop.
 
 It's a laptop. It's often asleep or off the LAN, so a deploy on merge would
 mostly fail, and a switch landing mid-work would swap apps out from under
-Shane. The build check still proves every merge builds for it.
+Shane.
 
 For the same reason it has no `homelab.lanAddress`, and monitoring is off,
 since a sleeping laptop would trip HostDown all day.

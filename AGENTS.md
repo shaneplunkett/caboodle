@@ -8,35 +8,32 @@ and the Mac mini. Read `README.md` for how it fits together.
 
 - **Build:** builds and evaluations run here, on Shane's desktop, and only
   through `scripts/quietly.sh`: `scripts/quietly.sh colmena build --on
-  <host>`, or `apply` to deploy it. The wrapper runs one at a time, at idle
-  priority, capped at 20 GB, so a build never gets in the way of whatever
-  Shane is doing on the machine, and a hook blocks the bare commands. A
-  whole-hive evaluation is about 15 GB and a few minutes, so build the host
-  you changed, not the hive. The local gate is `scripts/check.sh`. Flakes
-  ignore untracked files, so `git add` new files first. Nix code reads for
-  itself, with no comments.
+  <host>`. The wrapper runs one at a time, at idle priority, capped at 20
+  GB, so a build never gets in the way of whatever Shane is doing on the
+  machine, and a hook blocks the bare commands. A whole-hive evaluation is
+  about 15 GB and a few minutes, so build the host you changed, not the
+  hive. The local gate is `scripts/check.sh`. Flakes ignore untracked
+  files, so `git add` new files first. Nix code reads for itself, with no
+  comments.
+- **Deploy:** `scripts/deploy.sh <host>` builds a host here and applies it
+  over SSH; with no arguments it applies every server, dns2 after dns1. The
+  mini builds on itself, since the desktop can't build darwin. PVE, Cube,
+  the desktop, the Deck and the MacBook are switched by hand, each per its
+  doc under `docs/`. `scripts/terraform.sh` plans Terraform with the tokens
+  agenix holds, and `scripts/terraform.sh apply` applies that plan.
 - **Pull request:** land every change through a pull request on the forge
   (`origin`; GitHub is a mirror of it). Commit on a branch and file it with
-  the `pr` skill, which opens it and assigns it to Shane for review. Done is a
-  green build check, the derivation diff comment, plus a Terraform plan
-  comment showing what you expect when `terraform/` changed.
+  the `pr` skill, which opens it and assigns it to Shane for review. Done is
+  a green check, plus the `Plan:` line from `scripts/terraform.sh` in the
+  body when `terraform/` changed. Rebase onto `origin/main` before filing.
 - **Merge:** Shane merges, except the `ai-skills` bumps that merge
-  themselves once every host builds (`docs/pve/builder.md`). Merging applies
-  Terraform and deploys every host but PVE, Cube, the desktop, the Deck and
-  the MacBook. CI builds those too, and Shane switches each by hand per its doc
-  under `docs/`.
-- **Derivation diff:** CI works out which hosts a pull request changes,
-  against its merge base, and posts them as a `forge-bot` comment it edits on
-  each push. Shane reads it herself, so the pull request body doesn't list
-  hosts. Rebase onto `origin/main` before filing: `main` won't merge a
-  branch that's behind it, so a pull request goes stale whenever another
-  merges and needs updating again. A package built from `lib.cleanSource ./.`
-  changes with any file in its folder, its README included, so a docs edit
-  there shows up as that package's hosts.
-- **CI:** the files in `.forgejo/workflows/` are callers of `shane/workflows`
-  (build, check, flake update, checkout), pinned to a tag. Change CI behaviour
-  there, following its `AGENTS.md`, and Renovate moves the pins here. Steps
-  check out with `https://git.shaneplunkett.com/shane/workflows/checkout@<tag>`.
+  themselves once the check passes. Merging deploys nothing. Once a change
+  is on `main`, deploy it from the desktop with `scripts/deploy.sh` and, if
+  `terraform/` changed, `scripts/terraform.sh apply`, when Shane asks.
+- **CI:** runs `scripts/check.sh` and nothing else. `.forgejo/workflows/`
+  and `.github/workflows/` call the check workflow in `shane/workflows`
+  (`shaneplunkett/workflows` on GitHub), pinned to a tag that Renovate
+  moves. Nothing builds or deploys in CI; `docs/adr/0004` says why.
 
 ## Checks
 

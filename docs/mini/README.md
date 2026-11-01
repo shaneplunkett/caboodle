@@ -1,9 +1,9 @@
 # The Mac mini
 
-The mini is a Mac server in the hive, deployed on merge like the other servers.
-Colmena runs from a fork that can deploy darwin nodes until upstream merges
-it. The mini is also the builder's darwin remote builder, so the PR build
-check builds every Mac on it. It's a workstation too, so
+The mini is a Mac server in the hive, deployed with `scripts/deploy.sh mini`
+like the other servers. Colmena runs from a fork that can deploy darwin
+nodes until upstream merges it, and the mini builds on itself
+(`deployment.buildOnTarget`), since the desktop can't build darwin. It's a workstation too, so
 [docs/workstation](../workstation/README.md) covers what it shares with the
 desktop and the MacBook.
 

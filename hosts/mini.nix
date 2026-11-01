@@ -12,6 +12,7 @@ in
   deployment = {
     systemType = "darwin";
     targetUser = "shane";
+    buildOnTarget = true;
   };
 
   homelab = {

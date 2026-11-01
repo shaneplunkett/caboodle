@@ -18,8 +18,7 @@ Per-service docs:
 
 ## Deploying
 
-Merging builds Cube but never deploys it, since a bad switch takes every
-guest on it down. Switch it by hand the way PVE is
+Nothing deploys Cube, since a bad switch takes every guest on it down. Switch it by hand the way PVE is
 ([pve](../pve/README.md#deploying)), with the rollback armed for anything
 that touches `br0` or the uplink. Its keyboard is the JetKVM.
 

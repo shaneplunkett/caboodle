@@ -13,7 +13,7 @@ Access commands.
 ## Credentials
 
 - **Agents and local dev:** a user token, stored in rbw as `homelab_cf_token`. The password is the token and the username is the account ID. It's a user token because the Workers Builds API rejects account tokens with `12006 Invalid token`, whatever their permissions. Edit it in the dashboard under **My Profile → API Tokens**.
-- **Terraform:** an account token, stored in rbw as `homelab_cf_terraform_token` and in agenix as `terraform-cloudflare-token` for the builder. It has Account API Tokens: Edit, so it can mint tokens with any permission and gets the same care as the Hetzner token. That also lets it update its own policies through the API (`PUT /accounts/{id}/tokens/{token_id}`), which is how to give it more permissions without the dashboard. Its zone permissions cover the personal zones only.
+- **Terraform:** an account token, stored in rbw as `homelab_cf_terraform_token` and in agenix as `terraform-cloudflare-token` for `scripts/terraform.sh`. It has Account API Tokens: Edit, so it can mint tokens with any permission and gets the same care as the Hetzner token. That also lets it update its own policies through the API (`PUT /accounts/{id}/tokens/{token_id}`), which is how to give it more permissions without the dashboard. Its zone permissions cover the personal zones only.
 
 The ingress host's ACME renewals use a third token, scoped to DNS edit on the personal zones only, kept in agenix as `cloudflare-dns`. Terraform manages its permissions.
 

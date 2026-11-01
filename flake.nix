@@ -284,7 +284,7 @@
             deployment.targetHost = lib.mkDefault (
               if config.homelab.tailscale.enable then name else config.homelab.lanAddress
             );
-            deployment.tags = lib.mkDefault [ "deploy-on-merge" ];
+            deployment.tags = lib.mkDefault [ "deploy" ];
             imports = [
               ./modules/homelab.nix
               ./modules/devices.nix

@@ -65,13 +65,16 @@ A service backs up its data by listing it in `homelab.backup.paths`. See
 [docs/hetzner](docs/hetzner/README.md) for how that works and how to restore.
 
 ```sh
-nix build --store ssh-ng://root@builder .#hydraJobs.<host>   # build on the builder
-nix copy --from https://cache.shaneplunkett.com/shane <path> # fetch a result, signed
-colmena apply --on <host>                                     # deploy over SSH
+scripts/quietly.sh colmena build --on <host>   # build here, one at a time, out of the way
+scripts/deploy.sh <host>                        # build and apply over SSH
+scripts/deploy.sh                               # every server, dns2 after dns1
+scripts/terraform.sh                            # plan; `apply` applies
 ```
 
-Flakes only see tracked files, so `git add` new files before building. CI
-builds what a pull request changes, so the desktop needn't build at all.
+Flakes only see tracked files, so `git add` new files before building.
+Builds happen on the desktop, through the wrapper
+([docs/desktop](docs/desktop/README.md#building-here)); CI only runs
+`scripts/check.sh`.
 
 ### Adding a host
 
@@ -101,26 +104,17 @@ New hosts are Incus containers, on PVE or Cube.
    eth0` on its Incus host asks afresh.
 3. Add the host's key to `modules/agenix/host-keys.nix`
    (`ssh-keyscan -t ed25519 <ip>`), name it in `agenix-rules.nix`, add it to
-   the secrets it needs, and `agenix -r` to rekey. The builder trusts hosts
-   from the same file, so this is also what lets it deploy there.
-4. Deploy it once by hand to join Tailscale and start its services. The
-   builder's Colmena SSH config reaches hosts over the LAN, and the desktop
-   doesn't evaluate the hive. Build the host on the builder, and have the
-   host fetch it through the cache. The host has neither the cache's key
-   nor its pull token yet, so pass the key from
-   `modules/services/attic/client.nix` and hand it a netrc for the fetch.
-   The cache leaves out whatever cache.nixos.org has, so the host
-   substitutes from both rather than `nix copy`ing from the cache alone:
+   the secrets it needs, and `agenix -r` to rekey. Shane's key is root on
+   every guest through `guest.nix`, which is what lets the desktop deploy
+   there.
+4. Deploy it once by hand to join Tailscale and start its services. Its
+   hive name doesn't resolve until it's on the tailnet, so push the first
+   build to its LAN address yourself:
 
    ```sh
-   path=$(nix build --no-link --print-out-paths --store ssh-ng://root@builder .#hydraJobs.<host>)
-   printf 'machine cache.shaneplunkett.com\npassword %s\n' "$(rbw get attic-pull-token)" \
-     | ssh root@<ip> 'umask 077; cat > /root/attic-netrc'
-   ssh root@<ip> "nix-store --realise $path \
-     --option extra-substituters https://cache.shaneplunkett.com/shane \
-     --option extra-trusted-public-keys <key> --option netrc-file /root/attic-netrc \
-     && rm /root/attic-netrc \
-     && nix-env -p /nix/var/nix/profiles/system --set $path \
+   path=$(scripts/quietly.sh nix build --no-link --print-out-paths .#hydraJobs.<host>)
+   nix copy --to ssh://root@<ip> "$path"
+   ssh root@<ip> "nix-env -p /nix/var/nix/profiles/system --set $path \
      && $path/bin/switch-to-configuration switch"
    ```
 
@@ -167,8 +161,10 @@ the host's `lanAddress`, and Terraform makes the UniFi rule.
 
 ## Changes and deploys
 
-How pull requests build, merges deploy, Terraform applies and updates arrive
-is in [docs/pve/builder.md](docs/pve/builder.md).
+CI runs `scripts/check.sh` and nothing else. Builds and deploys happen on
+the desktop, through `scripts/quietly.sh`, `scripts/deploy.sh` and
+`scripts/terraform.sh`; `AGENTS.md` has the routine and
+[ADR 0004](docs/adr/0004-the-desktop-builds-and-deploys.md) the why.
 
 ## Tools
 

@@ -2,8 +2,8 @@
 
 The Deck is an LCD model running NixOS through
 [Jovian-NixOS](https://github.com/Jovian-Experiments/Jovian-NixOS). It's a
-host in the hive like the desktop: the PR build check builds it on the
-builder, and merging never deploys it. It boots into Game Mode, and Switch to
+host in the hive like the desktop, and nothing deploys it: the desktop
+builds it and the Deck pulls the result. It boots into Game Mode, and Switch to
 Desktop opens Plasma. Why Jovian, and what it does and doesn't do, is in
 [the research](../research/2026-10-25-jovian-steam-deck.md).
 
@@ -16,12 +16,13 @@ instead, and joins once with `sudo tailscale up`.
 
 `nrs` doesn't work on the Deck: the flake's private inputs need the forge
 key, which the Deck doesn't have, and evaluating the hive there would take
-gigabytes. Switch it from the desktop instead. Once the PR's
-`build (deck)` check is green, the builder has put the system in the cache,
-so the Deck downloads it and nothing builds:
+gigabytes. Build it on the desktop instead, and the Deck pulls the result
+from the desktop's store, signed, over `ssh-ng`
+([the store as the cache](../workstation/README.md#the-store-as-the-cache)),
+so nothing compiles on the Deck:
 
 ```sh
-p=$(nix eval --raw .#hydraJobs.deck.outPath)
+p=$(scripts/quietly.sh nix build --no-link --print-out-paths .#hydraJobs.deck)
 ssh deck "sudo nix-env --profile /nix/var/nix/profiles/system --set $p && sudo $p/bin/switch-to-configuration switch"
 ```
 

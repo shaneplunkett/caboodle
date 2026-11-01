@@ -9,7 +9,7 @@ The cost is that Terraform's inputs live outside `terraform/`, so a path
 filter on that folder alone can't tell whether it needs to run. This record
 first chose a plan against state that skips the refresh as the gate, but
 that was never built. CI path-filters instead, on `terraform/`, `flake.nix`,
-`modules/devices.nix` and `scripts/terraform-ci.sh`. That runs Terraform for
+`modules/devices.nix` and `scripts/terraform.sh`. That runs Terraform for
 some hive edits it never reads, but misses none it does.
 
 ## Considered options
