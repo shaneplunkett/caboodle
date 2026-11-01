@@ -195,33 +195,16 @@ re-run it.
 
 ## Updates
 
-The weekly flake update calls `flake-update.yml` in `shane/workflows`, and
-its README covers how it works. It runs Friday night so the pull request is
-ready to review on Saturday, and it only moves the inputs that aren't pinned
-in `flake.nix`. Renovate moves the pinned ones. Its pull request comes from
-`forge-bot`, since a pull request can't ask its own author to review.
+Renovate opens two pull requests early on Sunday, nobody is asked to review
+them, and both merge themselves once the check passes. One holds every
+dependency update. The other is lock file maintenance, which runs
+`nix flake update` and so moves every input that isn't pinned in
+`flake.nix`; Renovate never groups it with anything else. The check builds
+nothing, so a bump that breaks a host lands anyway and shows up at the next
+`scripts/deploy.sh`. Revert it then. The `flake-update` skill still triages
+a lock file change when asked.
 
-`scripts/flake-update-notes.sh` adds the changelogs for nixpkgs,
-home-manager, nix-darwin and omniwm, and the `flake-update` skill triages
-the pull request. Those inputs stay out of Renovate, because a merge on
-green would skip the news and new evaluation warnings that only the weekly
-pull request shows. A warning doesn't fail a build, so nothing else would
-surface it.
-
-On GitHub, `.github/workflows/update.yml` calls the GitHub
-`flake-update.yml` half an hour after the forge's, as the `caboodle-agent`
-App, which commits the lock, opens the pull request and asks Shane to
-review it. Its description has the same changelogs and input changes, and
-not the package changes or new evaluation warnings: that run builds
-nothing, and the pull request's own `hosts` run builds the changed hosts.
-Surfacing the warnings there again is still to do. The branch is
-`update-github/flake-lock`, so the forge's `update/flake-lock` can't mirror
-over it, and until cutover the pull request is a preview like Renovate's,
-closed at the forge's next push; the half-hour offset keeps the forge's own
-update from closing it the moment it opens. At cutover the branch drops
-its prefix and the forge's caller goes.
-
-`ai-skills` doesn't wait for Friday. Each push to its `main` dispatches
+`ai-skills` doesn't wait for Sunday. Each push to its `main` dispatches
 `ai-skills.yml` here with forge-bot's token, which runs the same workflow
 with `only: ai-skills` on its own branch and merges once every host builds.
 The review happened in `ai-skills`, so a bad skill is fixed by reverting it
@@ -234,16 +217,15 @@ notice. The next `ai-skills` push clears it: the run commits the bump on
 current `main`, force-pushes `update/ai-skills`, and refreshes the same
 pull request. A push doesn't cancel a scheduled merge, so it goes through
 once the new head's checks pass. To land it sooner, rebase it with Update
-Branch. The weekly update merges by hand, so it only ever needs the Update
 Branch.
 
 ## Renovate
 
-Renovate runs on the builder every morning as `forge-bot`, for what a flake
-update doesn't move: container images in Nix modules, pinned flake inputs,
-the dev shell's `npx` packages, and Terraform providers. New pull requests
-default to a Sunday batch, and the repo's rules are in `renovate.json`. To
-run it now:
+Renovate runs on the builder every morning as `forge-bot`, on caboodle
+only. It moves container images in Nix modules, flake inputs, the dev
+shell's `npx` packages, Terraform providers and workflow pins. Only the
+Sunday run opens pull requests; the other mornings refresh one that's still
+open. The repo's rules are in `renovate.json`. To run it now:
 
 ```sh
 ssh root@builder systemctl start renovate
@@ -255,16 +237,17 @@ the real ones.
 
 ### Flake inputs
 
-Renovate only updates an input whose commit is written into `flake.nix`. One
-that's only in `flake.lock` gets nothing of its own. To hand an input to
-Renovate, pin it, then run `nix flake lock`:
+Lock file maintenance moves every input that's only in `flake.lock`. An
+input whose commit is written into `flake.nix` is pinned, and Renovate bumps
+it in the dependency pull request instead. To pin one, write it as one of
+these, then run `nix flake lock`:
 
 - `github:owner/repo/<commit>`
 - `git+https://github.com/owner/repo?ref=<branch>&rev=<commit>` to follow a
   branch, since `github:` won't take a branch and a commit together.
 
-Pinned inputs merge themselves: Renovate asks Forgejo to merge once the
-checks pass. That only works because `main` requires the build check
+Renovate's pull requests merge themselves: Renovate asks Forgejo to merge
+once the checks pass. That only works because `main` requires the build check
 (`terraform/forge-config.tf`). Without required checks, Forgejo merges on
 the first status it sees, pending or failed. The required contexts are globs
 over job names, so renaming a CI job, or giving a called workflow a `name:`,
@@ -278,16 +261,14 @@ nothing there requires a check yet and GitHub won't auto-merge without one.
 It merges on its next run once every check on the branch has passed, so a
 pinned input lands the morning after its pull request goes green.
 
-`minimumReleaseAge` is off for them, because `git-refs` has no release dates
-and the wait would hold every input forever.
+`minimumReleaseAge` is off for pinned inputs, because `git-refs` has no release
+dates and the wait would hold every input forever.
 
-Only the fast movers with nothing to review are pinned: `llm-agents` and the
-Homebrew taps, which share a pull request. Everything else waits for the
-weekly update, and these couldn't go to Renovate anyway:
+Only the fast movers are pinned: `llm-agents` and the Homebrew taps.
+Everything else moves with the lock file, and these can't be pinned anyway:
 
 - nixpkgs, because another input locks its own `nixpkgs` node.
 - electron-nixpkgs, which a pin would turn into a clone of nixpkgs.
-- The private inputs, since `renovate-github-token` can't read them.
 
 Moving an input between the two without moving its lock means editing its
 `original` in `flake.lock` to match the new URL, adding or dropping the
@@ -296,15 +277,15 @@ latest commit.
 
 ### Repos and lock files
 
-- Renovate finds every repo in the `shane` org through
-  `autodiscoverNamespaces`. Its default search stopped finding public repos
-  once the org went public. A new repo gets an onboarding pull request, and
-  closing it unmerged tells Renovate to leave the repo alone.
+- Renovate runs on `shane/caboodle` alone, named in `repositories`. The
+  forge's other repos get no Renovate.
 - It regenerates lock files with the tools in `runtimePackages`. A repo
   whose package manager isn't there gets an "Artifact update problem"
   comment with an empty error, so add the tool.
-- `renovate-github-token` is a read-only GitHub token, because GitHub won't
-  list tags and releases without one.
+- Its github.com token is the inputs token
+  ([below](#github-app-and-inputs-token)). GitHub won't list tags and
+  releases without a token, and Renovate hands the same one to
+  `nix flake update`, which needs it for the private inputs.
 
 ### On GitHub
 
@@ -314,17 +295,16 @@ winter, so inside the Sunday batch either way. Run workflow on its Actions
 page runs it now. Its global config is the `RENOVATE_CONFIG` in the
 workflow, the builder's `settings` with these differences:
 
-- It only runs on repos that already have a Renovate config, and onboards
-  nothing, since most of the account never had Renovate. To add a repo,
-  commit a `renovate.json` to it. Forks count, which takes in `vex-code`.
+- It only runs on caboodle (`autodiscoverFilter`), and onboards nothing.
 - A config has to extend `github>shaneplunkett/workflows`, which resolves on
   both forges. `local>shane/workflows` looks for `shane` on GitHub, which is
   someone else, so Renovate rejects the repo's config.
 - `force` makes `shaneplunkett` the reviewer, since `metrokitten` on GitHub
-  is also someone else, and turns off `platformAutomerge`.
+  is also someone else, and turns off `platformAutomerge`. It comes off at
+  cutover.
 - Commits go through GitHub's API (`platformCommit`), so GitHub signs them
   and authors them as `caboodle-agent[bot]`. The App's token also covers
-  github.com's tags and releases, so `renovate-github-token` isn't needed.
+  github.com's tags and releases, so the inputs token isn't needed.
 - Renovate's container installs `nix`, `uv`, `pnpm`, Go and Node when a
   lock file needs them, the same tools `runtimePackages` gives the builder.
 - Renovate reads a branch's Actions results as check runs, which needs the
@@ -363,7 +343,8 @@ plan's identity step moves the other bots onto it.
 - **The inputs token** is `github-inputs-token` (`INPUTS_TOKEN` in Actions),
   a fine-grained token with contents read on vex-brain, nix-config-private,
   ai-skills, noctalia-plugins and wallpapers, for fetching those inputs. It
-  never expires, since it can only read.
+  is also Renovate's github.com token on the builder. It never expires,
+  since it can only read.
 
 To replace the token, regenerate it on GitHub's fine-grained tokens page,
 then from `modules/agenix`:

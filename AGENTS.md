@@ -26,8 +26,9 @@ and the Mac mini. Read `README.md` for how it fits together.
   the `pr` skill, which opens it and assigns it to Shane for review. Done is
   a green check, plus the `Plan:` line from `scripts/terraform.sh` in the
   body when `terraform/` changed. Rebase onto `origin/main` before filing.
-- **Merge:** Shane merges, except the `ai-skills` bumps that merge
-  themselves once the check passes. Merging deploys nothing. Once a change
+- **Merge:** Shane merges, except Renovate's Sunday pull requests (every
+  dependency in one, the lock file in the other) and the `ai-skills` bumps,
+  which merge themselves once the check passes. Merging deploys nothing. Once a change
   is on `main`, deploy it from the desktop with `scripts/deploy.sh` and, if
   `terraform/` changed, `scripts/terraform.sh apply`, when Shane asks.
 - **CI:** runs `scripts/check.sh` and nothing else. `.forgejo/workflows/`

@@ -4,12 +4,17 @@
     "config:recommended",
     "github>shaneplunkett/workflows"
   ],
-  "reviewers": [
-    "metrokitten"
-  ],
   "dependencyDashboard": false,
   "prHourlyLimit": 0,
   "platformAutomerge": true,
+  "separateMajorMinor": false,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": [
+      "before 9am on sunday"
+    ]
+  },
   "nix": {
     "enabled": true
   },
@@ -50,85 +55,23 @@
   ],
   "packageRules": [
     {
-      "description": "One PR for the Terraform providers",
-      "matchManagers": [
-        "terraform"
-      ],
-      "groupName": "Terraform providers"
-    },
-    {
-      "description": "UniFi's provider on its own, since a bump can change the live network",
+      "description": "Every update in one weekly PR, which merges itself once the check passes",
       "matchPackageNames": [
-        "ubiquiti-community/unifi"
+        "*"
       ],
-      "groupName": "UniFi provider"
-    },
-    {
-      "description": "One PR for the arr stack's container images",
-      "matchFileNames": [
-        "modules/services/arr/**"
-      ],
-      "groupName": "arr containers"
-    },
-    {
-      "description": "One PR for openGym's api and web images",
-      "matchPackageNames": [
-        "ghcr.io/duartesantos8/opengym-*"
-      ],
-      "groupName": "openGym"
-    },
-    {
-      "description": "One PR for the tools pinned in flake.nix",
-      "matchManagers": [
-        "custom.regex"
-      ],
-      "matchFileNames": [
-        "flake.nix"
-      ],
-      "groupName": "flake tools"
-    },
-    {
-      "description": "One PR for workflow actions, apart from the shared workflows' pins, which land on their own as soon as a release is tagged",
-      "matchManagers": [
-        "github-actions"
-      ],
-      "groupName": "workflow actions",
-      "matchPackageNames": [
-        "!shaneplunkett/workflows"
-      ]
-    },
-    {
-      "description": "One PR per pinned flake input, merged as soon as CI builds it. git-refs has no release dates, so minimumReleaseAge would hold every input forever.",
-      "matchManagers": [
-        "nix"
-      ],
-      "commitMessageTopic": "flake input {{depName}}",
+      "groupName": "all dependencies",
+      "groupSlug": "all",
       "schedule": [
-        "at any time"
+        "before 9am on sunday"
       ],
-      "minimumReleaseAge": null,
-      "automerge": true,
-      "automergeType": "pr"
+      "automerge": true
     },
     {
-      "description": "The update workflow owns the inputs on the forge, which Renovate can't reach over SSH",
+      "description": "git-refs has no release dates, so minimumReleaseAge would hold every pinned flake input forever",
       "matchManagers": [
         "nix"
       ],
-      "matchPackageNames": [
-        "/^ssh://forgejo@forge//"
-      ],
-      "enabled": false
-    },
-    {
-      "description": "One PR for the Homebrew taps",
-      "matchManagers": [
-        "nix"
-      ],
-      "matchDepNames": [
-        "/^homebrew-/"
-      ],
-      "groupName": "Homebrew taps"
+      "minimumReleaseAge": null
     }
   ]
 }

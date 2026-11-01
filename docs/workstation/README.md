@@ -101,7 +101,7 @@ The wallpapers are the forge's `shane/wallpapers` repo, a flake input read
 from the store. The desktop's Noctalia rotates through it, and the MacBook
 links it to `~/Pictures/Wallpapers` for System Settings. The Deck and the
 mini don't get it, since neither imports a desktop shell. Adding one is a push to that repo, then
-`nix flake update wallpapers` here, or the Friday update. The input is
+`nix flake update wallpapers` here, or the Sunday lock file update. The input is
 shallow, so the history of culled images never lands in the store. Anything
 under 3840 wide is stretched on the desktop's 4K screen, so look at those
 at full size before adding them.
