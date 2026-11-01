@@ -1,5 +1,6 @@
 { inputs, ... }:
 {
+  environment.variables.SHA_276_PROBE = "1";
   imports = [
     inputs.home-manager.darwinModules.home-manager
     ./settings.nix
