@@ -1,0 +1,29 @@
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/fetch-proof.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OUT: /nix/store/xk82kv5w027abd2zh2dz9llj1cdk5w12-terraform-1.16.6
+    steps:
+      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
+      - name: Add the upstreams Attic filters against, and no Attic
+        run: |
+          printf 'extra-substituters = %s\nextra-trusted-public-keys = %s\n' \
+            "https://nix-community.cachix.org https://noctalia.cachix.org https://cache.numtide.com" \
+            "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=" \
+            | sudo tee -a /etc/nix/nix.conf
+          sudo systemctl restart nix-daemon
+      - name: Fetch terraform's closure, building nothing
+        run: |
+          nix-store --realise "$OUT" --max-jobs 0 2>&1 | tee "$RUNNER_TEMP/fetch.log"
+          grep "copying path '$OUT'" "$RUNNER_TEMP/fetch.log"
+          echo "Built: $(grep -c "^building '" "$RUNNER_TEMP/fetch.log" || true)"
+          nix path-info --sigs "$OUT"
