@@ -416,16 +416,6 @@
           };
         };
 
-        gym = incus "gym" {
-          homelab.lanAddress = "192.168.1.209";
-          homelab.guest = {
-            host = "pve";
-            cores = 1;
-            memory = 1024;
-            mac = "BC:24:11:C4:3F:EC";
-          };
-        };
-
         rss = incus "rss" {
           homelab.lanAddress = "192.168.1.153";
           homelab.guest = {
