@@ -15,10 +15,7 @@ let
   dumps = "${stateDir}/dumps";
   sqlite3 = lib.getExe' pkgs.sqlite "sqlite3";
   model = "claude-haiku-5-5";
-  clients = map (host: nodes.${host}.config.homelab.lanAddress) [
-    "ingress"
-    "dashboard"
-  ];
+  ingress = nodes.ingress.config.homelab.lanAddress;
 in
 {
   homelab = {
@@ -108,7 +105,7 @@ in
     };
   };
 
-  networking.firewall.extraCommands = lib.concatMapStrings (ip: ''
-    iptables -A nixos-fw -p tcp -s ${ip} --dport ${toString port} -j nixos-fw-accept
-  '') clients;
+  networking.firewall.extraCommands = ''
+    iptables -A nixos-fw -p tcp -s ${ingress} --dport ${toString port} -j nixos-fw-accept
+  '';
 }

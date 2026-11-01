@@ -14,7 +14,7 @@ mostly fail, and a switch landing mid-work would swap apps out from under
 Shane.
 
 For the same reason it has no `homelab.lanAddress`, and monitoring is off,
-since a sleeping laptop would trip HostDown all day.
+since Prometheus can't scrape a sleeping laptop.
 
 ## Switching
 

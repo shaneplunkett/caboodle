@@ -4,7 +4,6 @@
     ../modules/services/smartctl/alerts.nix
     ../modules/services/nas/alerts.nix
     ../modules/services/alertmanager
-    ../modules/services/gatus/alerts.nix
     ../modules/services/grafana
     ../modules/services/loki
     ../modules/services/blocky/monitoring.nix
@@ -12,14 +11,7 @@
     ../modules/services/incus/monitoring.nix
     ../modules/services/blackbox
     ../modules/services/unpoller
-    ../modules/services/tailscale/alerts.nix
     ../modules/services/backup/monitoring.nix
     ../modules/services/vex-brain/alerts.nix
-    ../modules/services/forgejo/alerts.nix
-    ../modules/services/freshrss/alerts.nix
-    ../modules/services/immich/alerts.nix
-    ../modules/services/plex/alerts.nix
-    ../modules/services/paperless/alerts.nix
-    ../modules/services/paperless-gpt/alerts.nix
   ];
 }

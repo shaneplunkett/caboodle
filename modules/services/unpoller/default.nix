@@ -3,10 +3,6 @@ let
   secrets = config.age.secrets;
 in
 {
-  imports = [
-    ./alerts.nix
-  ];
-
   homelab.secrets = [ "unpoller-api-key" ];
 
   age.secrets.unpoller-api-key.owner = "unifi-poller";

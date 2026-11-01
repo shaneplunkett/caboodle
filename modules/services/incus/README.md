@@ -66,7 +66,7 @@ needs no certificate. The rest of the API still wants one.
 Node exporter's CPU figures inside a guest are not the guest's own. lxcfs
 narrows `/proc/stat` to the guest's pinned CPUs, but on cgroup v2 the times
 are the host's, so a guest sharing CPUs with the builder looks as busy as
-the builder. The CPU alert and the dashboard read Incus instead.
+the builder. The dashboard reads Incus instead.
 
 The pool alerts read Incus's pool size and used bytes, which for LVM are the
 thin pool's data use, the same as `lvs`. Two gaps need covering beside them.

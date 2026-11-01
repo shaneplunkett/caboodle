@@ -77,10 +77,6 @@ Maintainerr calling the arr apps on `/api/`, or SABnzbd fetching NZBs from
 Prowlarr. Every open path still needs that app's API key. Before gating a new
 app, search the arr host's `/var/lib` for its hostname to find what calls it.
 
-Glance's tiles for gated apps check the app's LAN address directly, because
-through ingress they'd hit the sign-in redirect and look up even when the app
-was down.
-
 - **Pocket ID doesn't verify emails** without a mail server, so every
   `email_verified` claim is false. oauth2-proxy refuses those by default,
   which shows up as a 500 after signing in. It runs with

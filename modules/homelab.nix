@@ -125,18 +125,6 @@
       };
 
       thresholds = {
-        memoryAvailable = lib.mkOption {
-          type = lib.types.float;
-          default = 0.10;
-          description = "Alert when the free share of memory drops below this.";
-        };
-
-        cpu = lib.mkOption {
-          type = lib.types.float;
-          default = 0.9;
-          description = "Alert when sustained CPU use goes above this share.";
-        };
-
         disk = lib.mkOption {
           type = lib.types.float;
           default = 0.85;

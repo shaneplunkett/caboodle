@@ -22,8 +22,7 @@ sign into. Recovery is `git clone` from the folder.
 
 The token goes to git as an `Authorization` header in the environment, so
 it never lands in a repo's config or on the command line. A repo that fails
-doesn't stop the others; the unit fails at the end and
-`mirror.service` is in the guest's monitored units, so the failure alerts.
+doesn't stop the others; the unit fails at the end.
 
 `journalctl -u mirror` shows each run, and `systemctl start mirror` runs one
 now.

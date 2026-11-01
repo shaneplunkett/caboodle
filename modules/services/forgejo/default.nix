@@ -72,8 +72,6 @@ let
   };
 in
 {
-  imports = [ ./workflows.nix ];
-
   homelab = {
     secrets = [
       "forgejo-oidc-client-secret"

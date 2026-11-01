@@ -46,7 +46,7 @@ service stopped.
 
 `modules/services/freshrss/theme` adds a Catppuccin theme to the FreshRSS
 package, picked per user under Settings, Display. It's Latte in light mode and
-Mocha in dark, to match Glance, and it sits on top of the stock Origine theme
+Mocha in dark, and it sits on top of the stock Origine theme
 so FreshRSS updates mostly carry through.
 
 - **Origine's dark mode is cut out at build time.** Its dark rules are more

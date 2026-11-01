@@ -1,13 +1,10 @@
 {
   lib,
   nodes,
-  options,
   pkgs,
   ...
 }:
 let
-  byThreshold = import ../prometheus/thresholds.nix { inherit lib nodes options; } "name";
-  links = import ../grafana/links.nix;
   incusHosts = lib.filterAttrs (
     _: node: node.config.homelab.monitoring.enable && node.config.virtualisation.incus.enable or false
   ) nodes;
@@ -107,26 +104,7 @@ in
             {
               name = "incus";
               rules =
-                byThreshold "cpu" (
-                  {
-                    value,
-                    percent,
-                    matcher,
-                  }:
-                  {
-                    alert = "GuestCpuHigh";
-                    expr = "sum without (cpu, mode) (rate(incus_cpu_seconds_total{${matcher}}[5m])) / incus_cpu_effective_total{${matcher}} > ${toString value}";
-                    for = "15m";
-                    labels.severity = "warning";
-                    annotations = {
-                      summary = "{{ $labels.name }} on {{ $labels.host }} is at {{ $value | humanizePercentage }} of its CPUs";
-                      condition = "CPU over ${percent} for 15m";
-                      check = "ssh {{ $labels.name }} top -bn1 -c | head -20";
-                      dashboard = links.hostHealth "{{ $labels.name }}";
-                    };
-                  }
-                )
-                ++ filling {
+                filling {
                   name = "IncusPool";
                   ratio = "incus_storage_pool_used_bytes / incus_storage_pool_size_bytes";
                   summary = "Incus pool {{ $labels.pool }} on {{ $labels.host }} is {{ $value | humanizePercentage }} full";
@@ -173,23 +151,12 @@ in
                     };
                   }
                   {
-                    alert = "HardwareTooHot";
-                    expr = "node_hwmon_temp_celsius{${hostMatcher}} > node_hwmon_temp_crit_celsius{${hostMatcher}} - 5";
-                    for = "10m";
-                    labels.severity = "warning";
-                    annotations = {
-                      summary = "{{ $labels.chip }} {{ $labels.sensor }} on {{ $labels.host }} is at {{ $value }}°C";
-                      condition = "Within 5°C of its critical temperature for 10m";
-                      check = "ssh {{ $labels.host }} grep . /sys/class/hwmon/*/name /sys/class/hwmon/*/temp*_input";
-                    };
-                  }
-                  {
                     alert = "IncusMetricsDown";
                     expr = ''up{job="incus"} == 0'';
                     for = "5m";
                     labels.severity = "warning";
                     annotations = {
-                      summary = "Incus on {{ $labels.host }} isn't serving metrics, so its guest CPU and pool alerts are blind";
+                      summary = "Incus on {{ $labels.host }} isn't serving metrics, so its pool alerts are blind";
                       condition = "Incus metrics scrape failing for 5m";
                       check = "ssh {{ $labels.host }} incus config get core.metrics_authentication";
                     };

@@ -1,7 +1,6 @@
 let
   shane = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINfq31bP+xQwlO/joZeGU6LaLYZXV2ql7TLSv5ToVUtJ";
   inherit (import ./host-keys.nix)
-    dashboard
     monitoring
     ingress
     dns1
@@ -37,7 +36,6 @@ in
   ];
   "discord-webhook.age".publicKeys = [
     shane
-    dashboard
     monitoring
 
   ];
@@ -59,14 +57,6 @@ in
     shane
     ingress
 
-  ];
-  "linear-api-key.age".publicKeys = [
-    shane
-    dashboard
-  ];
-  "backup-dashboard.age".publicKeys = [
-    shane
-    dashboard
   ];
   "backup-plex.age".publicKeys = [
     shane
@@ -106,7 +96,6 @@ in
   ];
   "tailscale-oauth.age".publicKeys = [
     shane
-    dashboard
     monitoring
     ingress
     dns1
@@ -215,10 +204,6 @@ in
     shane
     forge
   ];
-  "immich-glance-api-key.age".publicKeys = [
-    shane
-    dashboard
-  ];
   "forgejo-runner-secret.age".publicKeys = [
     shane
     forge
@@ -274,10 +259,6 @@ in
     shane
     builder
   ];
-  "backup-r2-dashboard.age".publicKeys = [
-    shane
-    dashboard
-  ];
   "backup-r2-plex.age".publicKeys = [
     shane
     plex
@@ -317,10 +298,6 @@ in
   "backup-r2-paper.age".publicKeys = [
     shane
     paper
-  ];
-  "cloudflare-r2-usage.age".publicKeys = [
-    shane
-    monitoring
   ];
   "backup-music.age".publicKeys = [
     shane
@@ -374,7 +351,6 @@ in
   ];
   "attic-netrc.age".publicKeys = [
     shane
-    dashboard
     monitoring
     ingress
     dns1

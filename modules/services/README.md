@@ -1,11 +1,9 @@
 # Services
 
 One folder per service. `default.nix` is the NixOS module a host imports, and
-anything bigger (alert rules, templates, widgets) sits in its own file next to
+anything bigger (alert rules, templates, dashboards) sits in its own file next to
 it. Alert rules for a service live with that service, even when they're loaded
-by Prometheus or Loki on another host.
-
-Glance has its own [README](glance/README.md).
+by Prometheus on another host.
 
 ## Alertmanager
 
@@ -22,13 +20,6 @@ Glance has its own [README](glance/README.md).
 - Inside a container, node exporter's CPU numbers come from the host's
   counters and are wrong. Guests' CPU comes from Incus instead (see the
   [Incus README](incus/README.md#metrics)).
-
-## Loki
-
-- With `auth_enabled = false` the tenant is called `fake`. The ruler's local
-  storage expects rules under `<dir>/fake/`, hence the odd path.
-- Kernel OOM messages aren't visible inside a container. The OOM alert matches
-  systemd's "OOM killer" log line in `init.scope` instead.
 
 ## Alloy
 
@@ -50,11 +41,6 @@ Glance has its own [README](glance/README.md).
 - Home Assistant writes every line to stderr, so journald marks them all
   `err`. Its block reads the real level from HA's own text and folds each
   traceback into the line that logged it.
-
-## Gatus
-
-- Conditions only compare integers, so fractional values (like CPU ratios)
-  can't be checked there. Leave those to Prometheus.
 
 ## nginx-ingress
 

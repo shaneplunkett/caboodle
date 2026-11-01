@@ -326,14 +326,6 @@
           imports = [ ./hosts/deck ];
         };
 
-        dashboard = incus "dashboard" {
-          homelab.lanAddress = "192.168.1.152";
-          homelab.guest = {
-            host = "pve";
-            mac = "BC:24:11:C0:8C:06";
-          };
-        };
-
         monitoring = incus "monitoring" {
           homelab.lanAddress = "192.168.1.78";
           homelab.guest = {

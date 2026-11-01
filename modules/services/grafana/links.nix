@@ -7,5 +7,4 @@ in
     host: units:
     "${grafana}/logs/logs?var-host=${host}"
     + builtins.concatStringsSep "" (map (unit: "&var-unit=${unit}") units);
-  dns = "${grafana}/dns/dns";
 }

@@ -37,7 +37,6 @@ in
 
     environment = {
       IMMICH_TRUSTED_PROXIES = nodes.ingress.config.homelab.lanAddress;
-      IMMICH_TELEMETRY_INCLUDE = "all";
       IMMICH_LOG_FORMAT = "json";
     };
 
@@ -64,9 +63,4 @@ in
       };
     };
   };
-
-  networking.firewall.allowedTCPPorts = [
-    8081
-    8082
-  ];
 }

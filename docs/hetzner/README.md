@@ -84,8 +84,8 @@ restic snapshots
 
 A service with a `prepare` step backs up a dump rather than its live files,
 so restore that, copy it into place while the service is stopped, and chown
-it to the service's user. For Gatus that's `backup.db` over `data.db`, and
-for FreshRSS it's `users/<user>/backup.sqlite` over `db.sqlite`.
+it to the service's user. For FreshRSS that's `users/<user>/backup.sqlite`
+over `db.sqlite`.
 
 ### Monitoring
 

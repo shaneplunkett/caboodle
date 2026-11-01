@@ -25,8 +25,7 @@ overwritten on the next deploy that touches it.
 ## Actions
 
 Workflows live in `.forgejo/workflows/` and run on the builder. See
-[builder.md](builder.md). `ForgejoWorkflowFailing` fires in Discord when the
-last run of a workflow on a default branch failed.
+[builder.md](builder.md).
 
 ## Configuration in Terraform
 

@@ -48,7 +48,7 @@ What the workstations share is in
 [docs/workstation](docs/workstation/README.md).
 
 Modules can read the whole hive through colmena's `nodes` and `name`
-arguments, so things like scrape targets, log shipping and dashboard tiles are
+arguments, so things like scrape targets, log shipping and ingress routes are
 generated from the hive instead of kept as hand-written lists.
 
 Every address on the LAN is written once. A host's is its
@@ -140,8 +140,10 @@ Prometheus, Alertmanager, Loki and Grafana run on the monitoring host. Every
 NixOS host ships its journal to Loki, and every host is scraped unless it
 turns `homelab.monitoring` off, as the desktop does. Alert rules
 live next to the service they watch, and everything routes through
-Alertmanager to Discord. Gatus on the dashboard host watches the monitoring
-stack itself, so a dead Alertmanager still gets noticed.
+Alertmanager to Discord. They only cover what loses data quietly: disks
+filling, SMART, and backups failing or going stale. Anything else, look in
+Grafana. Alertmanager's always-firing Watchdog pings healthchecks.io every
+minute, so a dead Alertmanager still gets noticed.
 
 When the internet itself is broken, see
 [docs/internet-down.md](docs/internet-down.md).

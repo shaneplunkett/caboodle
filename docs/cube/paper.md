@@ -73,7 +73,7 @@ Paperless's own AI.
 
 Its UI at `https://papergpt.shaneplunkett.com` has no login, so it sits
 behind the oauth2-proxy gate, and the host's firewall only lets the ingress
-and the dashboard reach its port.
+reach its port.
 
 - **Leave `paperless-gpt-auto` unused.** That tag runs its title, tag and
   metadata suggestions, which would fight Paperless's.
@@ -99,8 +99,7 @@ an Anthropic key. From `modules/agenix`:
 
 The nightly backup runs Paperless's exporter first and backs up its output,
 which holds the originals, the archived copies and a manifest of everything
-in the database. The exporter stops Paperless while it runs, so the unit
-alerts wait 15 minutes.
+in the database. The exporter stops Paperless while it runs.
 
 To restore, rebuild the host, `restic-homelab restore` `/var/lib/paperless/export`,
 and run `paperless-manage document_importer /var/lib/paperless/export` on the
