@@ -336,7 +336,11 @@ deletes any GitHub branch the forge doesn't have. So every pull request
 Renovate opens on GitHub closes at the forge's next push, and these are
 only a preview. Its branches start with `renovate-github/` so the forge's
 own `renovate/` branches can't overwrite them, which would leave Renovate
-treating the pull request as edited by someone else. The prefix also keeps
+treating the pull request as edited by someone else. `branchPrefixOld` is
+set to the same prefix, because its default is `renovate/`: left alone,
+Renovate adopted the forge's mirrored branch as its own old-prefix branch,
+saw `forge-bot`'s commit on it as someone else's edit, and skipped the
+update without a word at its normal log level. The prefix also keeps
 the closed ones away from cutover: Renovate skips any update whose pull
 request was closed unmerged, and it matches them by branch name, so
 dropping the prefix at cutover starts GitHub clean.
