@@ -1,29 +1,27 @@
 on:
+  schedule:
+    # Friday 22:30 Melbourne (21:30 outside daylight saving), ready for
+    # Saturday, and half an hour after the forge's own update, whose push
+    # would otherwise mirror over and close this one straight away.
+    - cron: "30 11 * * 5"
   workflow_dispatch:
-  pull_request:
-    paths:
-      - ".github/workflows/tailnet.yml"
+
+concurrency:
+  group: flake-update
+  cancel-in-progress: true
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  join:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: shaneplunkett/workflows/tailnet@v2.0.0
-        with:
-          client-id: ${{ vars.TAILSCALE_CLIENT_ID }}
-          audience: ${{ vars.TAILSCALE_AUDIENCE }}
-      - name: Show the runner's node and its tag
-        run: tailscale status --json | jq '.Self | {HostName, Tags}'
-      - name: Reach atticd over the tailnet, which refuses a request without a token
-        run: |
-          code=$(curl -sS --retry 5 --retry-delay 3 -m 20 -o /dev/null -w '%{http_code}' \
-            http://cache.tail1d49f8.ts.net:8080/shane/nix-cache-info)
-          echo "atticd answered $code"
-          test "$code" = 401
-      - name: Reach sshd on dns1 over the tailnet
-        run: timeout 30 bash -c 'exec 3<>/dev/tcp/dns1.tail1d49f8.ts.net/22 && head -1 <&3'
+  update:
+    uses: shaneplunkett/workflows/.github/workflows/flake-update.yml@sha-275
+    with:
+      title: "throwaway: SHA-275 flake update proof (do not merge)"
+      branch: update-github/throwaway-sha-275
+      reviewer: ""
+      notes: scripts/flake-update-notes.sh
+    secrets:
+      INPUTS_TOKEN: ${{ secrets.INPUTS_TOKEN }}
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
