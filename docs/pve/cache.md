@@ -60,7 +60,7 @@ closure with `attic push` straight after the build, because the runner's
 store is gone when the job ends. It reaches the guest by its tailnet name,
 pulls with the pull token in Nix's netrc, and keeps the push token in the
 push step alone. The push leaves out anything an upstream signed, as the
-builder's does. The builder doc's [Building on GitHub](builder.md#building-on-github)
+builder's does, so the runner pulls from those upstreams itself. The builder doc's [Building on GitHub](builder.md#building-on-github)
 has the rest.
 
 ## Tokens

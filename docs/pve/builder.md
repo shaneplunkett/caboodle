@@ -404,11 +404,17 @@ nothing evaluates twice.
 
 A changed Linux host's job reclaims disk, joins the tailnet as `tag:ci`,
 adds the cache's tailnet name as a substituter with the pull token in a
-netrc, and builds. It pushes the closure with `attic push` and the push
+netrc, and builds. It also pulls from nix-community, noctalia and numtide,
+the caches in `modules/workstation/nix-settings.nix` and the forge
+runner's module, which the caller lists again since a workflow can't read
+Nix. Keep all three lists, and the cache's upstream keys, in step: Attic
+leaves out whatever those upstreams signed, so a runner missing one builds
+those paths from source. It pushes the closure with `attic push` and the push
 token, from the `ATTIC_PULL_TOKEN` and `ATTIC_PUSH_TOKEN` Actions secrets
 ([cache](cache.md#tokens)). Before building it logs a dry run, `builds N
-derivations and fetches M paths`, so a log tells fetching from compiling at
-a glance, and the build's own lines say which cache each path came from. The
+derivations, fetches M paths, and can't place K`, so a log tells fetching
+from compiling at a glance. The K are paths no cache has that Nix builds
+anyway, and they get a warning, and the build's own lines say which cache each path came from. The
 Macs only evaluate there until they build on macOS runners. A pull request
 from a fork builds nothing: it gets no secrets and no OIDC token.
 
@@ -432,6 +438,17 @@ seconds pushing 3 paths, the rest being cached or upstream. A fresh runner
 on the tailnet then fetched all 616 paths of gym's closure with
 `--max-jobs 0`, 90 from the cache and 526 from cache.nixos.org, and built
 nothing.
+
+The same day, a pull request that took gym out of the hive changed eight
+Linux hosts, which built side by side. The builder's job took 11 minutes,
+the Deck's 1 hour 40 and the desktop's 1 hour 45. Each evaluated in under
+3 minutes, reclaimed disk in about 2, and had 114 to 116 GiB free after.
+Nearly all of the Deck's and the desktop's time was one package: both
+compiled `terraform-1.16.6` from source, 1 hour 29 minutes each, since the
+runners didn't yet pull from nix-community and numtide, the only caches
+with it. The rest of their builds took 7 and 9 minutes, mostly fetching
+the desktop's 8.3 GiB, and its push 1.5 minutes. The longest a build can
+take is whatever no cache has, compiled on 4 vCPUs.
 
 ## Registration
 
