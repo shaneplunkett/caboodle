@@ -13,6 +13,9 @@
 
   catppuccin.autoEnable = lib.mkDefault false;
 
+  nix.daemonCPUSchedPolicy = "idle";
+  nix.daemonIOSchedClass = "idle";
+
   _module.args = {
     palette = import ../../../home/palette.nix;
     typography = import ../../../home/typography.nix;

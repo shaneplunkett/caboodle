@@ -16,6 +16,28 @@ tailscaled overwrites `/etc/resolv.conf` and fights NetworkManager.
 `FallbackDNS` is empty so resolved never goes round Blocky to a public
 resolver, and its mDNS is off because Avahi already has port 5353.
 
+## Building here
+
+The desktop builds the hive, and it's also where Shane plays games, so a
+build never gets to win against what she's doing. Everything goes through
+`scripts/quietly.sh`, which holds one lock per machine
+(`$XDG_RUNTIME_DIR/caboodle-build.lock`) so a second build waits rather
+than racing the first, runs the command under `SCHED_IDLE` and idle disk
+I/O in a scope with `CPUWeight=idle`, and caps that scope at 20 GB so a
+runaway evaluation dies before the machine does. The daemon's own builds
+run at idle CPU and I/O too, from `nix.daemon*` in
+`modules/workstation/nixos`. A hook blocks agents from the bare commands.
+
+```sh
+scripts/quietly.sh colmena build --on plex
+scripts/quietly.sh colmena apply --on plex
+```
+
+A whole-hive evaluation peaks around 15 GB and takes a few minutes, so
+build the host that changed. Two at once is what used to take the box down.
+`nrs` isn't wrapped: it's Shane's own switch, and the daemon's idle
+priority already covers the build half of it.
+
 ## Switching
 
 Wait for the PR's `build (desktop)` check to go green first, so the switch

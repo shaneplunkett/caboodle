@@ -8,6 +8,11 @@
             "type": "command",
             "command": "sh \"$(git rev-parse --show-toplevel)/scripts/block-hook-bypass.sh\"",
             "statusMessage": "Checking the git hooks aren't skipped"
+          },
+          {
+            "type": "command",
+            "command": "sh \"$(git rev-parse --show-toplevel)/scripts/block-raw-builds.sh\"",
+            "statusMessage": "Checking builds go through scripts/quietly.sh"
           }
         ]
       }

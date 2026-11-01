@@ -6,17 +6,15 @@ and the Mac mini. Read `README.md` for how it fits together.
 
 ## Making a change
 
-- **Build:** CI builds the hosts a pull request changes on the builder, so
-  nothing evaluates or builds on Shane's desktop: a full evaluation of the
-  hive takes gigabytes, and a few at once take the machine down. The local
-  gate is `scripts/check.sh`. For one host's answer before filing,
-  `nix build --store ssh-ng://root@builder .#hydraJobs.<host>` builds it on
-  the builder and leaves nothing here. To run a result here, fetch it
-  through the cache, `nix copy --from https://cache.shaneplunkett.com/shane
-  <path>`, since the builder signs nothing itself and a copy over SSH is
-  refused as unsigned. `docs/pve/builder.md` has the by-hand gotchas.
-  Flakes ignore untracked files, so `git add` new files first. Nix code
-  reads for itself, with no comments.
+- **Build:** builds and evaluations run here, on Shane's desktop, and only
+  through `scripts/quietly.sh`: `scripts/quietly.sh colmena build --on
+  <host>`, or `apply` to deploy it. The wrapper runs one at a time, at idle
+  priority, capped at 20 GB, so a build never gets in the way of whatever
+  Shane is doing on the machine, and a hook blocks the bare commands. A
+  whole-hive evaluation is about 15 GB and a few minutes, so build the host
+  you changed, not the hive. The local gate is `scripts/check.sh`. Flakes
+  ignore untracked files, so `git add` new files first. Nix code reads for
+  itself, with no comments.
 - **Pull request:** land every change through a pull request on the forge
   (`origin`; GitHub is a mirror of it). Commit on a branch and file it with
   the `pr` skill, which opens it and assigns it to Shane for review. Done is a

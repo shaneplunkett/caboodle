@@ -191,7 +191,8 @@
               pkgs.bun
               pkgs.git
               pkgs.pre-commit
-            ];
+            ]
+            ++ nixpkgs.lib.optional pkgs.stdenv.hostPlatform.isDarwin pkgs.flock;
 
             shellHook = ''
               if hook="$(git rev-parse --git-path hooks/pre-commit 2>/dev/null)" && [ ! -e "$hook" ]; then
