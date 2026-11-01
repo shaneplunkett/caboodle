@@ -103,15 +103,16 @@ because Forgejo leaves a job with an empty matrix blocked for good. The
 On GitHub, `.github/workflows/hosts.yml` posts the same comment from the
 `caboodle-agent` App, with the same `<!-- derivation-diff -->` marker, so
 each push edits it. Each host is evaluated on its own hosted runner (see
-below), and the `hosts` job gathers them and compares the head with the
-mapping `main` left for the merge base. Each push to `main` uploads that
-mapping as the artifact `hosts-<sha>`, kept 90 days, the most a public repo
-allows. A merge base without one, older than that or from before this
-landed, is evaluated in a second matrix once the head's finishes. `hosts`
-will be the required check at cutover, so it runs and fails when an
-evaluation fails, rather than being skipped, which GitHub counts as a pass.
-Nothing is built there yet. The `hosts.yml` section of the workflows README
-has the details.
+below) and compared with the mapping `main` left for the merge base. Each
+push to `main` uploads that mapping as the artifact `hosts-<sha>`, kept 90
+days, the most a public repo allows. A merge base without one, older than
+that or from before this landed, is evaluated in a matrix of its own
+before the head's. Each changed Linux host then builds in the same job and
+pushes to the cache ([Building on GitHub](#building-on-github)), and the
+`hosts` job posts the comment once they've all finished. `hosts` will be
+the required check at cutover, so it runs and fails when an evaluation,
+build or push fails, rather than being skipped, which GitHub counts as a
+pass. The `hosts.yml` section of the workflows README has the details.
 
 `main` won't merge a pull request that's behind it. Use Update Branch's
 rebase option, since the button merges `main` in by default, or rebase it
@@ -389,8 +390,48 @@ paths and memory within 0.01 GiB.
 The runner's `/` has 86 GiB free before anything is deleted, not the 14 GB
 GitHub documents. Deleting the Android, .NET, Haskell and tool caches and
 the Docker images takes it to 114 GiB, in 74 to 316 seconds, about two
-minutes on average. Evaluating needs none of that, so the `evaluate` jobs
-skip it; builds will need it.
+minutes on average. Evaluating needs none of that, so only a job that
+builds reclaims it, after evaluating.
+
+## Building on GitHub
+
+Shane chose on 1 November 2026 to build in the diff's own per-host jobs
+rather than with Atelier ([the PRD](../prd/forge-and-builder.md) has why).
+So a pull request's comment arrives once its slowest build has finished,
+not before the builds start as on the forge. Each job builds the derivation
+it evaluated, so the build is the very derivation the diff compared, and
+nothing evaluates twice.
+
+A changed Linux host's job reclaims disk, joins the tailnet as `tag:ci`,
+adds the cache's tailnet name as a substituter with the pull token in a
+netrc, and builds. It pushes the closure with `attic push` and the push
+token, from the `ATTIC_PULL_TOKEN` and `ATTIC_PUSH_TOKEN` Actions secrets
+([cache](cache.md#tokens)). Before building it logs a dry run, `builds N
+derivations and fetches M paths`, so a log tells fetching from compiling at
+a glance, and the build's own lines say which cache each path came from. The
+Macs only evaluate there until they build on macOS runners. A pull request
+from a fork builds nothing: it gets no secrets and no OIDC token.
+
+A rerun builds every changed host again. With the closure in the cache,
+that's all fetching and the dry run counts 0 derivations to build, but the
+job still downloads the closure. Skipping it would mean checking every path
+in the closure, since a cached top-level path says nothing about its
+dependencies, and Attic's collection doesn't trace references.
+
+A push to `main` compares with the commit before it, so it builds exactly
+what that merge changed and leaves it in the cache for the hosts Shane
+switches by hand. Pushes queue rather than cancel, but GitHub keeps only one
+waiting, so a push that's replaced while it waits never runs. The next one
+compares with it, not with the last one that built. Its hosts were built on
+its pull request, so they're cached anyway.
+
+On 1 November 2026, at `89c50374`, gym alone changed. Its job took 3
+minutes 30 seconds: 46 seconds evaluating, 2 minutes reclaiming disk, 15
+seconds building 6 derivations and fetching 610 paths (620 MiB), and 3
+seconds pushing 3 paths, the rest being cached or upstream. A fresh runner
+on the tailnet then fetched all 616 paths of gym's closure with
+`--max-jobs 0`, 90 from the cache and 526 from cache.nixos.org, and built
+nothing.
 
 ## Registration
 
