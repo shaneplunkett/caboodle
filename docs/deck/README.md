@@ -4,8 +4,10 @@ The Deck is an LCD model running NixOS through
 [Jovian-NixOS](https://github.com/Jovian-Experiments/Jovian-NixOS). It's a
 host in the hive like the desktop, and nothing deploys it: the desktop
 builds it and the Deck pulls the result. It boots into Game Mode, and Switch to
-Desktop opens Plasma. Why Jovian, and what it does and doesn't do, is in
-[the research](../research/2026-10-25-jovian-steam-deck.md).
+Desktop opens Plasma. Jovian only supports nixos-unstable and has no
+releases, so it moves with whatever commit the lock holds. It brings
+Valve's kernel, Steam client, fan control and power controls, and stubs
+SteamOS's own OS updates, since those are NixOS generations here.
 
 Monitoring is off, since the Deck is off or away more than it's on. The
 hive's Tailscale is off for the same reason as the desktop's: it joins with
@@ -66,6 +68,7 @@ nix run --inputs-from . nixpkgs#nixos-anywhere -- --flake .#deck \
   its games.
 - If it goes wrong, Valve's recovery image, written to a USB stick, puts
   SteamOS back. A copy is on the NAS under `games/dumps/steamos-recovery`.
+  The boot menu is Volume Down held while tapping Power, from off.
 
 ## Gotchas
 
@@ -73,7 +76,13 @@ nix run --inputs-from . nixpkgs#nixos-anywhere -- --flake .#deck \
   `holo-firmware-update`. Run `sudo jupiter-biosupdate` instead.
 - Steam's 80% battery charge limit doesn't show up yet (Jovian issue #537).
 - Jovian has no binary cache, so the Valve kernel builds from source on the
-  builder.
+  desktop whenever it changes.
+- `jovian.steam.desktopSession` has to name a real session, and
+  steamos-manager rejects any session whose name contains "gamescope"
+  (Jovian issue #586).
+- Decky Loader is off. Turning it on isn't enough by itself: it needs Steam's
+  CEF remote-debugging file, which Jovian doesn't create (Jovian issue #460
+  has a workaround).
 - An ext4 SD card mounts by itself, but Steam only lists it once it's added
   as a library from Desktop Mode.
 - If the touchscreen goes dead, the touch chip has stuck powered off: its

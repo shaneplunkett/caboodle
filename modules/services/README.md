@@ -42,6 +42,17 @@ by Prometheus on another host.
   `err`. Its block reads the real level from HA's own text and folds each
   traceback into the line that logged it.
 
+## Unpoller
+
+- The nixpkgs module has no `api_key` option, and its controller submodule
+  isn't freeform, so the key goes in through unpoller's own environment
+  config: `UP_UNIFI_DEFAULT_API_KEY=file://<path>` on the unit. The
+  startup log says `=> API Key: true` when it took.
+- On UniFi Network 11, unpoller before 5.5.1 drops
+  `unpoller_device_uplink_latency_seconds` and the speedtest series, which
+  the Internet dashboard reads. If those panels are empty, check the
+  version first.
+
 ## nginx-ingress
 
 - ACME uses `1.1.1.1` as its DNS resolver. The LAN's Blocky answers for the

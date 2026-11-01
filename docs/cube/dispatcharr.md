@@ -5,8 +5,6 @@ from, by pretending to be an HDHomeRun. It runs in a container on arr
 (`modules/services/arr/dispatcharr.nix`). It went in when the building's
 aerial died, so the HDHomeRun had nothing to tune, and it feeds Plex the
 Melbourne free-to-air channels from i.mjh.nz instead.
-[The research](../research/2026-10-25-iptv-into-plex-dvr.md) has the options
-and sources behind it.
 
 The HDHomeRun is still the better tuner when the aerial works. Off the
 aerial, Seven and ABC come in at broadcast quality, where online they stop at

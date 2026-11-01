@@ -62,3 +62,29 @@ $path/bin/switch-to-configuration switch
 
 `test` leaves the boot entry alone, so if the timer doesn't save it, a
 reboot still comes back on the old system.
+
+## NAS
+
+`modules/services/nas` mounts the old Unraid drives as they were, plain XFS
+disks and a btrfs NVMe cache, and pools them with mergerfs under Unraid's
+paths, so exports and the arr settings never changed. `/mnt/user` puts new
+files on the cache first, and the nightly mover shifts what's sat there a
+day onto the disks through `/mnt/user0`. There's no parity drive yet.
+
+- **NFS over mergerfs needs `never-forget-nodes`, `inodecalc=path-hash`
+  and a fixed `fsid` per export**, or clients get stale handles.
+- **The exports wait for the pool.** If NFS or Samba started before
+  mergerfs mounted, they'd export the empty directory underneath and
+  clients would write onto the root disk, so both require `/mnt/user`.
+- **A pool with a missing disk doesn't mount**, the way Unraid refused to
+  start its array, so arr never sees files vanish.
+- **Everything is owned by 99:100.** NFS squashes every client to it and
+  Samba forces it, as Unraid did. The `nas` user holds uid 99.
+- **The mover keeps hardlinks** by handing rsync the whole file list with
+  `-H`. Moving files one at a time would split each torrent from its
+  library copy and use the space twice.
+- **The mover skips SQLite's `-wal`, `-shm` and `-journal` files.**
+  Calibre-Web-Automated keeps its database open in `Media/library`, and
+  moving the sidecars under an open database can corrupt it.
+- **NFS clients' open files aren't visible here**, so the mover can't skip
+  a file a client still has open.

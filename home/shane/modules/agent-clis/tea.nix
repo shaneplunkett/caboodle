@@ -7,8 +7,7 @@
 # to a login through it, and without it neither recognises the forge.
 #
 # tea stays on 0.16, pinned here so a nixpkgs bump can't move it: 1.0 is
-# untagged, needs Gitea 28 and has no Forgejo tests
-# (docs/research/2026-10-16-forge-cli.md).
+# untagged, needs Gitea 28 and has no Forgejo tests.
 let
   forge = "git.shaneplunkett.com";
 

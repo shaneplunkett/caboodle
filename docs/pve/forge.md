@@ -1,19 +1,17 @@
 # Forge
 
-NixOS Incus container on PVE running Forgejo, Shane's git forge. Its size
-is `homelab.guest` in `flake.nix`, `terraform/incus.tf` makes it, and the
-service is `modules/services/forgejo`.
-
-Shane chose to move the primary forge to GitHub on 31 October 2026 and keep
-a homelab mirror. [The migration plan](../prd/forge-and-builder.md) tracks
-that work. Forgejo is still primary until cutover, so the instructions here
-describe the current setup.
+NixOS Incus container on PVE running Forgejo, Shane's git forge and the
+repo's primary until the GitHub cutover. The service is
+`modules/services/forgejo`.
 
 The web UI is `https://git.shaneplunkett.com`, through ingress. SSH clones
 go straight to the host over the tailnet, as
 `forgejo@forge:<owner>/<repo>.git`.
 
-## Signing in
+Sign-in goes through Pocket ID, using the `forgejo` client, and members of
+`forgejo_admins` become admins. The Nix module sets the `pocket-id` auth
+source on deploy, so change it there; edits in Site Administration get
+overwritten.
 
 Sign-in goes through Pocket ID, using the `forgejo` client. Members of
 `forgejo_admins` become admins.
@@ -29,27 +27,23 @@ Workflows live in `.forgejo/workflows/` and run on the builder. See
 
 ## Configuration in Terraform
 
-`terraform/forge-config.tf` holds the forge settings that matter: who can
-write where, and repos that other repos depend on. Everything else, including
-most repos, stays in the UI. Forgejo has no settings file inside a repo, so a
-per-repo exception goes in Terraform next to the default it overrides.
+`terraform/forge-config.tf` holds the settings that matter: who can write
+where, and repos that other repos depend on. Everything else, including
+most repos, stays in the UI. Forgejo has no settings file inside a repo, so
+a per-repo exception goes in Terraform next to the default it overrides.
 
-- **`bots`** gives `forge-bot` write access to every repo. Renovate runs
-  as `forge-bot`, so it opens an onboarding pull request on every new repo.
-  Closing it without merging tells Renovate to leave that repo alone.
+- **`bots`** gives `forge-bot` write access to every repo, for Renovate.
 - **`workflows`** holds the workflows other repos call. Forgejo only expands
   a workflow from another repo when its owner is public, so the `shane` org
   is public. That's set by hand, because the provider can't import an org
   and the API can't set an org public. The sign-in requirement still hides
   everything from anyone not signed in.
-- **`caboodle`'s `main`** requires the build check before a merge.
-  [builder.md](builder.md) covers why.
+- **`caboodle`'s `main`** requires the status checks listed there, and
+  refuses a branch that's behind it.
 
 Terraform signs in with `terraform-forgejo-token`, a token from Shane's
 account (an org owner) with read and write on organization and repository
-and read on user. It's in Bitwarden as `homelab_forgejo_terraform_token` and
-in agenix for the builder. Terraform runs on the forge's own runner, so if
-the forge is down, fix it with colmena first.
+and read on user. It's in Bitwarden as `homelab_forgejo_terraform_token`.
 
 ## Getting back in
 
@@ -64,9 +58,7 @@ ssh root@forge forgejo-admin user create --admin --username <name> --email <emai
 ## Backups and restores
 
 A restore needs both the database dump and `/var/lib/forgejo`, which holds
-the repositories and the secrets Forgejo generated for itself.
-
-To restore:
+the repositories and the secrets Forgejo generated for itself:
 
 ```sh
 ssh root@forge

@@ -1,14 +1,11 @@
 # Builder
 
-NixOS Incus container on PVE that runs the forge's Forgejo runner. Its size
-is `homelab.guest` in `flake.nix`, `terraform/incus.tf` makes it, and the
-service is in `modules/services/forgejo-runner`. It keeps no state worth backing up, so a
-dead builder is rebuilt from code.
-
-Shane chose on 31 October 2026 to move CI to GitHub-hosted runners and
-retire the builder. [The migration plan](../prd/forge-and-builder.md)
-tracks that work; until cutover the builder runs every job, and this doc
-describes it.
+NixOS Incus container on PVE. Until the GitHub cutover it runs the forge's
+Forgejo runner, for the check, the weekly flake update and the `ai-skills`
+bump, and the self-hosted Renovate. Nothing else builds or deploys here any
+more; [ADR 0004](../adr/0004-the-desktop-builds-and-deploys.md) says why.
+The runner is `modules/services/forgejo-runner`, and the guest keeps no
+state worth backing up, so a dead builder is rebuilt from code.
 
 ## How jobs run
 
@@ -23,175 +20,64 @@ Nix store stays warm between runs. Whatever a job leaves behind stays too.
   job. nix-ld lets generic Linux binaries a job downloads, like the `ruff`
   that `uv sync` installs, run unpatched. Without it they fail with
   `Could not start dynamically linked executable`.
-- This bullet is `build.yml` from `shane/workflows` v1.7.0
-  ([workflows#19](https://git.shaneplunkett.com/shane/workflows/pulls/19)).
-  An evaluation of every host's `hydraJobs` peaks around 14 GB. A pull
-  request's `hosts` job evaluates its head once and compares it with the
-  mapping `main` left for the merge base, in
-  `/var/lib/forgejo-runner/builder/evals/<repo>/<sha>.json`. Each push to
-  `main` evaluates once to write that file, and a mapping no job has
-  touched in 30 days is deleted. If the merge base has no mapping, the job
-  evaluates it too, one after the other, never side by side. A `flock`
-  keeps it to one full evaluation on the box at a time, since Forgejo
-  ignores `concurrency` on a job.
-- The runner is capped at 32 GB. That holds one full evaluation with room
-  for the per-host build jobs beside it. Builds happen in nix-daemon,
-  outside the cap, and the 16 GB left is theirs and the OS's. Past the cap the kernel kills the
-  biggest process in the runner, almost always an evaluation. The wedge
-  test showed that kill. `OOMPolicy=continue` stops systemd taking the
-  whole runner down over it, so the expected outcome is that the killed
-  evaluation's job fails and the others carry on. That isn't a promise: if
-  several evaluations grow at once, the kernel can kill again, in another
-  job. Re-run whatever failed once the rest finish.
-- If the runner thrashes below its cap instead, systemd-oomd kills it
-  whole once its memory pressure stays over 50% for 20 seconds. Every job
-  it had running fails with a lost runner, and systemd restarts it. Re-run
-  those jobs, deploys included. That's the second line, and unproven as
-  set up here: the test only saw oomd fire under a `MemoryHigh` throttle,
-  which the runner doesn't set. Hitting the cap alone leaves the pressure
-  near 0, so the kernel kill comes first. oomd used to watch
-  `system.slice` instead, which never fired: "full" pressure means every
-  task in the cgroup is stalled at once, and while the runner's own
-  evaluations stalled, other services kept the slice at 15%. Twice in one
-  day the box went unreachable with nothing killed, until an
-  `incus restart builder` or a manual kill.
 - The runner isn't a trusted Nix user, so a flake can't add caches for
   itself. The builder trusts the workstations' caches instead, or a desktop
   build would compile noctalia from source.
+- The private flake inputs come from GitHub with `github-inputs-token`, which
+  a step before the runner starts writes as Nix's `access-tokens` into
+  `/run/forgejo-runner-builder/nix.conf`, in RAM and readable only by the
+  runner. A new private input has to be added to the token's repositories on
+  GitHub, or its fetch fails with a 404.
 
-## Deploying
+## Memory
 
-Every push to `main` deploys the hosts tagged `deploy-on-merge`. Deploys
-queue rather than cancel each other. The hosts don't use Tailscale's DNS, so
-the builder reaches each one by its LAN address from the hive.
+The flake update evaluates and builds every host, one after another, before
+and after the bump, and builds happen in nix-daemon outside the runner. The
+runner is capped at 32 GB.
 
-The builder deploys first, on its own. Its SSH config and known hosts come
-from the hive, so a host added in the same push can't be reached until the
-builder has switched. Deployed alongside the rest, it lost that race and the
-new host failed its first deploy. It isn't tagged `deploy-on-merge`, so it
-switches once per deploy.
+- Past the cap the kernel kills the biggest process in the runner, almost
+  always an evaluation. `OOMPolicy=continue` stops systemd taking the whole
+  runner down over it, so that job fails and the others carry on. Re-run it.
+- If the runner thrashes below the cap instead, systemd-oomd kills it whole
+  once its memory pressure stays over 50% for 20 seconds, every running job
+  fails, and systemd restarts it. That second line is unproven as set up
+  here: hitting the cap alone leaves the pressure near 0, so the kernel kill
+  comes first. oomd used to watch `system.slice`, which never fired, because
+  "full" pressure means every task in the cgroup stalled at once and other
+  services kept the slice going; the box went unreachable twice in one day
+  until an `incus restart builder`.
+- To test the backstop, run one evaluation as a transient unit under a small
+  cap and watch it from a second SSH session, never through the runner. Copy
+  a checkout into a `mktemp -d` on the builder first, and only start with
+  more than 30 GB free:
 
-dns2 deploys in a later job, once dns1 answers. Deploying both at once
-restarted Blocky on both and left the network without DNS, so a bad DNS
-change now only takes one of them down.
+  ```sh
+  systemd-run --unit wedge-test -p MemoryMax=6G \
+    -p ManagedOOMMemoryPressure=kill -p ManagedOOMMemoryPressureLimit=50% \
+    -p ManagedOOMMemoryPressureDurationSec=20s -p CPUQuota=400% \
+    -p RuntimeMaxSec=900 --wait --collect \
+    nix eval --no-eval-cache --json "path:$dir#hydraJobs" \
+    --apply 'jobs: builtins.mapAttrs (_: job: job.drvPath) jobs'
+  ```
 
-The builder deploys itself, from a job on its own runner, and a plain
-restart of the runner would deadlock: the switch waits on the restart, the
-restart waits on the deploy job, and the job waits on the switch. So a change
-reloads the runner instead, and the reload schedules a graceful restart a few
-seconds later, which lets running jobs finish first. A job that ends in
-`RUN signal: terminated` outlasted the stop timeout.
+  The kernel kills it as it reaches 6 GB. To see oomd fire instead, add
+  `-p MemoryHigh=4G` and raise `MemoryMax` to 8G: the kernel throttles
+  rather than kills, the pressure climbs past 50%, and
+  `journalctl -u systemd-oomd` logs the kill. Without `--no-eval-cache`, a
+  revision the builder already evaluated proves nothing.
 
-That graceful restart is also why the builder can't switch twice in one
-deploy. Every switch restarts `sysinit-reactivation.target`, and while the
-runner is stopping, that restart waits for the stop, which waits for the
-deploy job, which waits for the switch. New units queue behind it too, so SSH
-stops answering, and only `incus restart builder` on PVE clears it. A second
-switch looked free while the config was unchanged, until a systemd bump made the
-first switch reload the runner.
+## Switching it
 
-## Pull requests
+The desktop deploys the builder like any other guest. A switch reloads the
+runner rather than restarting it, and the reload schedules a graceful
+restart a few seconds later, so running jobs finish first. A job that ends
+in `RUN signal: terminated` outlasted the stop timeout.
 
-Every pull request gets its derivation diff as a comment from `forge-bot`,
-edited on each push, and builds only the hosts in it. An unchanged host is
-the derivation `main` already built, so building it again proves nothing.
-The `hosts` job does the comparison, so it's the required check, and when
-no host changes the one build job is a placeholder whose steps skip,
-because Forgejo leaves a job with an empty matrix blocked for good. The
-`build.yml` section of `shane/workflows`' README has the details.
-
-On GitHub, `.github/workflows/hosts.yml` posts the same comment from the
-`caboodle-agent` App, with the same `<!-- derivation-diff -->` marker, so
-each push edits it. Each host is evaluated on its own hosted runner (see
-below) and compared with the mapping `main` left for the merge base. Each
-push to `main` uploads that mapping as the artifact `hosts-<sha>`, kept 90
-days, the most a public repo allows. A merge base without one, older than
-that or from before this landed, is evaluated in a matrix of its own
-before the head's. Each changed Linux host then builds in the same job and
-pushes to the cache ([Building on GitHub](#building-on-github)), and the
-`hosts` job posts the comment once they've all finished. `hosts` will be
-the required check at cutover, so it runs and fails when an evaluation,
-build or push fails, rather than being skipped, which GitHub counts as a
-pass. The `hosts.yml` section of the workflows README has the details.
-`.github/workflows/check.yml` runs `scripts/check.sh` there too, through
-the shared `check.yml`, with the dev shell pulled from the cache over the
-tailnet: Terraform is unfree and colmena is a fork, so without the cache a
-hosted runner would compile both on every run.
-
-`main` won't merge a pull request that's behind it. Use Update Branch's
-rebase option, since the button merges `main` in by default, or rebase it
-yourself. A behind branch's diff is against an older `main`, so it can miss
-what another merge changed. Once it's up to date, its merge base is `main`,
-and the diff is exactly what merging changes. Every merge makes the other
-open pull requests stale, so each one rebuilds after its update. Renovate
-rebases its own the next time it runs.
-
-## Building by hand
-
-`nix build --store ssh-ng://root@builder <flake attr>` evaluates here and
-builds there, and is the way to try one host or package before filing.
-
-- **Fetch a result through the cache, never over SSH.** The builder signs
-  nothing when it builds; Attic signs each path as it's pushed. So the
-  path sits unsigned in the builder's store, `nix copy --from
-  ssh-ng://root@builder` hands over that unsigned copy, and a workstation
-  refuses it with `lacks a signature by a trusted key`. The same path from
-  `nix copy --from https://cache.shaneplunkett.com/shane <path>` arrives
-  signed by the key every machine already trusts. The builder pushes a
-  build a few seconds after it lands, so a fetch straight after the build
-  can miss it once.
-- **An overlay package needs `--eval-store auto`.** The repo's own packages
-  are overlays with no flake output, so building one means `--impure
-  --expr` with `builtins.getFlake`. That route serves the inputs from the
-  local fetcher cache without copying them to a remote eval store, and the
-  build dies with `path '/nix/store/...-nixos-...' is not valid`. Adding
-  `--eval-store auto` evaluates against the local store and ships only the
-  derivation closure to the builder.
-- **A by-hand build has no root on the builder**, so it lasts until the next
-  weekly collection or `min-free` sweep. Fetch what you want to keep.
-
-## Terraform
-
-A pull request that touches `terraform/` gets its plan as a comment. Run
-workflow from the Actions tab only plans, which makes a quick drift check.
-
-On `main`, Terraform applies before any host deploys, because a container
-change like its memory can restart it and drop colmena's SSH mid-deploy. If
-the apply fails, nothing deploys.
-
-Everything is one state on purpose. `backup_hosts` makes a Storage Box
-subaccount and an R2 bucket, and the hive's addresses feed both the
-containers and their UniFi reservations, so split states would pass
-outputs between each other. If an outage keeps blocking applies, split
-Cloudflare out first, since it shares the least.
-
-State is in Terraform Cloud. The tokens are agenix secrets the runner loads
-as credentials. Two have other names in Bitwarden: `homelab_tfc_token` and
-`homelab_hcloud_token`. Terraform reaches Incus with its own client
-certificate ([incus](../../modules/services/incus/README.md#terraforms-access)).
-
-GitHub plans too, ahead of [the move](../prd/forge-and-builder.md):
-`.github/workflows/terraform.yml` runs the same script on the same paths, on
-a hosted runner, and posts the plan as a comment it edits on each push. Run
-workflow on its Actions page plans and posts nothing. Pull requests from a
-fork get no secrets, so the job skips them. The runner joins the tailnet as
-`tag:ci` and reaches Incus, UniFi and the forge by their LAN addresses
-through PVE's subnet route, and resolves names through Blocky, so the
-tailnet policy grants `tag:ci` those addresses and dns1 and dns2 on 53. It
-reads `INPUTS_TOKEN` for the flake's private inputs and these Actions
-secrets, each the agenix secret of the same name:
-`TERRAFORM_CLOUD_TOKEN`, `TERRAFORM_HCLOUD_TOKEN`,
-`TERRAFORM_CLOUDFLARE_TOKEN`, `TERRAFORM_ACCESS_EMAILS`,
-`TERRAFORM_FORGEJO_TOKEN`, `TERRAFORM_UNIFI_TOKEN` and
-`TERRAFORM_INCUS_KEY`. A changed `terraform-*.age` needs its Actions secret
-set again too. Apply still runs on the forge until cutover.
-
-A changed secret restarts the runner the same graceful way. Its restart
-triggers hash the `.age` files, because their paths sit in the flake's
-source, which changes every commit. That restart lands after the first
-apply, so a push that changes `modules/agenix/terraform-*.age` applies again
-in `terraform-secrets`. If that job fails because it ran on the old runner,
-re-run it.
+Don't switch it twice while the runner is draining. Every switch restarts
+`sysinit-reactivation.target`, and while the runner is stopping that
+restart waits for the stop, which waits for its jobs. New units queue
+behind it, SSH stops answering, and only `incus restart builder` on PVE
+clears it.
 
 ## Updates
 
@@ -206,18 +92,9 @@ a lock file change when asked.
 
 `ai-skills` doesn't wait for Sunday. Each push to its `main` dispatches
 `ai-skills.yml` here with forge-bot's token, which runs the same workflow
-with `only: ai-skills` on its own branch and merges once every host builds.
+with `only: ai-skills` on its own branch and merges once the check passes.
 The review happened in `ai-skills`, so a bad skill is fixed by reverting it
 there, and the next push carries the revert over.
-
-If another pull request merges while the skills one is still building, the
-skills branch falls behind `main`, and Forgejo keeps its scheduled merge but
-won't carry it out. It sits open with green checks and an out-of-date
-notice. The next `ai-skills` push clears it: the run commits the bump on
-current `main`, force-pushes `update/ai-skills`, and refreshes the same
-pull request. A push doesn't cancel a scheduled merge, so it goes through
-once the new head's checks pass. To land it sooner, rebase it with Update
-Branch.
 
 ## Renovate
 
@@ -327,11 +204,7 @@ dropping the prefix at cutover starts GitHub clean.
 
 ## GitHub App and inputs token
 
-Two secrets for [the move to GitHub](../prd/forge-and-builder.md) are in
-Bitwarden, in caboodle's Actions secrets on GitHub, and in agenix for the
-builder. The runner reads the inputs token to fetch the private flake
-inputs. Renovate's GitHub workflow runs as the App, and the rest of the
-plan's identity step moves the other bots onto it.
+Both are in Bitwarden and in caboodle's Actions secrets on GitHub.
 
 - **The App** is `github-app-client-id` and `github-app-private-key`
   (`APP_CLIENT_ID` and `APP_PRIVATE_KEY` in Actions). It's installed on every
@@ -355,129 +228,6 @@ printf '%s' "$(rbw get github-inputs-token)" | agenix -e github-inputs-token.age
 printf '%s' "$(rbw get github-inputs-token)" | gh secret set INPUTS_TOKEN --repo shaneplunkett/caboodle
 ```
 
-## One host per hosted runner
-
-The whole hive's 14 GB has no room on a 16 GB hosted runner, so on GitHub
-each host is evaluated alone, in the `evaluate` jobs of
-`.github/workflows/hosts.yml`, and each job's summary has the host's
-derivation path, peak memory and elapsed time. On 31 October
-2026, at `0fe52d23`, on `ubuntu-24.04`:
-
-| Host | Peak memory | Elapsed |
-| --- | --- | --- |
-| desktop | 5.79 GiB | 208 s |
-| macbook | 5.18 GiB | 146 s |
-| deck | 4.64 GiB | 111 s |
-| mini | 4.31 GiB | 84 s |
-| monitoring | 1.55 GiB | 39 s |
-| ingress | 1.50 GiB | 34 s |
-| dashboard | 1.48 GiB | 50 s |
-| builder | 1.31 GiB | 46 s |
-| auth, dns1, dns2 | 1.27 GiB | 31 to 53 s |
-| photos | 1.15 GiB | 26 s |
-| paper | 1.11 GiB | 54 s |
-| pve | 1.04 GiB | 28 s |
-| cube | 1.02 GiB | 39 s |
-| every other guest | 0.91 to 0.98 GiB | 30 to 45 s |
-
-The four machines with Home Manager are the heavy ones. Peak memory is the
-evaluator's own resident set, so the desktop leaves about 10 GiB of the
-runner's 16 before the Nix daemon and the OS take their share. Reading
-other hosts costs the dashboard and ingress little. Elapsed includes
-fetching the inputs on a cold runner. Every derivation path matched the
-builder's evaluation of the whole hive at the same commit, which peaked at
-14.8 GB in 2 minutes 43 seconds. A second run at `3a60f434` gave the same
-paths and memory within 0.01 GiB.
-
-The runner's `/` has 86 GiB free before anything is deleted, not the 14 GB
-GitHub documents. Deleting the Android, .NET, Haskell and tool caches and
-the Docker images takes it to 114 GiB, in 74 to 316 seconds, about two
-minutes on average. Evaluating needs none of that, so only a job that
-builds reclaims it, after evaluating.
-
-## Building on GitHub
-
-Shane chose on 1 November 2026 to build in the diff's own per-host jobs
-rather than with Atelier ([the PRD](../prd/forge-and-builder.md) has why).
-So a pull request's comment arrives once its slowest build has finished,
-not before the builds start as on the forge. Each job builds the derivation
-it evaluated, so the build is the very derivation the diff compared, and
-nothing evaluates twice.
-
-A changed Linux host's job reclaims disk, joins the tailnet as `tag:ci`,
-adds the cache's tailnet name as a substituter with the pull token in a
-netrc, and builds. It also pulls from nix-community, noctalia and numtide,
-the caches in `modules/workstation/nix-settings.nix` and the forge
-runner's module, which the caller lists again since a workflow can't read
-Nix. Keep all three lists, and the cache's upstream keys, in step: Attic
-leaves out whatever those upstreams signed, so a runner missing one builds
-those paths from source. It pushes the closure with `attic push` and the push
-token, from the `ATTIC_PULL_TOKEN` and `ATTIC_PUSH_TOKEN` Actions secrets
-([cache](cache.md#tokens)). Before building it logs a dry run, `builds N
-derivations, fetches M paths, and can't place K`, so a log tells fetching
-from compiling at a glance. The K are paths no cache has that Nix builds
-anyway, and they get a warning, and the build's own lines say which cache each path came from. The
-summary also has the closure's size and the build's peak disk use. A pull
-request from a fork builds nothing: it gets no secrets and no OIDC token.
-
-A rerun builds every changed host again. With the closure in the cache,
-that's all fetching and the dry run counts 0 derivations to build, but the
-job still downloads the closure. Skipping it would mean checking every path
-in the closure, since a cached top-level path says nothing about its
-dependencies, and Attic's collection doesn't trace references.
-
-A push to `main` compares with the commit before it, so it builds exactly
-what that merge changed and leaves it in the cache for the hosts Shane
-switches by hand. Pushes queue rather than cancel, but GitHub keeps only one
-waiting, so a push that's replaced while it waits never runs. The next one
-compares with it, not with the last one that built. Its hosts were built on
-its pull request, so they're cached anyway.
-
-On 1 November 2026, at `89c50374`, gym alone changed. Its job took 3
-minutes 30 seconds: 46 seconds evaluating, 2 minutes reclaiming disk, 15
-seconds building 6 derivations and fetching 610 paths (620 MiB), and 3
-seconds pushing 3 paths, the rest being cached or upstream. A fresh runner
-on the tailnet then fetched all 616 paths of gym's closure with
-`--max-jobs 0`, 90 from the cache and 526 from cache.nixos.org, and built
-nothing.
-
-The same day, a pull request that took gym out of the hive changed eight
-Linux hosts, which built side by side. The builder's job took 11 minutes,
-the Deck's 1 hour 40 and the desktop's 1 hour 45. Each evaluated in under
-3 minutes, reclaimed disk in about 2, and had 114 to 116 GiB free after.
-Nearly all of the Deck's and the desktop's time was one package: both
-compiled `terraform-1.16.6` from source, 1 hour 29 minutes each, since the
-runners didn't yet pull from nix-community and numtide, the only caches
-with it. The rest of their builds took 7 and 9 minutes, mostly fetching
-the desktop's 8.3 GiB, and its push 1.5 minutes. The longest a build can
-take is whatever no cache has, compiled on 4 vCPUs.
-
-## Building the Macs
-
-The MacBook's and the mini's jobs run on `macos-latest`, which the caller's
-`runners` input names, so they evaluate and build there, the same as a Linux
-host on Linux. A new Mac goes in that list too, or it evaluates on Linux and
-the comment says it wasn't built here. The baseline still evaluates on Linux,
-since a derivation path doesn't depend on where it's evaluated. With the
-Macs unchanged, their macOS evaluations matched main's Linux mapping.
-
-A hosted macOS runner has 3 cores and 7 GB of memory, but the disk isn't the
-documented 14 GB. On 1 November 2026, on `macos-26-arm64`, a runner had 93 to
-94 GiB free, and 264 to 265 GiB after the job deleted every Xcode but the
-selected one, the simulator runtimes, the Android SDK, .NET and the tool
-cache, which took 2 to 3 minutes. Nix builds with its own SDK, so it doesn't
-need the others. A change to both Macs' settings gave:
-
-| Host | Evaluation peak | Evaluation | Built, fetched | Peak disk use | Whole job |
-| --- | --- | --- | --- | --- | --- |
-| macbook | 3.17 GiB | 242 s | 2, 1380 paths | 17.32 GiB | 11 minutes |
-| mini | 4.62 GiB | 121 s | 6, 1325 paths | 17.27 GiB | 8 minutes |
-
-Peak disk use is the whole closure fetched into an empty store, with room to
-spare, so the mini doesn't need to register as a runner. The mini then
-substituted both systems from the cache in a dry run, with nothing to
-build. The builder still hands darwin builds to the mini until the cutover.
-
 ## Registration
 
 The forge and the builder share the `forgejo-runner-secret` secret, 40 hex
@@ -497,64 +247,20 @@ printf '%s' "$(rbw get forgejo-runner-secret | head -c 16)" | od -An -tx1 | tr -
 The last command prints the new UUID for the module. Deploy the forge, then
 the builder.
 
-## Binary cache
+## Store and cache
 
-The cache is Attic on its own guest; [cache.md](cache.md) covers it.
-`attic-watch-store` on the builder pushes every path that lands in the
-builder's store, as it lands, so anything a job builds can be downloaded
-instead of built again. Paths another cache already signed stay out.
-
-The builder's own store only keeps a build while something roots it,
-because it's collected weekly and whenever free space drops below
-`min-free`. Jobs root a build with `--out-link` into the runner's state
-directory. The builder's disk alert is worked out from `min-free` in `hosts/builder.nix`, set 5 GiB
-past it, so Discord only hears about a full disk when collection can't keep
-up.
-
-The build workflow also runs on pushes to `main` only to root each host's
-latest build, which is what the cache was seeded from.
-
-## Darwin builds
+`attic-watch-store` pushes every path that lands in the builder's store to
+the [cache](cache.md), as it lands. The store only keeps a build while
+something roots it, since it's collected weekly and whenever free space
+drops below `min-free`. The disk alert is set 5 GiB past `min-free` in
+`hosts/builder.nix`, so Discord only hears about a full disk when
+collection can't keep up.
 
 The builder hands `aarch64-darwin` builds to the mini over SSH, as `shane`
-with `builder-ssh-key`, and the results come back into its store and the
-cache. The mini's address is fixed in `darwin-builder.nix`, so if darwin
-builds stop connecting, check its DHCP reservation first.
-
-## Fetching other repos
-
-The private flake inputs, like `vex-brain`, come from GitHub with the
-inputs token. The runner loads `github-inputs-token` as a credential, and a
-step before it starts writes the token as Nix's `access-tokens` into
-`/run/forgejo-runner-builder/nix.conf`, which `NIX_USER_CONF_FILES` points
-every job's Nix at. The folder is in RAM and only the runner's user can open
-it. A new private input has to be added to the token's repositories on
-GitHub, or its fetch fails with a 404.
+with `builder-ssh-key`. The mini's address is fixed in `darwin-builder.nix`,
+so if darwin builds stop connecting, check its DHCP reservation first.
 
 ## Gotchas
-
-- **Testing the memory backstop.** Run one evaluation as a transient unit
-  under a small cap and watch it from a second SSH session, never through
-  the runner. Copy a checkout into a `mktemp -d` on the builder first, and
-  only start with more than 30 GB free:
-
-  ```sh
-  systemd-run --unit wedge-test -p MemoryMax=6G \
-    -p ManagedOOMMemoryPressure=kill -p ManagedOOMMemoryPressureLimit=50% \
-    -p ManagedOOMMemoryPressureDurationSec=20s -p CPUQuota=400% \
-    -p RuntimeMaxSec=900 --wait --collect \
-    nix eval --no-eval-cache --json "path:$dir#hydraJobs" \
-    --apply 'jobs: builtins.mapAttrs (_: job: job.drvPath) jobs'
-  ```
-
-  On 28 October the kernel killed it 45 seconds in, as it reached 6 GB.
-  Its memory pressure never left 0, so oomd had nothing to act on, and SSH
-  and PVE's load were unaffected. To see oomd fire, add `-p MemoryHigh=4G`
-  and raise `MemoryMax` to 8G. The kernel then throttles the evaluation
-  instead of killing it, its pressure climbs past 50% within a minute, and
-  `journalctl -u systemd-oomd` logs it being marked for killing 20 seconds
-  later. Without `--no-eval-cache`, a revision the builder has already
-  evaluated comes from the cache and proves nothing.
 
 - **`rbw add` and `rbw edit` read from stdin** when it isn't a terminal, and
   only the first line becomes the password. A multi-line value like an SSH

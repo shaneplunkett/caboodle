@@ -25,7 +25,10 @@ The costs: nothing deploys unless the desktop is on and someone runs the
 script, so a merge changes nothing until then; no derivation diff on a pull
 request, so what a change does to a server is seen at apply time; and a
 flake bump lands unbuilt, to be found when it's deployed. All three are
-accepted. This supersedes 0002 and 0003.
+accepted. This supersedes 0002, which kept the builder and put its
+evaluations behind one lock, and 0003, which moved CI to GitHub-hosted
+runners evaluating and building each host alone. Both were deleted once
+this landed; `git log --diff-filter=D -- docs/adr` finds them.
 
 ## Considered options
 
