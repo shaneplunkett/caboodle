@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   update:
-    uses: shaneplunkett/workflows/.github/workflows/flake-update.yml@v2.3.0
+    uses: shaneplunkett/workflows/.github/workflows/flake-update.yml@v3.0.0
     with:
       title: "flake.lock: update ai-skills"
       only: ai-skills
