@@ -111,10 +111,9 @@ here.
 
 ## Deploying
 
-Merging deploys it: the builder reaches it as `shane` and runs `sudo`
-without a password. Tailscale is the Homebrew app, so colmena uses its LAN
-address. `colmena apply --on mini` works from anywhere with the builder's
-key.
+`scripts/deploy.sh mini` deploys it from the desktop: colmena reaches it as
+`shane` with Shane's key, builds on the mini, and runs `sudo` without a
+password. Tailscale is the Homebrew app, so colmena uses its LAN address.
 
 The first switch has to happen on the mini, because the passwordless sudo
 rule is part of the system being switched to. Use the recipe in

@@ -41,7 +41,7 @@ What the desktop builds, it signs and serves to the Deck; see
 
 ## Switching
 
-Run `nrs`, which builds here and switches to the forge's `main`. To switch to unmerged work,
+Run `nrs`, which builds here and switches to GitHub's `main`. To switch to unmerged work,
 `git add` any new files in the caboodle checkout and run either of:
 
 ```sh

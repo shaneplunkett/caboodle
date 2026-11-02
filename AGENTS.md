@@ -21,20 +21,21 @@ and the Mac mini. Read `README.md` for how it fits together.
   the desktop, the Deck and the MacBook are switched by hand, each per its
   doc under `docs/`. `scripts/terraform.sh` plans Terraform with the tokens
   agenix holds, and `scripts/terraform.sh apply` applies that plan.
-- **Pull request:** land every change through a pull request on the forge
-  (`origin`; GitHub is a mirror of it). Commit on a branch and file it with
-  the `pr` skill, which opens it and assigns it to Shane for review. Done is
-  a green check, plus the `Plan:` line from `scripts/terraform.sh` in the
-  body when `terraform/` changed. Rebase onto `origin/main` before filing.
+- **Pull request:** land every change through a pull request on GitHub
+  (`origin`, `shaneplunkett/caboodle`). Commit on a branch and file it with
+  the `pr` skill and `gh`, assigned to Shane for review. Done is a green
+  check, plus the `Plan:` line from `scripts/terraform.sh` in the body when
+  `terraform/` changed. Rebase onto `origin/main` before filing.
 - **Merge:** Shane merges, except Renovate's Sunday pull requests (every
   dependency in one, the lock file in the other) and the `ai-skills` bumps,
   which merge themselves once the check passes. Merging deploys nothing. Once a change
   is on `main`, deploy it from the desktop with `scripts/deploy.sh` and, if
   `terraform/` changed, `scripts/terraform.sh apply`, when Shane asks.
-- **CI:** runs `scripts/check.sh` and nothing else. `.forgejo/workflows/`
-  and `.github/workflows/` call the check workflow in `shane/workflows`
-  (`shaneplunkett/workflows` on GitHub), pinned to a tag that Renovate
-  moves. Nothing builds or deploys in CI; `docs/adr/0004` says why.
+- **CI:** runs `scripts/check.sh` and nothing else. `.github/workflows/`
+  calls the check workflow in `shaneplunkett/workflows`, pinned to a tag
+  that Renovate moves, and `main` requires that check. Nothing builds or
+  deploys in CI; `docs/adr/0004` says why, and `docs/github` covers the
+  rest of GitHub.
 
 ## Checks
 

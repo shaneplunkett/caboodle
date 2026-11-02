@@ -8,7 +8,7 @@ the `vex` CLI) and its PostgreSQL. Its size is `homelab.guest` in
 ## How it runs
 
 The brain isn't packaged for Nix. Its source is the `vex-brain` flake input,
-the private repo on the forge, and the service runs it from the store as an
+the private repo on GitHub, and the service runs it from the store as an
 ordinary Python app in a uv venv. The prebuilt manylinux wheels work on NixOS
 as they are, so it needs no nix-ld.
 

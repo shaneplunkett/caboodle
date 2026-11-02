@@ -9,7 +9,7 @@ This is what holds for all of them. Each has its own doc too:
 
 ## Switching by hand
 
-`nrs` switches whichever machine it runs on to the forge's `main`, then
+`nrs` switches whichever machine it runs on to GitHub's `main`, then
 refreshes every open fish shell. It passes `--refresh`, because nix
 otherwise reuses a fetch for up to an hour and switches to a stale `main`.
 On a Mac it finds the host by matching the hostname against each darwin
@@ -38,23 +38,22 @@ On a new machine, or the Deck:
 ## Switching a Mac
 
 The MacBook's switches, and a new Mac's first one, happen on the Mac. Build
-as `shane` and only elevate for the switch. Root has no key for the forge
-and no inputs token, so `sudo darwin-rebuild switch` stalls on a password
-for `forgejo@forge` when it fetches caboodle.
+as `shane` and only elevate for the switch. Root has no inputs token, so
+`sudo darwin-rebuild switch` fails with a 404 on the first private input.
 
 ```sh
-nh darwin switch git+ssh://forgejo@forge/shane/caboodle -H <host>
+nh darwin switch github:shaneplunkett/caboodle -H <host>
 ```
 
 or, without nh:
 
 ```sh
-nix build --out-link /tmp/system git+ssh://forgejo@forge/shane/caboodle#darwinConfigurations.<host>.system
+nix build --out-link /tmp/system github:shaneplunkett/caboodle#darwinConfigurations.<host>.system
 sudo nix build --no-link --profile /nix/var/nix/profiles/system /tmp/system
 sudo /tmp/system/sw/bin/darwin-rebuild activate
 ```
 
-A local checkout works the same way with `.` in place of the forge URL. A
+A local checkout works the same way with `.` in place of the GitHub URL. A
 new Mac's first switch asks for a password, since the passwordless sudo
 rule arrives with it.
 
@@ -97,7 +96,7 @@ Tailscale is the Homebrew app rather than the hive's daemon, so
 
 ## Wallpapers
 
-The wallpapers are the forge's `shane/wallpapers` repo, a flake input read
+The wallpapers are the `shaneplunkett/wallpapers` repo on GitHub, a flake input read
 from the store. The desktop's Noctalia rotates through it, and the MacBook
 links it to `~/Pictures/Wallpapers` for System Settings. The Deck and the
 mini don't get it, since neither imports a desktop shell. Adding one is a push to that repo, then

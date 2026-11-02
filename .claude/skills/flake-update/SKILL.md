@@ -12,12 +12,9 @@ bump into a short **impact list** for Shane.
 
 ## 1. Gather
 
-The weekly update pull request (`update/flake-lock`, opened by
-forge-bot) already carries the raw material: new evaluation warnings per
-host, package changes per host, and a Changelogs section produced by
-`scripts/flake-update-notes.sh`. Read its body with `tea pr <index>`.
-
-For a bump made locally, produce the same material yourself:
+Renovate's weekly lock file maintenance pull request only lists what
+moved. Read it with `gh pr view <number>`, then gather the rest yourself,
+as for a bump made locally:
 
 - Changelogs: `scripts/flake-update-notes.sh <(git show HEAD:flake.lock) flake.lock`.
 - Warnings: build every host on the old and new lock with

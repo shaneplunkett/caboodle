@@ -51,7 +51,7 @@ one wants.
    then sign in from the app's login page.
 
 `secret` only matters when a client is created, so clients that already
-exist, like forgejo, home and oauth2-proxy, declare none. Changing it later
+exist, like home and oauth2-proxy, declare none. Changing it later
 does nothing. Clients are never deleted either, so one removed from Nix stays
 in Pocket ID until it's deleted there. The `pocket-id-clients` job's report is
 in `journalctl -u pocket-id-clients` on auth.

@@ -141,11 +141,6 @@ resource "incus_instance" "guest" {
 }
 
 moved {
-  from = module.builder.unifi_client.this
-  to   = unifi_client.guest["builder"]
-}
-
-moved {
   from = module.auth.unifi_client.this
   to   = unifi_client.guest["auth"]
 }
@@ -158,11 +153,6 @@ moved {
 moved {
   from = module.brain.unifi_client.this
   to   = unifi_client.guest["brain"]
-}
-
-moved {
-  from = module.forge.unifi_client.this
-  to   = unifi_client.guest["forge"]
 }
 
 moved {

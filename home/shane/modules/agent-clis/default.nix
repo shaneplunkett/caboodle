@@ -9,8 +9,6 @@ let
 in
 {
   home.packages = [
-    (import ./tea.nix { inherit lib pkgs; })
-
     (mkRbwWrapper {
       package = pkgs.browserbase-cli;
       secrets = [

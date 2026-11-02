@@ -26,9 +26,8 @@ TF_TOKEN_app_terraform_io="$(secret cloud-token)"
 TF_VAR_hcloud_token="$(secret hcloud-token)"
 TF_VAR_cloudflare_api_token="$(secret cloudflare-token)"
 TF_VAR_access_editor_emails="$(secret access-emails)"
-TF_VAR_forgejo_api_token="$(secret forgejo-token)"
 TF_VAR_unifi_api_key="$(secret unifi-token)"
-export TF_TOKEN_app_terraform_io TF_VAR_hcloud_token TF_VAR_cloudflare_api_token TF_VAR_access_editor_emails TF_VAR_forgejo_api_token TF_VAR_unifi_api_key
+export TF_TOKEN_app_terraform_io TF_VAR_hcloud_token TF_VAR_cloudflare_api_token TF_VAR_access_editor_emails TF_VAR_unifi_api_key
 
 INCUS_CONF="$creds"
 cp "$root/modules/services/incus/terraform.crt" "$INCUS_CONF/client.crt"

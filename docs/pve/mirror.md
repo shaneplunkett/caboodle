@@ -6,7 +6,7 @@ account, so losing GitHub costs no history. The service is
 sign into. Recovery is `git clone` from the folder.
 
 `mirror.timer` runs hourly. It mints a token from the GitHub App
-([builder](builder.md#github-app-and-inputs-token)), lists the repos the
+([github](../github/README.md#github-app-and-inputs-token)), lists the repos the
 App is installed on, which is all of them, then `git clone --mirror`s the
 new ones and `git remote update --prune`s the rest into `/var/lib/mirror`.
 A repo that fails doesn't stop the others; the unit fails at the end. `journalctl -u mirror` shows each run, and `systemctl start mirror`
@@ -54,11 +54,11 @@ pointing at objects the snapshot never got.
 
 ## The Forgejo dump
 
-Forgejo's issues, pull requests, comments and reviews don't move to GitHub,
-so `tools/forgejo-dump.sh` saves them as JSON. It runs from the dev shell
-with rbw unlocked, and the dump lives in the mirror's folder so restic
-keeps it too. Take it again at cutover, after the last pull request merges
-on the forge:
+Forgejo's issues, pull requests, comments and reviews didn't move to
+GitHub, so `tools/forgejo-dump.sh` saved them as JSON in
+`/var/lib/mirror/forgejo`, where restic keeps them too. The last one was
+taken at cutover, after the last pull request merged on the forge, so it's
+the forge's final state. It ran from the dev shell with rbw unlocked:
 
 ```sh
 tools/forgejo-dump.sh /tmp/forgejo
@@ -69,8 +69,8 @@ tar -C /tmp -cf - forgejo | ssh root@mirror \
 
 ## Gotchas
 
-- **A repo GitHub doesn't have isn't mirrored.** A repo that only lives on
-  the forge needs pushing to GitHub first.
+- **A repo GitHub doesn't have isn't mirrored.** Only repos the App is
+  installed on are listed, so a repo outside Shane's account isn't either.
 - **Renamed or deleted repos stay.** A rename clones fresh under the new
   name, and the old folder stops updating. Delete it by hand.
 - **GitHub's pull request refs come along.** `--mirror` fetches

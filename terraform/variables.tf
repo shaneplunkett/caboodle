@@ -13,11 +13,6 @@ variable "cloudflare_api_token" {
   sensitive = true
 }
 
-variable "forgejo_api_token" {
-  type      = string
-  sensitive = true
-}
-
 variable "unifi_api_key" {
   type      = string
   sensitive = true
