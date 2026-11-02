@@ -10,7 +10,7 @@ the pieces fit together.
 ## Layout
 
 ```
-flake.nix          colmena hive, dev shell, and the Incus base image
+flake.nix          colmena hive, the dev shells, and the Incus base image
 hosts/<host>.nix   what a host runs (the desktop's and the Deck's are folders)
 modules/           anything more than one host can import
   homelab.nix      the homelab.* options every host declares, whatever it runs

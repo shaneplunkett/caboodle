@@ -159,40 +159,46 @@
           cf = pkgs.writeShellScriptBin "cf" ''
             exec ${pkgs.nodejs_22}/bin/npx --yes cf@1.0.0-beta.26 "$@"
           '';
+          check = [
+            pkgs.git
+            pkgs.jq
+            pkgs.nixfmt
+            pkgs.statix
+            pkgs.deadnix
+            pkgs.terraform
+            pkgs.tflint
+            pkgs.biome
+            pkgs.python3
+            pkgs.ruff
+            pkgs.mypy
+            pkgs.shellcheck
+            pkgs.shfmt
+            pkgs.go
+          ];
         in
         {
-          default = pkgs.mkShell {
-            packages = [
-              cf
-              pkgs.cloudflared
-              pkgs.wrangler
-              pkgs.nodejs_22
-              pkgs.dnsutils
-              pkgs.doggo
-              pkgs.jq
-              pkgs.colmena
-              agenix.packages.${pkgs.stdenv.hostPlatform.system}.default
-              pkgs.grafana-alloy
-              pkgs.restic
-              pkgs.rclone
-              pkgs.nixfmt
-              pkgs.statix
-              pkgs.deadnix
-              pkgs.terraform
-              pkgs.tflint
-              pkgs.biome
-              pkgs.python3
-              pkgs.ruff
-              pkgs.mypy
-              pkgs.uv
-              pkgs.shellcheck
-              pkgs.shfmt
-              pkgs.go
-              pkgs.bun
-              pkgs.git
-              pkgs.pre-commit
-            ]
-            ++ nixpkgs.lib.optional pkgs.stdenv.hostPlatform.isDarwin pkgs.flock;
+          default = pkgs.mkShell { packages = check; };
+
+          full = pkgs.mkShell {
+            packages =
+              check
+              ++ [
+                cf
+                pkgs.cloudflared
+                pkgs.wrangler
+                pkgs.nodejs_22
+                pkgs.dnsutils
+                pkgs.doggo
+                pkgs.colmena
+                agenix.packages.${pkgs.stdenv.hostPlatform.system}.default
+                pkgs.grafana-alloy
+                pkgs.restic
+                pkgs.rclone
+                pkgs.uv
+                pkgs.bun
+                pkgs.pre-commit
+              ]
+              ++ nixpkgs.lib.optional pkgs.stdenv.hostPlatform.isDarwin pkgs.flock;
 
             shellHook = ''
               if hook="$(git rev-parse --git-path hooks/pre-commit 2>/dev/null)" && [ ! -e "$hook" ]; then
