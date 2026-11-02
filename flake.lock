@@ -692,11 +692,11 @@
     "vex-code": {
       "flake": false,
       "locked": {
-        "lastModified": 1793414312,
-        "narHash": "sha256-EYJzvofGIXJT/1mSudiKOfZyk1SVCrf+EvQKrrXDNTA=",
+        "lastModified": 1793624154,
+        "narHash": "sha256-sCsZXD+CwBPe9rfRFdoLFZ7L/cwtN13fF+LGqV2jVNw=",
         "owner": "shaneplunkett",
         "repo": "vex-code",
-        "rev": "06ddf666b0adf5b9545c3065b7a906f4feaed13a",
+        "rev": "cf4b69b0e9104769fa23e5a72c8d0fc59439013d",
         "type": "github"
       },
       "original": {
