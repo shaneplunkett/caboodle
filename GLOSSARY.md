@@ -9,7 +9,7 @@ The repo that configures every machine Shane runs. It deploys services but doesn
 _Avoid_: homelab
 
 **Service**:
-Something a server runs for Shane, like the forge, Pocket ID or Immich. It's hers, used by her and her other projects; caboodle only deploys it.
+Something a server runs for Shane, like Pocket ID, Immich or the brain. It's hers, used by her and her other projects; caboodle only deploys it.
 
 ## Machines
 
@@ -37,10 +37,6 @@ The hosts whose built system differs between a pull request's base and its head.
 _Avoid_: host diff, affected hosts
 
 ## Pipeline
-
-**Cache**:
-The Attic service at home that CI pushes built paths to and hosts and workstations pull from.
-_Avoid_: binary cache, Harmonia, store
 
 **Mirror**:
 The cold copy of every GitHub repo kept at home as bare clones, for recovery only.

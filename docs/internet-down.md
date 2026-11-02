@@ -1,6 +1,6 @@
 # When the internet's broken
 
-The forge, the DNS hosts and the monitoring stack are all on the LAN, so a
+The DNS hosts and the monitoring stack are all on the LAN, so a
 bad ISP day can lock you out of the things you'd fix it with. This is the
 order to work through, from a laptop on 4G.
 
@@ -50,7 +50,7 @@ sudo tailscale set --accept-dns=false
 ssh -o HostKeyAlias=dns1 -o StrictHostKeyChecking=accept-new root@"$(tailscale ip -4 dns1)"
 ```
 
-The builder does the deploys, so the laptop may never have seen the DNS
+The desktop does the deploys, so the laptop may never have seen the DNS
 hosts' keys. `HostKeyAlias` files the key under the name rather than the
 address, and `accept-new` takes it on first contact.
 
@@ -58,18 +58,12 @@ Turn it back on afterwards with `sudo tailscale set --accept-dns=true`.
 
 ## Get the repo
 
-The forge remote uses the tailnet name `forge`. If it won't resolve, either
-fetch from the GitHub mirror:
+With GitHub out of reach, fetch from the mirror guest by address. It has a
+bare clone of every repo, at most an hour old:
 
 ```sh
-git fetch github
-```
-
-or reach the forge by address:
-
-```sh
-GIT_SSH_COMMAND='ssh -o HostKeyAlias=forge' \
-  git fetch "forgejo@$(tailscale ip -4 forge):shane/caboodle.git" main
+GIT_SSH_COMMAND='ssh -o HostKeyAlias=mirror' \
+  git fetch "root@$(tailscale ip -4 mirror):/var/lib/mirror/caboodle.git" main
 ```
 
 Check how old the checkout is before trusting what it says:

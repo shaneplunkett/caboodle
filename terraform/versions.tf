@@ -21,10 +21,6 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = "~> 5.27"
     }
-    forgejo = {
-      source  = "svalabs/forgejo"
-      version = "~> 1.6"
-    }
     external = {
       source  = "hashicorp/external"
       version = "~> 2.3"

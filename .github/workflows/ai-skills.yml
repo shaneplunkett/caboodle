@@ -1,0 +1,43 @@
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ai-skills-update
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    uses: shaneplunkett/workflows/.github/workflows/flake-update.yml@v2.3.0
+    with:
+      title: "flake.lock: update ai-skills"
+      only: ai-skills
+      branch: update/ai-skills
+      reviewer: ""
+    secrets:
+      INPUTS_TOKEN: ${{ secrets.INPUTS_TOKEN }}
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+
+  automerge:
+    needs: update
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app
+        with:
+          client-id: ${{ secrets.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Merge the pull request once the check passes
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          number="$(gh pr list --repo "$GITHUB_REPOSITORY" --head update/ai-skills --state open --json number --jq '.[0].number // empty')"
+          if [ -n "$number" ]; then
+            gh pr merge "$number" --repo "$GITHUB_REPOSITORY" --auto --rebase
+          fi

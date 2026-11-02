@@ -300,14 +300,12 @@
           ./modules/services/backup
           ./modules/services/alloy
           ./modules/services/tailscale
-          ./modules/services/attic/client.nix
         ];
 
         darwinDefaults.imports = [
           ./modules/darwin
           agenix.darwinModules.default
           ./modules/agenix
-          ./modules/services/attic/client.nix
         ];
 
         mini = {
@@ -507,42 +505,12 @@
           };
         };
 
-        forge = incus "forge" {
-          homelab.lanAddress = "192.168.1.115";
-          homelab.guest = {
-            host = "pve";
-            disk = 32;
-            mac = "BC:24:11:12:40:4A";
-          };
-        };
-
-        cache = incus "cache" {
-          homelab.lanAddress = "192.168.1.158";
-          homelab.guest = {
-            host = "pve";
-            cores = 4;
-            disk = 100;
-          };
-        };
-
         mirror = incus "mirror" {
           homelab.lanAddress = "192.168.1.159";
           homelab.guest = {
             host = "pve";
             mounts."/var/lib/mirror" = "/mnt/user/mirror";
           };
-        };
-
-        builder = incus "builder" {
-          homelab.lanAddress = "192.168.1.224";
-          homelab.guest = {
-            host = "pve";
-            cores = 20;
-            memory = 49152;
-            disk = 250;
-            mac = "BC:24:11:CC:42:C2";
-          };
-          deployment.tags = [ ];
         };
 
         pve = {

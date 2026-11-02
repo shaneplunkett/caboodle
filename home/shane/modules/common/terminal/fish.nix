@@ -172,7 +172,7 @@ in
         nrs = ''
           argparse --ignore-unknown local -- $argv; or return 1
 
-          set -l flake git+ssh://forgejo@forge/shane/caboodle --refresh
+          set -l flake github:shaneplunkett/caboodle --refresh
           if set -q _flag_local
             set flake $NH_FLAKE
           end

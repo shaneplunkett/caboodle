@@ -167,6 +167,7 @@ CI runs `scripts/check.sh` and nothing else. Builds and deploys happen on
 the desktop, through `scripts/quietly.sh`, `scripts/deploy.sh` and
 `scripts/terraform.sh`; `AGENTS.md` has the routine and
 [ADR 0004](docs/adr/0004-the-desktop-builds-and-deploys.md) the why.
+[docs/github](docs/github/README.md) covers the check, Renovate and the App.
 
 ## Tools
 

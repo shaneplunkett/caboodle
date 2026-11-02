@@ -25,8 +25,3 @@ provider "unifi" {
   api_key        = var.unifi_api_key
   allow_insecure = true
 }
-
-provider "forgejo" {
-  host      = "https://git.shaneplunkett.com"
-  api_token = var.forgejo_api_token
-}

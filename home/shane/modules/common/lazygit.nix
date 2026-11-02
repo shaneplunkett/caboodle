@@ -29,7 +29,5 @@ in
           '*': '${withHash.lavender}'
     git:
       overrideGpg: true
-    services:
-      'forge': 'gitea:git.shaneplunkett.com'
   '';
 }

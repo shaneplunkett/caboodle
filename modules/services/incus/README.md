@@ -65,8 +65,8 @@ needs no certificate. The rest of the API still wants one.
 
 Node exporter's CPU figures inside a guest are not the guest's own. lxcfs
 narrows `/proc/stat` to the guest's pinned CPUs, but on cgroup v2 the times
-are the host's, so a guest sharing CPUs with the builder looks as busy as
-the builder. The dashboard reads Incus instead.
+are the host's, so a guest sharing CPUs with a busy one looks as busy as
+it. The dashboard reads Incus instead.
 
 The pool alerts read Incus's pool size and used bytes, which for LVM are the
 thin pool's data use, the same as `lvs`. Two gaps need covering beside them.
@@ -103,9 +103,6 @@ reinstalled. It suits a guest whose state all lives in `/var/lib`. Its
 mounts' sources before the guest starts. It takes two pull requests, and
 nothing else merges between them.
 
-The cache can't move this way, since the restore fetches from it. Rebuild
-it from code and seed it again ([cache.md](../../../docs/pve/cache.md)).
-
 1. On the guest's host, stop the guest's apps, alloy and tailscaled with
    `incus exec`, then tar its host keys and `/var/lib`. When the host itself
    is about to be reinstalled, write the tar somewhere else, like the NAS:
@@ -124,21 +121,20 @@ it from code and seed it again ([cache.md](../../../docs/pve/cache.md)).
 
 2. The first pull request gives the node its `homelab.guest` with its old
    MAC and `running = false`. Merging creates the container, stopped.
-3. Build the second pull request's system on the builder before it merges
-   (`.#hydraJobs.<guest>`). On the new host, restore the tar and switch the
-   guest to that system. The restored guest has no `/run/agenix` yet, so
-   hand it the pull token for the copy, and the cache's key from
-   `modules/services/attic/client.nix`:
+3. On the new host, start the guest and restore the tar:
 
    ```sh
    incus start <guest>
    incus exec <guest> -- tar -C / --numeric-owner -xpf - < <dir>/<guest>.tar
-   printf 'machine 192.168.1.158\npassword %s\n' "$(rbw get attic-pull-token)" \
-     | incus exec <guest> -- bash -c 'umask 077; cat > /root/attic-netrc'
-   incus exec <guest> -- bash -lc "nix copy --from http://192.168.1.158:8080/shane $path \
-     --option extra-trusted-public-keys <key> --option netrc-file /root/attic-netrc \
-     && rm /root/attic-netrc \
-     && nix-env -p /nix/var/nix/profiles/system --set $path \
+   ```
+
+   Then build the second pull request's system on the desktop before it
+   merges, push it to the guest's LAN address, and switch:
+
+   ```sh
+   path=$(scripts/quietly.sh nix build --no-link --print-out-paths .#hydraJobs.<guest>)
+   nix copy --to ssh://root@<ip> "$path"
+   ssh root@<ip> "nix-env -p /nix/var/nix/profiles/system --set $path \
      && $path/bin/switch-to-configuration switch"
    ```
 
@@ -163,10 +159,6 @@ Gotchas:
 - **Run long copies as systemd units,** with `systemd-run`, so a dropped
   SSH session doesn't take them with it. A unit's `PATH` on NixOS lacks
   `/run/current-system/sw/bin`, so give it one.
-- **Never fetch from `cache.shaneplunkett.com` while moving ingress.** The
-  cache is served through ingress, and fetching from it mid-move took
-  everything web down for 4 minutes. Go to Attic at the cache guest's LAN
-  address directly.
 - **Don't SSH over Tailscale to a host and stop its tailscaled.** Use the
   LAN address.
 - **Podman images pinned by tag can be left out.** They pull again on

@@ -16,8 +16,7 @@ instead, and joins once with `sudo tailscale up`.
 
 ## Switching
 
-`nrs` doesn't work on the Deck: the flake's private inputs need the forge
-key, which the Deck doesn't have, and evaluating the hive there would take
+`nrs` doesn't work on the Deck: evaluating the hive there would take
 gigabytes. Build it on the desktop instead, and the Deck pulls the result
 from the desktop's store, signed, over `ssh-ng`
 ([the store as the cache](../workstation/README.md#the-store-as-the-cache)),

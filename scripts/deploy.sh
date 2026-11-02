@@ -23,7 +23,7 @@ fi
 scripts/quietly.sh colmena apply --on @deploy
 
 for attempt in $(seq 30); do
-  if dig +short +time=2 +tries=1 @dns1 git.shaneplunkett.com A | grep -q '^[^;]'; then
+  if dig +short +time=2 +tries=1 @dns1 auth.shaneplunkett.com A | grep -q '^[^;]'; then
     break
   fi
   if [ "$attempt" -eq 30 ]; then

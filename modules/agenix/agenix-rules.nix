@@ -9,8 +9,6 @@ let
     arr
     brain
     auth
-    forge
-    builder
     dlna
     gym
     rss
@@ -19,14 +17,11 @@ let
     paper
     music
     recipes
-    cache
     mirror
     pve
     cube
-    deck
     desktop
     mini
-    macbook
     ;
 in
 {
@@ -104,8 +99,6 @@ in
     arr
     brain
     auth
-    forge
-    builder
     dlna
     gym
     rss
@@ -114,7 +107,6 @@ in
     paper
     music
     recipes
-    cache
     mirror
     pve
     cube
@@ -154,10 +146,6 @@ in
   "oauth2-proxy-cookie-secret.age".publicKeys = [
     shane
     ingress
-  ];
-  "backup-forge.age".publicKeys = [
-    shane
-    forge
   ];
   "backup-gym.age".publicKeys = [
     shane
@@ -200,64 +188,34 @@ in
     shane
     home
   ];
-  "forgejo-oidc-client-secret.age".publicKeys = [
-    shane
-    forge
-  ];
-  "forgejo-runner-secret.age".publicKeys = [
-    shane
-    forge
-    builder
-  ];
-  "builder-ssh-key.age".publicKeys = [
-    shane
-    builder
-  ];
-  "forge-bot-token.age".publicKeys = [
-    shane
-    builder
-  ];
   "github-app-client-id.age".publicKeys = [
     shane
-    builder
     mirror
   ];
   "github-app-private-key.age".publicKeys = [
     shane
-    builder
     mirror
   ];
   "github-inputs-token.age".publicKeys = [
     shane
-    builder
   ];
   "terraform-cloud-token.age".publicKeys = [
     shane
-    builder
   ];
   "terraform-hcloud-token.age".publicKeys = [
     shane
-    builder
   ];
   "terraform-cloudflare-token.age".publicKeys = [
     shane
-    builder
   ];
   "terraform-access-emails.age".publicKeys = [
     shane
-    builder
-  ];
-  "terraform-forgejo-token.age".publicKeys = [
-    shane
-    builder
   ];
   "terraform-unifi-token.age".publicKeys = [
     shane
-    builder
   ];
   "terraform-incus-key.age".publicKeys = [
     shane
-    builder
   ];
   "backup-r2-plex.age".publicKeys = [
     shane
@@ -274,10 +232,6 @@ in
   "backup-r2-auth.age".publicKeys = [
     shane
     auth
-  ];
-  "backup-r2-forge.age".publicKeys = [
-    shane
-    forge
   ];
   "backup-r2-gym.age".publicKeys = [
     shane
@@ -344,43 +298,6 @@ in
   "norish-obscura-env.age".publicKeys = [
     shane
     recipes
-  ];
-  "attic-env.age".publicKeys = [
-    shane
-    cache
-  ];
-  "attic-netrc.age".publicKeys = [
-    shane
-    monitoring
-    ingress
-    dns1
-    dns2
-    plex
-    arr
-    brain
-    auth
-    forge
-    builder
-    dlna
-    gym
-    rss
-    home
-    photos
-    paper
-    music
-    recipes
-    cache
-    mirror
-    pve
-    cube
-    deck
-    desktop
-    mini
-    macbook
-  ];
-  "attic-push-token.age".publicKeys = [
-    shane
-    builder
   ];
   "nix-store-key-desktop.age".publicKeys = [
     shane

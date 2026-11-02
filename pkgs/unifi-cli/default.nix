@@ -21,7 +21,7 @@ buildGoModule {
 
   meta = {
     description = "Read-only CLI for Shane's UniFi Cloud Gateway Max — exposes drops/latency/events the UI hides";
-    homepage = "https://git.shaneplunkett.com/shane/caboodle/src/branch/main/pkgs/unifi-cli";
+    homepage = "https://github.com/shaneplunkett/caboodle/tree/main/pkgs/unifi-cli";
     license = lib.licenses.mit;
     mainProgram = "unifi";
   };
