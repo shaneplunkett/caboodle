@@ -30,6 +30,10 @@ in
     shane
     monitoring
   ];
+  "linear-bridge.age".publicKeys = [
+    shane
+    monitoring
+  ];
   "discord-webhook.age".publicKeys = [
     shane
     monitoring
