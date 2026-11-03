@@ -1,9 +1,12 @@
 package main
 
 import (
+	"net"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 func watchdog() alert {
@@ -225,5 +228,89 @@ func TestAPingThatCannotConnectAnswers200AndKeepsTheURLOutOfTheLog(t *testing.T)
 	}
 	if strings.Contains(r.logs.String(), "check-uuid") {
 		t.Errorf("the ping URL is in the log: %s", r.logs.String())
+	}
+}
+
+func logsAfterAPingAgainst(t *testing.T, handler http.HandlerFunc) string {
+	t.Helper()
+	r := newRig(t)
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+	r.bridge.heartbeat = newHeartbeat(server.URL + "/ping/check-uuid")
+	if code := r.post(t, "repeat interval elapsed", watchdog()); code != http.StatusOK {
+		t.Fatalf("status = %d", code)
+	}
+	r.record(t, "verb=ping")
+	return r.logs.String()
+}
+
+func TestAMalformedRedirectKeepsThePingPathOutOfTheLog(t *testing.T) {
+	logs := logsAfterAPingAgainst(t, func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Location", "/ping/check-uuid/%zz")
+		w.WriteHeader(http.StatusFound)
+	})
+	for _, trace := range []string{"check-uuid", "/ping", "%zz"} {
+		if strings.Contains(logs, trace) {
+			t.Errorf("%q is in the log: %s", trace, logs)
+		}
+	}
+	if !strings.Contains(logs, "level=ERROR") {
+		t.Errorf("logs = %s", logs)
+	}
+}
+
+func TestAPingNamesWhyItFailedWithoutQuotingTheError(t *testing.T) {
+	r := newRig(t)
+	r.bridge.heartbeat = newHeartbeat("http://127.0.0.1:1/ping/check-uuid")
+	r.post(t, "repeat interval elapsed", watchdog())
+	if line := r.record(t, "verb=ping"); !strings.Contains(line, `error="connection refused"`) {
+		t.Errorf("record = %s", line)
+	}
+}
+
+func TestAPingThatTimesOutSaysSo(t *testing.T) {
+	r := newRig(t)
+	release := make(chan struct{})
+	server := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) { <-release }))
+	t.Cleanup(server.Close)
+	t.Cleanup(func() { close(release) })
+	r.bridge.heartbeat = newHeartbeat(server.URL + "/ping/check-uuid")
+	r.bridge.heartbeat.http.Timeout = 50 * time.Millisecond
+	if code := r.post(t, "repeat interval elapsed", watchdog()); code != http.StatusOK {
+		t.Fatalf("status = %d", code)
+	}
+	if line := r.record(t, "verb=ping"); !strings.Contains(line, `error=timeout`) || strings.Contains(line, "check-uuid") {
+		t.Errorf("record = %s", line)
+	}
+}
+
+type lookupFails struct{}
+
+func (lookupFails) RoundTrip(*http.Request) (*http.Response, error) {
+	return nil, &net.DNSError{Err: "no such host", Name: "check-uuid.invalid", IsNotFound: true}
+}
+
+func TestAPingAgainstAnUnknownHostSaysSo(t *testing.T) {
+	r := newRig(t)
+	r.bridge.heartbeat = newHeartbeat("http://check-uuid.invalid/ping/check-uuid")
+	r.bridge.heartbeat.http.Transport = lookupFails{}
+	if code := r.post(t, "repeat interval elapsed", watchdog()); code != http.StatusOK {
+		t.Fatalf("status = %d", code)
+	}
+	line := r.record(t, "verb=ping")
+	if !strings.Contains(line, `error="dns lookup failed"`) || strings.Contains(line, "check-uuid") {
+		t.Errorf("record = %s", line)
+	}
+}
+
+func TestABrokenPingURLStaysOutOfTheLog(t *testing.T) {
+	r := newRig(t)
+	r.bridge.heartbeat = newHeartbeat("http://bad host/check-uuid")
+	if code := r.post(t, "repeat interval elapsed", watchdog()); code != http.StatusOK {
+		t.Fatalf("status = %d", code)
+	}
+	line := r.record(t, "verb=ping")
+	if !hasAttr(line, "level=ERROR") || strings.Contains(line, "check-uuid") {
+		t.Errorf("record = %s", line)
 	}
 }

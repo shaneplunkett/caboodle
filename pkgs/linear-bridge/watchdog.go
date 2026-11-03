@@ -5,15 +5,24 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
-	"net/url"
 	"sync"
+	"syscall"
 	"time"
 )
 
 const (
 	verbPing     verb = "ping"
 	verbWithheld verb = "withheld"
+)
+
+var (
+	errPingURLInvalid = errors.New("the ping URL is invalid")
+	errPingFailed     = errors.New("request failed")
+	errPingRefused    = errors.New("connection refused")
+	errPingLookup     = errors.New("dns lookup failed")
+	errPingTimeout    = errors.New("timeout")
 )
 
 type heartbeat struct {
@@ -28,11 +37,11 @@ func newHeartbeat(pingURL string) *heartbeat {
 func (h *heartbeat) ping(ctx context.Context) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, h.pingURL, nil)
 	if err != nil {
-		return withoutURL(err)
+		return errPingURLInvalid
 	}
 	resp, err := h.http.Do(req)
 	if err != nil {
-		return withoutURL(err)
+		return classifyPingFailure(err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= http.StatusMultipleChoices {
@@ -41,12 +50,18 @@ func (h *heartbeat) ping(ctx context.Context) error {
 	return nil
 }
 
-func withoutURL(err error) error {
-	var failed *url.Error
-	if errors.As(err, &failed) {
-		return failed.Err
+func classifyPingFailure(err error) error {
+	var lookup *net.DNSError
+	var network net.Error
+	switch {
+	case errors.As(err, &lookup):
+		return errPingLookup
+	case errors.As(err, &network) && network.Timeout():
+		return errPingTimeout
+	case errors.Is(err, syscall.ECONNREFUSED):
+		return errPingRefused
 	}
-	return err
+	return errPingFailed
 }
 
 func (b *bridge) watchdog(ctx context.Context, a alert, log *slog.Logger) {
