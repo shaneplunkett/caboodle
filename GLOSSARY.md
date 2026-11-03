@@ -18,7 +18,7 @@ A machine Nix configures as a member of the colmena hive: PVE, Cube, a guest, th
 _Avoid_: node, hive node
 
 **Server**:
-A host that runs services: PVE, Cube, every guest, and the mini. All but PVE and Cube deploy when a pull request merges. The mini is a workstation too.
+A host that runs services: PVE, Cube, every guest, and the mini. All but PVE and Cube deploy when a merge lands on `main`. The mini is a workstation too.
 
 **Workstation**:
 A host that carries Shane's own setup: home-manager, fish and fonts. The desktop, the MacBook and the mini.
@@ -27,14 +27,16 @@ _Avoid_: machine Shane sits at
 **Guest**:
 A host that runs in an Incus container on PVE or Cube.
 
+**Runner**:
+The guest that runs the deploy job when `main` moves, and nothing else. It builds every Linux host and applies the servers, and the desktop deploys it.
+_Avoid_: builder, CI box
+
+**Cache**:
+The guest whose store the runner and the mini push built closures into, served read-only by Harmonia so every host pulls instead of building. A shelf, not a service: losing it costs a slow week.
+_Avoid_: binary cache server, Attic
+
 **Device**:
 Something on the LAN with a reserved address that isn't a host, like the gateway or a smart plug. Each one is listed in `modules/devices.nix`. PVE and Cube are listed there too, and their hosts read their address and MAC from it.
-
-## Changes
-
-**Derivation diff**:
-The hosts whose built system differs between a pull request's base and its head. It's the list of what a merge would rebuild.
-_Avoid_: host diff, affected hosts
 
 ## Pipeline
 
