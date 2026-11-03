@@ -34,7 +34,7 @@ and the Mac mini. Read `README.md` for how it fits together.
 - **CI:** runs `scripts/check.sh` and nothing else. `.github/workflows/`
   calls the check workflow in `shaneplunkett/workflows`, pinned to a tag
   that Renovate moves, and `main` requires that check. Nothing builds or
-  deploys in CI; `docs/adr/0004` says why, and `docs/github` covers the
+  deploys in CI; `docs/adr/0005` says why, and `docs/github` covers the
   rest of GitHub.
 
 ## Checks
