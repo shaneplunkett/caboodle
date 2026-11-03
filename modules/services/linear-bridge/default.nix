@@ -19,7 +19,7 @@ in
   options.homelab.linearBridge = {
     port = lib.mkOption {
       type = lib.types.port;
-      default = 9095;
+      default = 9096;
       description = "Loopback port the bridge listens on for Alertmanager's webhook.";
     };
 

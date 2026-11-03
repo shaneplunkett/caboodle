@@ -24,6 +24,9 @@ by Prometheus on another host.
   and SHA-304 sizes the healthchecks.io check from that. The prototype measured
   it on a desktop Alertmanager with the same timings, since Prometheus doesn't
   scrape the real one.
+- The bridge listens on 9096 because Loki's gRPC server takes 9095 by default,
+  and no module says so. A local build can't catch a port clash; the first sign
+  was `bind: address already in use` in the bridge's journal after a deploy.
 
 ## Prometheus
 
