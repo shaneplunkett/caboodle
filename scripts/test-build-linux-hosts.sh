@@ -4,7 +4,8 @@
 # A fake git points the script at the sandbox, a fake quietly.sh records each call
 # and plays the hosts, and a fake nix on the PATH catches a call that skips
 # quietly.sh. FAIL_HOST makes one host's build fail, and INT_HOST interrupts the
-# script during one host's build. scripts/check.sh runs this.
+# script during one host's build. FAIL_HOST takes several names, separated by
+# spaces. scripts/check.sh runs this.
 set -eu
 
 script="$(cd "$(dirname "$0")" && pwd)/build-linux-hosts.sh"
@@ -50,10 +51,12 @@ if [ "\$host" = "\${INT_HOST:-}" ]; then
   kill -INT "\$PPID"
   exit 1
 fi
-if [ "\$host" = "\${FAIL_HOST:-}" ]; then
-  echo "error: build of \$host failed" >&2
-  exit 1
-fi
+case " \${FAIL_HOST:-} " in
+  *" \$host "*)
+    echo "error: build of \$host failed" >&2
+    exit 1
+    ;;
+esac
 if [ -n "\$link" ]; then
   ln -s "/nix/store/fake-\$host" "\$link"
 fi
@@ -135,6 +138,15 @@ run CLOSURE_LINKS="$sandbox/closures" FAIL_HOST=deck
 check "exits non-zero" 1 "$status"
 check "attempts every host" "$all_built" "$(calls)"
 check "names only that host" "build-linux-hosts: these hosts didn't build: deck" "$(tail -n 1 "$sandbox/err")"
+
+echo
+echo "two hosts fail"
+run CLOSURE_LINKS="$sandbox/closures" FAIL_HOST="cube plex"
+check "exits non-zero" 1 "$status"
+check "prints nothing on stdout" "" "$out"
+check "attempts every host" "$all_built" "$(calls)"
+check "names both hosts on stderr" "build-linux-hosts: these hosts didn't build: cube plex" "$(tail -n 1 "$sandbox/err")"
+check "the host that built keeps its link" "deck -> /nix/store/fake-deck" "$(links)"
 
 echo
 echo "the build is interrupted"
