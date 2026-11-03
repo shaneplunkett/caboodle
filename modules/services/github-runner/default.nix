@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  nodes,
   pkgs,
   ...
 }:
@@ -13,6 +14,10 @@ let
   work = "/var/lib/github-runner-work";
   tokenDir = "github-runner-registration";
   tokenFile = "/run/${tokenDir}/token";
+  inputsTokenDir = "nix-inputs-token";
+  inputsTokenFile = "/run/${inputsTokenDir}/access-tokens.conf";
+  hostKeys = import ../../agenix/host-keys.nix;
+  deployed = lib.filterAttrs (_: node: node.config.homelab.deployedByRunner) nodes;
   gib = n: n * 1024 * 1024 * 1024;
 
   slice = "runner";
@@ -35,7 +40,11 @@ in
   homelab.secrets = [
     "github-app-client-id"
     "github-app-private-key"
+    "github-inputs-token"
+    "runner-ssh-key"
   ];
+
+  age.secrets.runner-ssh-key.owner = user;
 
   users.users.${user} = {
     group = user;
@@ -55,6 +64,22 @@ in
       max-jobs = 2;
       cores = 4;
     };
+    extraOptions = "!include ${inputsTokenFile}";
+  };
+
+  networking.hosts = lib.mapAttrs' (
+    name: node: lib.nameValuePair node.config.homelab.lanAddress [ name ]
+  ) deployed;
+
+  programs.ssh = {
+    extraConfig = "IdentityFile ${secrets.runner-ssh-key.path}";
+    knownHosts = lib.mapAttrs (name: node: {
+      hostNames = [
+        name
+        node.config.homelab.lanAddress
+      ];
+      publicKey = hostKeys.${name};
+    }) deployed;
   };
 
   systemd.slices.${slice}.sliceConfig = {
@@ -75,7 +100,12 @@ in
     tokenType = "registration";
     replace = true;
     extraLabels = [ name ];
-    extraPackages = [ pkgs.util-linux ];
+    extraPackages = [
+      pkgs.colmena
+      pkgs.dnsutils
+      pkgs.openssh
+      pkgs.util-linux
+    ];
     workDir = work;
     serviceOverrides = fence // {
       Restart = lib.mkForce "on-failure";
@@ -100,5 +130,23 @@ in
         "private-key:${secrets.github-app-private-key.path}"
       ];
     };
+  };
+
+  systemd.services.nix-inputs-token = {
+    description = "Write the inputs token where the job's Nix reads it";
+    before = [ "github-runner-${name}.service" ];
+    requiredBy = [ "github-runner-${name}.service" ];
+    restartTriggers = [ (builtins.hashFile "sha256" secrets.github-inputs-token.file) ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = user;
+      UMask = "0077";
+      RuntimeDirectory = inputsTokenDir;
+      LoadCredential = "token:${secrets.github-inputs-token.path}";
+    };
+    script = ''
+      printf 'access-tokens = github.com=%s\n' "$(cat "$CREDENTIALS_DIRECTORY/token")" > ${inputsTokenFile}
+    '';
   };
 }

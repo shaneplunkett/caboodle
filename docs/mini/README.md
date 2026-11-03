@@ -111,6 +111,10 @@ here.
 
 ## Deploying
 
+A merge doesn't reach the mini. Its tag is `deploy-mini`, so the
+[runner](../pve/runner.md#the-deploy-job) skips it, and `scripts/deploy.sh` with
+no arguments applies it from the desktop along with the guests.
+
 `scripts/deploy.sh mini` deploys it from the desktop: colmena reaches it as
 `shane` with Shane's key, builds on the mini, and runs `sudo` without a
 password. Tailscale is the Homebrew app, so colmena uses its LAN address.

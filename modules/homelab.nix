@@ -7,6 +7,12 @@
       description = "The host's LAN address, for anything that must keep working without Tailscale. A host that's always on the LAN has one; a laptop doesn't.";
     };
 
+    deployedByRunner = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether a merge to main applies this host from the runner, whose root key it then accepts.";
+    };
+
     guest = lib.mkOption {
       type = lib.types.nullOr (
         lib.types.submodule {

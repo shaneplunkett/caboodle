@@ -13,7 +13,7 @@
 #   before it kills the machine. The whole hive peaks around 15.
 #
 #   scripts/quietly.sh colmena apply --on plex
-#   scripts/quietly.sh colmena build --on @deploy-on-merge
+#   scripts/quietly.sh colmena build --on @deploy
 #   scripts/quietly.sh nix build .#hydraJobs.desktop
 #
 # On a Mac there's no systemd and no chrt, so it degrades to nice and the

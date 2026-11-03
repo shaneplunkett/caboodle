@@ -6,7 +6,7 @@ and the Mac mini. Read `README.md` for how it fits together.
 
 ## Making a change
 
-- **Build:** builds and evaluations run here, on Shane's desktop, and only
+- **Build:** to check a change, build here, on Shane's desktop, and only
   through `scripts/quietly.sh`: `scripts/quietly.sh colmena build --on
   <host>`. The wrapper runs one at a time, at idle priority, capped at 20
   GB, so a build never gets in the way of whatever Shane is doing on the
@@ -15,10 +15,12 @@ and the Mac mini. Read `README.md` for how it fits together.
   hive. The local gate is `scripts/check.sh`. Flakes ignore untracked
   files, so `git add` new files first. Nix code reads for itself, with no
   comments.
-- **Deploy:** `scripts/deploy.sh <host>` builds a host here and applies it
-  over SSH; with no arguments it applies every server, dns2 after dns1. The
-  mini builds on itself, since the desktop can't build darwin. PVE, Cube,
-  the desktop, the Deck and the MacBook are switched by hand, each per its
+- **Deploy:** a merge to `main` deploys the guests from the runner, through
+  `.github/workflows/deploy.yml`, dns2 after dns1. The desktop is the
+  fallback: `scripts/deploy.sh <host>` builds a host here and applies it over
+  SSH, and with no arguments it applies every server. Only the desktop applies
+  the runner and the mini, which builds on itself. PVE, Cube, the desktop, the
+  Deck and the MacBook are switched by hand, each per its
   doc under `docs/`. `scripts/terraform.sh` plans Terraform with the tokens
   agenix holds, and `scripts/terraform.sh apply` applies that plan.
 - **Pull request:** land every change through a pull request on GitHub
@@ -28,13 +30,16 @@ and the Mac mini. Read `README.md` for how it fits together.
   `terraform/` changed. Rebase onto `origin/main` before filing.
 - **Merge:** Shane merges, except Renovate's Sunday pull requests (every
   dependency in one, the lock file in the other) and the `ai-skills` bumps,
-  which merge themselves once the check passes. Merging deploys nothing. Once a change
-  is on `main`, deploy it from the desktop with `scripts/deploy.sh` and, if
-  `terraform/` changed, `scripts/terraform.sh apply`, when Shane asks.
-- **CI:** runs `scripts/check.sh` and nothing else. `.github/workflows/`
-  calls the check workflow in `shaneplunkett/workflows`, pinned to a tag
-  that Renovate moves, and `main` requires that check. Nothing builds or
-  deploys in CI; `docs/adr/0005` says why, and `docs/github` covers the
+  which merge themselves once the check passes. Merging deploys, unless only
+  `docs/` changed, so choosing when to merge is choosing when it lands. The
+  mini, and `terraform/` with `scripts/terraform.sh apply`, go from the
+  desktop when Shane asks. A failed deploy is a red cross on the merge commit,
+  and rollback is a revert pull request.
+- **CI:** GitHub's runners run `scripts/check.sh` and nothing else.
+  `.github/workflows/` calls the check workflow in `shaneplunkett/workflows`,
+  pinned to a tag that Renovate moves, and `main` requires that check. Nothing
+  on a pull request builds or deploys. `docs/adr/0005` says why,
+  `docs/pve/runner.md` covers the deploy job, and `docs/github` covers the
   rest of GitHub.
 
 ## Checks

@@ -199,6 +199,9 @@ in
   "github-inputs-token.age".publicKeys = [
     shane
   ];
+  "runner-ssh-key.age".publicKeys = [
+    shane
+  ];
   "terraform-cloud-token.age".publicKeys = [
     shane
   ];

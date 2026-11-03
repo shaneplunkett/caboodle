@@ -16,10 +16,10 @@ as they are, so it needs no nix-ld.
 
 Renovate's weekly lock file update moves the `vex-brain` input. For a new
 version sooner, run `nix flake update vex-brain` on a branch. Once it's on
-`main`, `scripts/deploy.sh` deploys it.
+`main`, the merge deploys it.
 
 The app runs its migrations on startup. If the update brings new files in
-`app/migrations/`, take a backup first with
+`app/migrations/`, take a backup before you merge with
 `ssh root@brain systemctl start restic-backups-homelab`, because migrations
 only run forward.
 
