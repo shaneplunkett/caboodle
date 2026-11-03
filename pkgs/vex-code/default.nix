@@ -102,8 +102,8 @@ let
           src
           pnpmWorkspaces
           ;
-        fetcherVersion = 4;
-        hash = "sha256-XqdfHBKTB1QnlqLBAdm2lqzVSGpSW99V0aedDNl24eQ=";
+        fetcherVersion = 5;
+        hash = "sha256-ABzAEEFeotEz6cePB3M4EaGrM+tbfjGZScy2BRAyLVc=";
       };
 
       postPatch = ''
