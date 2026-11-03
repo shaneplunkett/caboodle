@@ -72,8 +72,8 @@ the LAN or Tailscale. Its admin UI only answers on the desktop itself, at
 whoever controls it can pair new clients. Moonlight shows a PIN, which goes
 on the UI's PIN page.
 
-Moonlight lists two apps. Desktop streams DP-2 as it is. Steam runs
-`sunshine-stream start`, which makes a headless Hyprland output called
+Moonlight lists two apps. Desktop streams one physical monitor as it is. Steam
+runs `sunshine-stream start`, which makes a headless Hyprland output called
 `STREAM` at the client's resolution and frame rate, moves Steam's workspace
 onto it, turns the physical monitors off and opens Big Picture fullscreen.
 Games then render at the client's size rather than 4K. Quitting the app in
@@ -93,7 +93,9 @@ dark anyway, Super + Shift + M runs the stop from the desk.
   window. The stream turns it on and `stop` restores the config's value,
   since at the desk it would fullscreen whatever sits behind a closed video.
 - `output_name` matches Hyprland's output names. When none matches, Sunshine
-  quietly streams the first output, which is how Desktop gets DP-2.
+  quietly streams the first output, which is how Desktop gets a monitor. That
+  order changes, so Desktop has opened on both DP-2 and HDMI-A-1. If the cursor
+  or a window seems to be missing, it's probably on the other monitor.
 - Hyprland's config is Lua, so runtime changes go through `hyprctl eval`.
   `hyprctl keyword`, which most shared Sunshine scripts use, does nothing.
 - If encoding breaks after a Mesa or kernel update,
