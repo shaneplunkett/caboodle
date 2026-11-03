@@ -312,10 +312,12 @@ disk. It stays out of a failed build and a cancelled job.
 - **It applies everything it finds.** A plan isn't limited to what its merge
   changed, so a change made in Cloudflare's or UniFi's dashboard gets reverted by
   the next merge that plans. That can be a lock file bump that merged itself.
-- **A merge can delete a guest.** `incus_instance.guest` follows `.#network` and
-  has no `prevent_destroy`, so a merge that drops a guest from the hive or clears
-  its `homelab.guest` deletes the container and its disk, and nobody reads that
-  plan first. Run `scripts/terraform.sh` from the desktop before merging one.
+- **A merge can't delete a guest.** `incus_instance.guest` follows `.#network`
+  and has no `prevent_destroy`, so a merge that drops a guest from the hive or
+  clears its `homelab.guest` plans to delete the container and its disk. The
+  [guard](#terraform) refuses that plan, the run goes red, and the deletion
+  waits for `scripts/terraform.sh apply` from the desktop, where someone reads
+  the plan first.
 - **A run that stops early leaves the change behind.** A build failure or a cancel
   skips Terraform, and a failed or refused apply leaves it undone. Nothing retries
   it. The next merge that changes something on the list plans again and picks it up,
@@ -341,8 +343,10 @@ disk. It stays out of a failed build and a cancelled job.
   an apply that changes it can kill the job halfway and leave the lock held. Before
   the job applies, `scripts/terraform.sh` passes the saved plan through
   `scripts/terraform-guard.sh`, which stops the job on anything but a no-op on
-  `incus_instance.guest["runner"]`. It also stops on a plan it can't read or one
-  that doesn't list the container, since a real plan always does. Nothing in that
+  `incus_instance.guest["runner"]`, and on a delete or replace of any other
+  guest, since that takes a container and its disk with it. It also stops on a
+  plan it can't read or one that doesn't list the container, since a real plan
+  always does. Nothing in that
   plan applies, other resources included, and the run goes red, as does every merge
   that plans after it until the desktop applies. The desktop leaves
   `TERRAFORM_SECRETS_DIR` unset, so it skips the guard. Run
