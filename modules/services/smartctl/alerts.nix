@@ -77,7 +77,7 @@ in
                   annotations = {
                     summary = "{{ $labels.device }} on {{ $labels.host }} cannot be read by smartctl";
                     condition = "smartctl reports an invocation, device-open or SMART-command error for 10m";
-                    description = "smartctl can't get a straight answer from this drive, so its health numbers are old or missing and the other SMART alerts can't speak for it. That's either a sick drive or a bad connection, and either can become a lost disk without much more warning. Read the top of the check's output: a failed open means the system can't reach the drive at all, and a failed SMART command means it's there but not answering properly. Resets or ATA errors in `journalctl -k` on {{ $labels.host }} point the same way, and on a spinning disk, reseating the cable is the cheap thing to try before blaming the drive.";
+                    description = "smartctl can't get a straight answer from this drive, so its health numbers are old or missing and the other SMART alerts can't speak for it. Sometimes that's smartctl itself failing to run, which is a config problem, not a drive; otherwise it's a sick drive or a bad connection, and either can become a lost disk without much more warning. Read the top of the check's output: an invocation error means the command or its device path is wrong, a failed open means the system can't reach the drive at all, and a failed SMART command means it's there but not answering properly. Resets or ATA errors in `journalctl -k` on {{ $labels.host }} point the same way, and on a spinning disk, reseating the cable is the cheap thing to try before blaming the drive.";
                     check = smartLog;
                   };
                 }

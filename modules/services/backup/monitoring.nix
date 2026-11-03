@@ -71,7 +71,7 @@ let
         annotations = {
           summary = "{{ $labels.host }} has no successful restic ${task} on record";
           condition = "No ${task} on record for ${humanize seconds}";
-          description = "${stakes.${task}} {{ $labels.host }} has data to back up and has been up long enough to run this, yet there's no record of it ever finishing, so treat that copy as missing. The record is a stamp in `${config.homelab.metricsDir}`, so a rebuilt host loses it even when the repo is fine. The check shows whether the job has run at all, and `systemctl start restic-backups-${jobs.${task}}` runs it now and shows what stops it.";
+          description = "${stakes.${task}} {{ $labels.host }} has data to back up and has been up long enough to run this, yet there's no record of it ever finishing. The record is a stamp in `${config.homelab.metricsDir}`, so a rebuilt host loses it even when the repo is fine. The check shows whether the job has run at all, and `systemctl start restic-backups-${jobs.${task}}` runs it now and shows what stops it.";
           check = "ssh root@{{ $labels.host }} journalctl -u restic-backups-${jobs.${task}} -n 50";
           dashboard = links.logs "{{ $labels.host }}" [ "restic-backups-${jobs.${task}}.service" ];
         };
@@ -144,7 +144,7 @@ in
                 annotations = {
                   summary = "The Storage Box isn't answering SFTP, so no host can back up";
                   condition = "SSH banner probe failing for 15m";
-                  description = "Every host's backup to the box fails while this lasts, and so do their weekly prunes and checks. R2 still gets its copy, because that job runs even when the box one fails, so a night or two costs little. Find out whether it's home or Hetzner: if the internet is out, `docs/internet-down.md` is the place to start, and otherwise it's Hetzner's status page. Run the check from monitoring, since the probe goes over IPv4 from there and a machine with IPv6 can get a different answer.";
+                  description = "Every host's backup to the box fails while this lasts, and so do their weekly prunes and checks. The R2 job runs on its own and still gets its copy while the internet is up, so check `r2-backup` is fresh before deciding a night or two costs little. Find out whether it's home or Hetzner: if the internet is out, `docs/internet-down.md` is the place to start, and otherwise it's Hetzner's status page. Run the check from monitoring, since the probe goes over IPv4 from there and a machine with IPv6 can get a different answer.";
                   check = "nc -vz {{ reReplaceAll \":.*\" \"\" $labels.instance }} 23";
                 };
               }

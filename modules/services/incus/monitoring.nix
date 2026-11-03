@@ -42,7 +42,7 @@ let
         alert = "${name}Filling";
         severity = "warning";
         value = 0.8;
-        urgency = "There's room for now, so this is a job for this week.";
+        urgency = "There's room for now, but nothing here says how fast it's filling, so look at the trend before deciding it can wait.";
       }
       {
         alert = "${name}AlmostFull";
@@ -165,7 +165,7 @@ in
                     annotations = {
                       summary = "Incus on {{ $labels.host }} isn't serving metrics, so its pool alerts are blind";
                       condition = "Incus metrics scrape failing for 5m";
-                      description = "Prometheus can't scrape Incus on {{ $labels.host }}, so nothing is watching how full its pools are, and the guests' CPU graphs stop too. Either the daemon is down or the metrics endpoint has started asking for a certificate. The check prints `false` when the endpoint is set right, and anything else is why the scrape fails. If the command errors, the daemon is down and `systemctl status incus` shows why. The guests may still be running, but Terraform can't reach them until it's back.";
+                      description = "Prometheus can't scrape Incus on {{ $labels.host }}, so nothing is watching how full its pools are, and the guests' CPU graphs stop too. The daemon may be down, the metrics endpoint may have started asking for a certificate, or monitoring may just not be able to reach the host; the scrape looks the same from here for all three. The check prints `false` when the endpoint is set right, and anything else is why the scrape fails. If the command errors, SSH or the daemon is the problem, and `systemctl status incus` on the host says which. If the host answers but Prometheus can't, it's the path between them. The guests may still be running, but Terraform can't reach them until it's back.";
                       check = "ssh {{ $labels.host }} incus config get core.metrics_authentication";
                     };
                   }
