@@ -6,9 +6,10 @@ account, so losing GitHub costs no history. The service is
 sign into. Recovery is `git clone` from the folder.
 
 `mirror.timer` runs hourly. It mints a token from the GitHub App
-([github](../github/README.md#github-app-and-inputs-token)), lists the repos the
-App is installed on, which is all of them, then `git clone --mirror`s the
-new ones and `git remote update --prune`s the rest into `/var/lib/mirror`.
+([github](../github/README.md#github-app-and-inputs-token)) that can only read
+contents, lists the repos the App is installed on, which is all of them, then
+`git clone --mirror`s the new ones and `git remote update --prune`s the rest
+into `/var/lib/mirror`.
 A repo that fails doesn't stop the others; the unit fails at the end. `journalctl -u mirror` shows each run, and `systemctl start mirror`
 runs one now.
 
