@@ -5,8 +5,10 @@
 # .runner is missing, and otherwise never looks at the file. A registered runner
 # gets the file removed, since every job runs as the user who could read it.
 #
-# Everything written lands in a directory root owns, so a job can't plant a
-# symlink for this script, which runs as root, to write through.
+# This runs as root and every file in the state directory is a job's to plant, so
+# it only ever tests for .runner and never reads anything out of there. Everything
+# written lands in a directory root owns, so a job can't plant a symlink for this
+# script to write through either.
 url=$1
 state=$2
 file=$3
@@ -22,6 +24,6 @@ install -d -m 755 "$dir"
 tmp=$(mktemp "$dir/.token.XXXXXX")
 trap 'rm -f "$tmp"' EXIT
 
-github-runner-registration-token "$url" "$state" "$tmp"
+github-runner-registration-token "$url" "$tmp"
 chown "$user" "$tmp"
 mv "$tmp" "$file"

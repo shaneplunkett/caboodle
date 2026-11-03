@@ -37,6 +37,12 @@ on every start would register on every start. The oneshot is its own unit so
 that `LoadCredential` never hands the App's key to the runner's service, where
 every job could read it.
 
+The copy runs as root and reads from a directory the job's user owns, which is
+only safe because of the module's `InaccessiblePaths`. It mounts over
+`.current-token` in the job's view, and the kernel refuses to unlink or replace a
+mount point, so a job can't swap it for a symlink to one of root's files. If a
+symlink ever turns up anyway, the oneshot mints instead of following it.
+
 **The App needs Administration write.** GitHub lists
 `POST /repos/{owner}/{repo}/actions/runners/registration-token` under
 "Repository permissions for Administration" in
@@ -120,10 +126,13 @@ own commit, so a burst of merges lands one after another.
 
 - **The inputs token.** `nix-inputs-token.service` writes
   `/run/nix-inputs-token/access-tokens.conf`, the file `nix.conf` includes, from
-  the agenix copy, which stays root's. The job's user owns the new file, since
-  Nix fetches flake inputs in the process that evaluates, not in the daemon.
-  A workstation's daemon has no token either, and its deploys work. Nix silently skips an `!include` it can't read, so a root-only file
-  shows up as a 404 on the first private input.
+  the agenix copy, which stays root's. The job's group can read the new file,
+  since Nix fetches flake inputs in the process that evaluates, not in the daemon.
+  A workstation's daemon has no token either, and its deploys work. Nix silently
+  skips an `!include` it can't read, so a file the group can't read shows up as a
+  404 on the first private input. Root owns the file and its directory and the file
+  is `0640`, because root's Nix and the daemon read it too, with no check on its
+  owner: a job that could write it could set `plugin-files` and run code as root.
 - **Its root SSH key.** `/run/agenix/runner-ssh-key` belongs to the job's user,
   and `/etc/ssh/ssh_config` names it. A job can read that key, since applying a
   guest needs it. Running colmena as root instead would need `sudo`, which the service's

@@ -27,7 +27,14 @@ let
     OOMPolicy = "continue";
   };
 
-  registrationToken = pkgs.callPackage ./registration-token.nix { };
+  registration = pkgs.writeShellApplication {
+    name = "github-runner-registration";
+    runtimeInputs = [
+      (pkgs.callPackage ./registration-token.nix { })
+      pkgs.coreutils
+    ];
+    text = builtins.readFile ./nixos-registration.sh;
+  };
 in
 {
   imports = [
@@ -125,7 +132,7 @@ in
     requiredBy = [ "github-runner-${name}.service" ];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${lib.getExe registrationToken} ${url} ${state} ${tokenFile}";
+      ExecStart = "${lib.getExe registration} ${url} ${state} ${tokenFile}";
       RuntimeDirectory = tokenDir;
       RuntimeDirectoryMode = "0700";
       RuntimeDirectoryPreserve = true;
@@ -144,13 +151,12 @@ in
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      User = user;
-      UMask = "0077";
       RuntimeDirectory = inputsTokenDir;
-      LoadCredential = "token:${secrets.github-inputs-token.path}";
     };
     script = ''
-      printf 'access-tokens = github.com=%s\n' "$(cat "$CREDENTIALS_DIRECTORY/token")" > ${inputsTokenFile}
+      token=$(<${secrets.github-inputs-token.path})
+      printf 'access-tokens = github.com=%s\n' "$token" |
+        install -m 0640 -g ${user} /dev/stdin ${inputsTokenFile}
     '';
   };
 }
