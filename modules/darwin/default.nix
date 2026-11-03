@@ -1,5 +1,7 @@
 { config, lib, ... }:
 {
+  imports = [ ../services/harmonia/client.nix ];
+
   nixpkgs.config.allowUnfree = true;
 
   nix = {

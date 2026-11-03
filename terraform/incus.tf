@@ -128,7 +128,7 @@ resource "incus_instance" "guest" {
     type = "disk"
     properties = {
       path = "/"
-      pool = "default"
+      pool = each.value.pool
       size = "${each.value.disk}GiB"
     }
   }

@@ -307,4 +307,7 @@ in
     shane
     mini
   ];
+  "nix-store-key-cache.age".publicKeys = [
+    shane
+  ];
 }

@@ -4,6 +4,9 @@
   pkgs,
   ...
 }:
+let
+  cache = import ../harmonia/cache.nix;
+in
 {
   services.blocky = {
     enable = true;
@@ -54,7 +57,10 @@
         };
       };
       customDNS = {
-        mapping."shaneplunkett.com" = nodes.ingress.config.homelab.lanAddress;
+        mapping = {
+          "shaneplunkett.com" = nodes.ingress.config.homelab.lanAddress;
+          ${cache.name} = nodes.cache.config.homelab.lanAddress;
+        };
         zone = ''
           $ORIGIN shaneplunkett.com.
           redbook 3600 CNAME red-book-5nn.pages.dev.

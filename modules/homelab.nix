@@ -29,6 +29,11 @@
               default = 8;
               description = "Root disk in GiB.";
             };
+            pool = lib.mkOption {
+              type = lib.types.str;
+              default = "default";
+              description = "The Incus storage pool the root disk lives in.";
+            };
             mac = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
               default = null;
