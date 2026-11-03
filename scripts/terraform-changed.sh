@@ -1,6 +1,6 @@
 #!/bin/sh
-# Says whether a push to main changed terraform/, for the deploy job. Prints
-# true or false.
+# Says whether a push to main changed anything a Terraform plan reads, for the
+# deploy job. Prints true or false.
 #
 #   scripts/terraform-changed.sh <before> <after>
 #
@@ -14,6 +14,22 @@ set -eu
 before="$1"
 after="$2"
 
+# Terraform's own config, then what evaluating .#network and the Incus image
+# reads, then the scripts the job plans through. The flake's overlays force the
+# two files under pkgs/ but none of the packages they name.
+set -- \
+  terraform/ \
+  flake.nix \
+  flake.lock \
+  hosts/ \
+  modules/ \
+  pkgs/overlays.nix \
+  pkgs/default.nix \
+  scripts/terraform.sh \
+  scripts/terraform-changed.sh \
+  scripts/terraform-guard.sh \
+  scripts/incus-image.sh
+
 if ! git cat-file -e "$before^{commit}" 2>/dev/null &&
   ! git fetch --quiet --depth=1 origin "$before" 2>/dev/null; then
   echo "terraform-changed: can't get $before, so assuming Terraform changed" >&2
@@ -21,7 +37,7 @@ if ! git cat-file -e "$before^{commit}" 2>/dev/null &&
   exit 0
 fi
 
-if git diff --quiet "$before" "$after" -- terraform/; then
+if git diff --quiet "$before" "$after" -- "$@"; then
   echo false
 else
   echo true

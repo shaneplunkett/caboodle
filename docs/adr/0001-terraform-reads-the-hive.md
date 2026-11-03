@@ -11,9 +11,11 @@ first chose a plan against state that skips the refresh as the gate, but
 that was never built. The old CI path-filtered on `terraform/`, `flake.nix`,
 `modules/devices.nix` and `scripts/terraform.sh`, which ran Terraform for
 some hive edits it never reads but missed none it does. Since ADR 0005 the
-deploy job on the runner applies Terraform when a merge touched
-`terraform/`, and a hive-only change that moves the plan is applied from
-the desktop by hand (`docs/pve/runner.md`).
+deploy job on the runner applies Terraform, at first only when a merge
+touched `terraform/`, which left a hive-only change to be applied from the
+desktop by hand. It now runs on a merge that touches anything a plan reads,
+hive included, which takes extra plans that find nothing over a forgotten
+apply (`docs/pve/runner.md`).
 
 ## Considered options
 
@@ -21,7 +23,8 @@ the desktop by hand (`docs/pve/runner.md`).
   This keeps the standard path filter honest and shows address changes in
   the diff, but it's a second copy of the hive that someone has to remember
   to regenerate.
-- **Path filters on `flake.nix` too.** This is what runs, with
+- **Path filters on `flake.nix` too.** This is what the old CI ran, with
   `modules/devices.nix` added on 24 Oct 2026 after a devices-only change got
-  no plan. It still starts Terraform for flake edits it can't see, so an
-  unrelated provider outage can block them.
+  no plan, and the job's wider list is the same idea. It still starts
+  Terraform for edits it can't see, so an unrelated provider outage can turn
+  them red.

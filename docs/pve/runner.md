@@ -200,9 +200,9 @@ store gains none. It has four steps:
 3. **Apply.** `scripts/deploy.sh` applies the `deploy` tag, then dns2 once dns1
    answers, the same as the desktop. Colmena evaluates the hive again but finds
    everything built, so a run costs two evaluations.
-4. **Terraform.** If the push changed `terraform/`, `scripts/terraform.sh apply`
-   plans, prints the plan to the log and applies it. See
-   [Terraform](#terraform).
+4. **Terraform.** If the push changed anything a plan reads,
+   `scripts/terraform.sh apply` plans, prints the plan to the log and applies it.
+   See [Terraform](#terraform).
 
 The build evaluates in a dry run of its own and then builds from Nix's eval
 cache. An evaluator keeps its heap until it exits, so a `nix build` that did both
@@ -269,7 +269,7 @@ finishes the job.
 Rollback is a revert pull request. Re-run failed jobs on the newest run is fine,
 but re-running an older run applies that older commit over whatever came after
 it, and moves every host's profile on the cache back to it until the next merge.
-If that run changed `terraform/`, it applies the older Terraform too.
+If that run changed anything a plan reads, it applies the older Terraform too.
 
 `concurrency: deploy` never cancels a running deploy, and `queue: max` keeps
 every later merge waiting in order instead of GitHub's default of one pending
@@ -278,7 +278,23 @@ own commit, so a burst of merges lands one after another.
 
 ### Terraform
 
-`scripts/terraform-changed.sh` compares the trees of the commits `main` went from
+A merge runs a plan when it changes anything a plan reads, and
+`scripts/terraform-changed.sh` holds that list: `terraform/`, what evaluating
+`.#network` and the Incus base image reads, and the scripts the job plans
+through. Terraform [reads the hive](../adr/0001-terraform-reads-the-hive.md), so a
+new guest, device or port forward applies on the merge that adds it, and nobody
+has to remember to. Most of these merges can't move the plan, like a README under
+`modules/` or an `ai-skills` bump, and their plans find nothing. An extra plan is
+cheaper than a forgotten apply. `docs/` and anything else off the list run none.
+
+The evaluation forces `pkgs/overlays.nix` and `pkgs/default.nix`, so those count,
+but not the packages they name, and not `home/`. With only the listed paths in a
+fresh repo, `git add`ed, `.#network` and the image's derivations come out byte for
+byte the same. A new file the evaluation needs fails that check with `Path '...'
+does not exist in Git repository`, so it's the way to re-check the list after
+rewiring the flake.
+
+The script compares the trees of the commits `main` went from
 and to, after a shallow fetch of the before commit, since a diff of two trees
 needs no history. A rebase merge's several commits and a force push count the same
 way, and a change that a later commit in the same push reverts counts as nothing.
@@ -293,12 +309,22 @@ disk. It stays out of a failed build and a cancelled job.
 - **The `Plan:` line isn't what it applies.** The line in the pull request comes
   from the desktop before merging. The runner plans again at merge time and applies
   what it finds, so anything that moved in between goes too.
-- **Only `terraform/` counts.** Terraform reads `.#network` from the hive, so a new
-  guest, device or port forward changes the plan without touching that folder, and
-  the merge runs no Terraform. Run `scripts/terraform.sh apply` from the desktop.
+- **It applies everything it finds.** A plan isn't limited to what its merge
+  changed, so a change made in Cloudflare's or UniFi's dashboard gets reverted by
+  the next merge that plans. That can be a lock file bump that merged itself.
+- **A merge can delete a guest.** `incus_instance.guest` follows `.#network` and
+  has no `prevent_destroy`, so a merge that drops a guest from the hive or clears
+  its `homelab.guest` deletes the container and its disk, and nobody reads that
+  plan first. Run `scripts/terraform.sh` from the desktop before merging one.
 - **A run that stops early leaves the change behind.** A build failure or a cancel
-  skips Terraform, and the next merge only runs it if that one changed `terraform/`
-  too. Re-run the job if it's still the newest, or apply from the desktop.
+  skips Terraform, and a failed or refused apply leaves it undone. Nothing retries
+  it. The next merge that changes something on the list plans again and picks it up,
+  and a merge off the list doesn't. Re-run the job if it's still the newest, or
+  apply from the desktop.
+- **An outage can turn an unrelated merge red.** A plan refreshes Cloudflare,
+  Hetzner, UniFi and the Incus hosts, so one of them being down fails the step on a
+  merge that changed nothing they care about. The hosts have already applied by
+  then. Re-run the job once it's back.
 - **The log is public.** caboodle is public, so its Actions logs are, and the plan
   and its refresh lines go there: hostnames, LAN addresses, MACs, DNS records,
   Cloudflare IDs, and a few things that read as personal when a resource changes
@@ -317,7 +343,8 @@ disk. It stays out of a failed build and a cancelled job.
   `scripts/terraform-guard.sh`, which stops the job on anything but a no-op on
   `incus_instance.guest["runner"]`. It also stops on a plan it can't read or one
   that doesn't list the container, since a real plan always does. Nothing in that
-  plan applies, other resources included, and the run goes red. The desktop leaves
+  plan applies, other resources included, and the run goes red, as does every merge
+  that plans after it until the desktop applies. The desktop leaves
   `TERRAFORM_SECRETS_DIR` unset, so it skips the guard. Run
   `scripts/terraform.sh apply` from a checkout of `main` while the runner is idle,
   then re-run the job, whose plan now finds nothing to do. Applying from the desktop
@@ -341,9 +368,10 @@ disk. It stays out of a failed build and a cancelled job.
 
 - **What a plan costs.** Each one evaluates `.#network`, about 2 GB for a few
   seconds, and builds the Incus base image, which `linuxHosts` leaves out, for the
-  external data source in `terraform/incus.tf`. After a bump that means a build
-  even when no guest is new. All of it sits inside `runner.slice` with the job's
-  other steps finished, so it needs nothing from the fence.
+  external data source in `terraform/incus.tf`. That image takes only nixpkgs and
+  its own modules from the flake, so a nixpkgs bump means a build even when no guest
+  is new, and an `ai-skills` bump doesn't. All of it sits inside `runner.slice` with
+  the job's other steps finished, so it needs nothing from the fence.
 
 ### What it holds
 
