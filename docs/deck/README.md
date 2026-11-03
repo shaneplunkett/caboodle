@@ -53,7 +53,8 @@ a closure the Deck already has prints nothing. Then
   [the inputs token](../workstation/README.md#the-inputs-token) and enough
   memory free, so not with a game running. It then pulls the same closure, and
   it does have a derivation, so with the cache down it compiles what no other
-  cache has, the Valve kernel included. It hasn't been tried on the Deck yet.
+  cache has, the Valve kernel included, since only the runner trusts Nyx. It
+  hasn't been tried on the Deck yet.
 
 Sudo needs no password on the Deck, as on SteamOS. SSH only takes Shane's
 key, so that's only reachable with the Deck in hand or her key.
@@ -102,8 +103,12 @@ nix run --inputs-from . nixpkgs#nixos-anywhere -- --flake .#deck \
 - BIOS updates don't run from the Steam UI, since Jovian stubs
   `holo-firmware-update`. Run `sudo jupiter-biosupdate` instead.
 - Steam's 80% battery charge limit doesn't show up yet (Jovian issue #537).
-- Jovian has no binary cache, so the Valve kernel builds from source on the
-  runner whenever it changes.
+- Jovian documents no official binary cache. [Nyx](../pve/runner.md#nyx) is a
+  third-party cache that builds Jovian, and the runner trusts it, so a new Valve
+  kernel downloads when Nyx has the exact path and compiles on the runner when it
+  doesn't. The match has to be exact because a store path comes from everything the
+  derivation depends on, so a kernel built from different inputs has a different
+  path, and Nyx's copy of it is no use here.
 - `jovian.steam.desktopSession` has to name a real session, and
   steamos-manager rejects any session whose name contains "gamescope"
   (Jovian issue #586).

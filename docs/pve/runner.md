@@ -108,7 +108,8 @@ costs:
 
 The runner trusts the same upstream caches as the workstations, from
 `modules/workstation/upstream-caches.nix`. Without them it would compile
-everything Noctalia's and Numtide's caches already hold.
+everything Noctalia's and Numtide's caches already hold. It also trusts
+[Nyx](#nyx), which the workstations don't.
 
 The mini is outside it. Its tag is `deploy-mini`, the runner has no key to it,
 and the job can't build darwin, so only the desktop applies it. The Macs build on
@@ -268,6 +269,62 @@ colmena or terraform bump reaches the job at the runner's next deploy. If a Sund
 bump makes the old command and the new flake disagree, it's a red cross with the
 same fix.
 
+### Nyx
+
+Jovian documents no official binary cache, so every Valve kernel bump meant about
+two hours of compiling here. [Chaotic Nyx](https://www.nyx.chaotic.cx/) is a
+third-party cache that builds Jovian, so the runner's module lists it and trusts
+its key. When Nyx holds the exact path the Deck asks for, the runner downloads it
+and the log says `copying path '...' from 'https://nyx-cache.chaotic.cx'`.
+
+It's on the runner alone because nothing else needs it. Every other host gets
+these paths from the home cache under the home cache's key. That's why it isn't
+in `upstream-caches.nix`, which the workstations share.
+
+- **The key covers everything Nyx serves.** Nix can't trust a key for Jovian
+  alone. Any store path the runner wants can come from Nyx if Nyx signed it. The
+  URL's `priority=45` puts it behind every other cache, so it only answers when
+  none of them has the path. Nyx advertises 30 itself, which would tie with the
+  home cache and beat cache.nixos.org. The order limits what Nyx supplies, not
+  what it could.
+- **The signature is the trust, and it's Nyx's.** A store path's hash comes from
+  the derivation's inputs, not from what the build produced, so a matching path
+  says the recipe matched and nothing about the binary. The signature says Nyx
+  stands behind it. Nobody here rebuilds it to check. When the two were compared
+  on one kernel, `out` and `modules` were byte for byte the runner's own compile
+  and `dev` wasn't, so even an honest match can differ. `dev` isn't in the Deck's
+  closure. To compare again, read `narHash` from `nix path-info --json` on each
+  store.
+- **Downstream can't tell.** `scripts/push-to-cache.sh` copies with
+  `--no-check-sigs` and Harmonia signs what it serves, so a path from Nyx reaches
+  every host whose closure holds it, under the home cache's key. The runner is
+  the only place that checks Nyx's signature, and the only store where
+  `nix path-info --sigs <path>` still names it.
+- **A miss just builds.** A path Nyx doesn't have is a 404, and the runner compiles
+  it as before. With Nyx down, `fallback` and `connect-timeout` in
+  `modules/services/harmonia/client.nix` bench it [the same way as the
+  cache](cache.md#when-its-down).
+- **Matches aren't guaranteed.** Nyx pins its own nixpkgs and Jovian, and ours move
+  on the Sunday bump. The kernel only matches while everything its derivation
+  depends on matches, even though other parts of nixpkgs can differ. Nyx's docs
+  say to follow Jovian through its flake to avoid exactly this, and caboodle
+  doesn't, because that means taking Nyx as an input. So the job's timeout still
+  allows for the compile.
+
+To prove a download on the runner, whose store may already hold the path, use a
+scratch store as root. Nix opens it in the client, so the daemon and the real
+store aren't involved, and the keys are the ones `nix.conf` trusts:
+
+```sh
+s=$(mktemp -d)
+nix copy --from https://nyx-cache.chaotic.cx --to "$s" <path>
+nix path-info --store "$s" --sigs <path>
+rm -rf "$s"
+```
+
+Without the key in `nix.conf`, or for a path it didn't sign, the copy fails with
+`lacks a signature by a trusted key`.
+
 ### When the runner is down
 
 `scripts/deploy.sh` from the desktop applies what the job applies, plus the mini,
@@ -302,9 +359,9 @@ outer one.
   under it, wrapper or no wrapper. `OOMPolicy=continue` means the kernel kills
   the biggest process and the listener survives to report a red job. The
   daemon's `max-jobs` and `cores` are pinned low so a cold hive build can't
-  run eight compilers at once into that cap. A cold run compiles the Valve kernel,
-  Node, Mesa and Gamescope among others, at idle priority, which is why the job's
-  timeout is six hours.
+  run eight compilers at once into that cap. A cold run can compile the Valve
+  kernel, Node, Mesa and Gamescope among others when no cache has that exact build,
+  at idle priority, which is why the job's timeout is six hours.
 
 `scripts/quietly.sh` still gives a job its lock and `nice`. Its
 `systemd-run --user` scope can't work here, since the service has no user

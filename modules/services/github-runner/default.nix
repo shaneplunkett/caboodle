@@ -76,6 +76,8 @@ in
     daemonCPUSchedPolicy = "idle";
     daemonIOSchedClass = "idle";
     settings = {
+      substituters = [ "https://nyx-cache.chaotic.cx?priority=45" ];
+      trusted-public-keys = [ "nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=" ];
       min-free = gib 40;
       max-free = gib 80;
       max-jobs = 2;
