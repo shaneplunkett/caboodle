@@ -5,6 +5,7 @@
   ...
 }:
 let
+  links = import ../grafana/links.nix;
   monitored = lib.filterAttrs (_: node: node.config.homelab ? nas) nodes;
   hostMatcher = ''host=~"${lib.concatStringsSep "|" (lib.attrNames monitored)}"'';
 in
@@ -25,6 +26,7 @@ in
                   summary = "{{ $labels.mountpoint }} on {{ $labels.host }} has {{ $value | humanize }}B free";
                   condition = "Less than 200 GB free on this data disk for 10m";
                   check = "ssh root@{{ $labels.host }} df -h {{ $labels.mountpoint }}";
+                  dashboard = links.storage "{{ $labels.host }}";
                 };
               }
             ];

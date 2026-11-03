@@ -47,7 +47,7 @@ let
           summary = "{{ $labels.host }}'s last successful restic ${task} was {{ $value | humanizeDuration }} ago";
           condition = "No successful ${task} in ${humanize seconds}";
           check = "ssh root@{{ $labels.host }} journalctl -u restic-backups-${jobs.${task}} -n 50";
-          dashboard = links.logs "{{ $labels.host }}" [ "restic-backups-${jobs.${task}}.service" ];
+          dashboard = links.hostBackups "{{ $labels.host }}" task;
         };
       }
       {
@@ -62,7 +62,7 @@ let
           summary = "{{ $labels.host }} has no successful restic ${task} on record";
           condition = "No ${task} on record for ${humanize seconds}";
           check = "ssh root@{{ $labels.host }} journalctl -u restic-backups-${jobs.${task}} -n 50";
-          dashboard = links.logs "{{ $labels.host }}" [ "restic-backups-${jobs.${task}}.service" ];
+          dashboard = links.hostBackups "{{ $labels.host }}" task;
         };
       }
     ]) maxAge
@@ -134,6 +134,7 @@ in
                   summary = "The Storage Box isn't answering SFTP, so no host can back up";
                   condition = "SSH banner probe failing for 15m";
                   check = "nc -vz {{ reReplaceAll \":.*\" \"\" $labels.instance }} 23";
+                  dashboard = links.backups;
                 };
               }
               {
@@ -145,6 +146,7 @@ in
                   summary = "The Storage Box is {{ $value | humanizePercentage }} full";
                   condition = "Over 80% used for 1h";
                   check = "ssh root@monitoring journalctl -u restic-backups-homelab-prune -n 50";
+                  dashboard = links.backups;
                 };
               }
               {
@@ -155,6 +157,7 @@ in
                   summary = "Storage Box usage hasn't updated from Hetzner's API in over 3 hours";
                   condition = "Usage file older than 3h";
                   check = "ssh root@monitoring journalctl -u storagebox-usage -n 20";
+                  dashboard = links.backups;
                 };
               }
             ];

@@ -5,6 +5,7 @@
   ...
 }:
 let
+  links = import ../grafana/links.nix;
   monitored = lib.filterAttrs (
     _: node:
     node.config.homelab.monitoring.enable
@@ -12,6 +13,7 @@ let
   ) nodes;
   hostMatcher = ''host=~"${lib.concatStringsSep "|" (lib.attrNames monitored)}"'';
   smartLog = "ssh root@{{ $labels.host }} smartctl -a /dev/disk/by-id/{{ $labels.device }}";
+  deviceHealth = links.diskHealth "{{ $labels.host }}" [ "{{ $labels.device }}" ];
 
   missingDrives = lib.concatLists (
     lib.mapAttrsToList (
@@ -29,6 +31,7 @@ let
           summary = "{{ $labels.device }} on {{ $labels.host }} has no SMART health reading";
           condition = "Exporter is answering but this drive's health reading has been missing for 10m";
           check = smartLog;
+          dashboard = deviceHealth;
         };
       }) node.config.services.prometheus.exporters.smartctl.devices
     ) monitored
@@ -65,6 +68,7 @@ in
                     summary = "SMART monitoring on {{ $labels.host }} isn't answering";
                     condition = "SMART exporter unreachable for 5m";
                     check = "ssh root@{{ $labels.host }} journalctl -u prometheus-smartctl-exporter -n 50";
+                    dashboard = links.diskHealth "{{ $labels.host }}" [ ];
                   };
                 }
                 {
@@ -76,6 +80,7 @@ in
                     summary = "{{ $labels.device }} on {{ $labels.host }} cannot be read by smartctl";
                     condition = "smartctl reports an invocation, device-open or SMART-command error for 10m";
                     check = smartLog;
+                    dashboard = deviceHealth;
                   };
                 }
                 {
@@ -86,6 +91,7 @@ in
                     summary = "{{ $labels.device }} on {{ $labels.host }} is failing SMART health checks";
                     condition = "The drive reports a failing SMART status";
                     check = smartLog;
+                    dashboard = deviceHealth;
                   };
                 }
                 {
@@ -96,6 +102,7 @@ in
                     summary = "{{ $labels.device }} on {{ $labels.host }} has more {{ $labels.attribute_name }} sectors";
                     condition = "Reallocated sectors increased in the last day";
                     check = smartLog;
+                    dashboard = deviceHealth;
                   };
                 }
                 {
@@ -107,6 +114,7 @@ in
                     summary = "{{ $labels.device }} on {{ $labels.host }} has {{ $value }} {{ $labels.attribute_name }} sectors";
                     condition = "Pending or uncorrectable sectors have been present for 5m";
                     check = smartLog;
+                    dashboard = deviceHealth;
                   };
                 }
                 {
@@ -118,6 +126,7 @@ in
                     summary = "{{ $labels.device }} on {{ $labels.host }} is at {{ $value }}°C";
                     condition = "ATA drive over 50°C or NVMe over 70°C for 10m";
                     check = smartLog;
+                    dashboard = deviceHealth;
                   };
                 }
                 {
@@ -128,6 +137,7 @@ in
                     summary = "{{ $labels.device }} on {{ $labels.host }} is raising NVMe critical warning {{ $value }}";
                     condition = "The drive's NVMe critical warning flags are set";
                     check = smartLog;
+                    dashboard = deviceHealth;
                   };
                 }
                 {
@@ -138,6 +148,7 @@ in
                     summary = "{{ $labels.device }} on {{ $labels.host }} logged new NVMe media errors";
                     condition = "NVMe media errors increased in the last day";
                     check = smartLog;
+                    dashboard = deviceHealth;
                   };
                 }
                 {
@@ -148,6 +159,7 @@ in
                     summary = "{{ $labels.device }} on {{ $labels.host }} has {{ $value }}% spare blocks left";
                     condition = "NVMe spare under twice the manufacturer's threshold";
                     check = smartLog;
+                    dashboard = deviceHealth;
                   };
                 }
                 {
@@ -158,6 +170,7 @@ in
                     summary = "{{ $labels.device }} on {{ $labels.host }} has used {{ $value }}% of its rated endurance";
                     condition = "At least 90% of the manufacturer's rated NVMe endurance used";
                     check = smartLog;
+                    dashboard = deviceHealth;
                   };
                 }
               ]

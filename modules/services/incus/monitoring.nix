@@ -5,6 +5,8 @@
   ...
 }:
 let
+  links = import ../grafana/links.nix;
+  dashboard = links.storage "{{ $labels.host }}";
   incusHosts = lib.filterAttrs (
     _: node: node.config.homelab.monitoring.enable && node.config.virtualisation.incus.enable or false
   ) nodes;
@@ -26,7 +28,7 @@ let
       for = "10m";
       labels.severity = severity;
       annotations = {
-        inherit summary check;
+        inherit summary check dashboard;
         condition = "Over ${toString (builtins.floor (value * 100))}% full for 10m";
       };
     };
@@ -72,6 +74,7 @@ let
             summary = "Incus on {{ $labels.host }} is answering but not reporting pool {{ $labels.pool }}, so its fill alerts are blind";
             condition = "Scrape up but the pool's size or used bytes missing for 10m";
             check = "ssh {{ $labels.host }} sudo journalctl -u incus -n 50";
+            inherit dashboard;
           };
         }
       ) node.config.virtualisation.incus.preseed.storage_pools
@@ -127,6 +130,7 @@ in
                       summary = "{{ $labels.host }} can't read its thin pool with lvs, so its metadata alerts are blind";
                       condition = "${collector}.service failed for 5m";
                       check = "ssh {{ $labels.host }} sudo journalctl -u ${collector} -n 20";
+                      inherit dashboard;
                     };
                   }
                   {
@@ -137,6 +141,7 @@ in
                       summary = "{{ $labels.host }}'s thin pool reading is {{ $value | humanizeDuration }} old";
                       condition = "Thin pool metrics older than 10m without the collector failing";
                       check = "ssh {{ $labels.host }} systemctl list-timers ${collector}";
+                      inherit dashboard;
                     };
                   }
                   {
@@ -148,6 +153,7 @@ in
                       summary = "{{ $labels.host }} has never published its thin pool reading";
                       condition = "Node exporter up but no thin pool metrics for 10m";
                       check = "ssh {{ $labels.host }} systemctl status ${collector}";
+                      inherit dashboard;
                     };
                   }
                   {
@@ -159,6 +165,7 @@ in
                       summary = "Incus on {{ $labels.host }} isn't serving metrics, so its pool alerts are blind";
                       condition = "Incus metrics scrape failing for 5m";
                       check = "ssh {{ $labels.host }} incus config get core.metrics_authentication";
+                      inherit dashboard;
                     };
                   }
                 ];

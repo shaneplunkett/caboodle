@@ -219,6 +219,92 @@ rec {
       };
     };
 
+  state = value: text: color: { inherit value text color; };
+
+  timeline =
+    {
+      title,
+      gridPos,
+      targets,
+      states,
+    }:
+    panel {
+      type = "state-timeline";
+      inherit title gridPos targets;
+      defaults = {
+        color.mode = "thresholds";
+        thresholds = {
+          mode = "absolute";
+          steps = lib.imap0 (i: { value, color, ... }: {
+            inherit color;
+            value = if i == 0 then null else value;
+          }) states;
+        };
+        mappings = [
+          {
+            type = "value";
+            options = lib.listToAttrs (
+              map ({ value, text, ... }: lib.nameValuePair (toString value) { inherit text; }) states
+            );
+          }
+        ];
+      };
+      options = {
+        showValue = "never";
+        mergeValues = true;
+        rowHeight = 0.8;
+        legend.showLegend = false;
+      };
+    };
+
+  upOrDown = [
+    (state 0 "Down" "red")
+    (state 1 "Up" "green")
+  ];
+
+  firing =
+    gridPos: legendFormat: selectors:
+    let
+      alerts = lib.concatMapStringsSep " or " (
+        selector: ''ALERTS{alertstate="firing",${selector}}''
+      ) selectors;
+      quiet = ''label_replace(vector(0), "alertname", "Nothing firing", "", "")'';
+    in
+    timeline {
+      title = "Firing";
+      inherit gridPos;
+      targets = [ (query legendFormat "${alerts} or on() ${quiet}") ];
+      states = [
+        (state 0 "Nothing firing" "green")
+        (state 1 "Firing" "red")
+      ];
+    };
+
+  labelVariable =
+    name: label: selector:
+    let
+      definition = "label_values(${selector}, ${name})";
+    in
+    {
+      inherit name label definition;
+      type = "query";
+      datasource = prometheus;
+      query = {
+        qryType = 1;
+        query = definition;
+        refId = name;
+      };
+      refresh = 2;
+      sort = 1;
+      multi = true;
+      includeAll = true;
+      allValue = ".+";
+      current = {
+        text = "All";
+        value = "$__all";
+      };
+    };
+
   dashboard =
     {
       uid,
