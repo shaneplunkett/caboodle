@@ -24,6 +24,7 @@ biome ci --colors=off --error-on-warnings .
 
 git ls-files --cached --others --exclude-standard -z '*.sh' | xargs -0 -r shfmt -d
 git ls-files --cached --others --exclude-standard -z '*.sh' | xargs -0 -r shellcheck
+scripts/test-build-linux-hosts.sh
 
 unformatted="$(git ls-files --cached --others --exclude-standard -z '*.go' | xargs -0 -r gofmt -l)"
 if [ -n "$unformatted" ]; then
