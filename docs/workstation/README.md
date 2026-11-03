@@ -72,13 +72,14 @@ ssh mini darwin-version --configuration-revision   # the mini or the MacBook
 
 A switch from a checkout with uncommitted changes prints `<commit>-dirty`,
 which means that commit plus edits that were never committed. "Unknown" and
-an exit code of 1 mean the host last switched before this was set, or from
-something that isn't a git checkout.
+an exit code of 1 mean the host last switched before this was set, or from a
+source with no revision, like a plain directory or a tarball.
 
-The revision is part of the closure, so every commit is a new generation on
-every host, even when nothing else changed. Switching to one reloads
-dbus-broker, and on the desktop and the Deck it also restarts polkit and
-accounts-daemon, which read the system path.
+The revision is part of the closure, so building a different commit changes
+every host's system, even when nothing else did, and switching to it is a
+new generation. On NixOS that reloads dbus-broker, and on the desktop and
+the Deck it also restarts polkit and accounts-daemon, which read the system
+path.
 
 ## The store as the cache
 
