@@ -1,0 +1,506 @@
+# Epic games through Steam on Linux
+
+- **Question:** "I wanna play Alan Wake II but forgor its only on epic games. Can you check what the latest is on getting Epic Games junk running on linux? Wanna play it through steam though if thats at all possible to keep my deck moonlight goodness"
+- **Researched:** 2026-11-03, normal
+
+## Sub-questions
+
+1. What's the current best way to run Epic games on Linux (Heroic, Legendary, umu, anything newer)?: answered
+2. How does Alan Wake II run on Linux and Proton right now, and is it still Epic-only?: answered from user reports; no consensus Proton version, and a gap on RX 7900 with RADV
+3. What's the cleanest way to launch an Epic game from Steam as a non-Steam game?: answered from source and user reports, not run
+4. Does that keep Sunshine, Moonlight and the Deck working?: answered for Sunshine from source; Steam's side is user reports only, and no working end-to-end report was found
+
+## Claims
+
+### Launchers
+
+- Heroic latest stable is v2.22.4, a hotfix (GOG login, UMU handling, ARM64 flatpak)
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/tag/v2.22.4
+  - **Date:** 2026-10-15
+  - **Verdict:** confirmed
+- Heroic repo is active and not archived
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher
+  - **Date:** 2026-11-02
+  - **Verdict:** confirmed
+- Heroic is in nixpkgs as `heroic-unwrapped`, wrapped by `heroic` through `steam.buildRuntimeEnv`
+  - **Source:** https://github.com/NixOS/nixpkgs/blob/master/pkgs/by-name/he/heroic-unwrapped/package.nix
+  - **Date:** undated (master, 2026-11-03)
+  - **Verdict:** confirmed
+- This repo's pinned nixpkgs (31ecbac) ships Heroic 2.22.4 with `fix-non-steam-shortcuts.patch`
+  - **Source:** `flake.lock`, nixpkgs at that rev
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed
+- Legendary latest is 0.21.1 (smaller Linux binaries, wrapper EXE and symlink support)
+  - **Source:** https://github.com/legendary-gl/legendary/releases/tag/0.21.1
+  - **Date:** 2026-09-08
+  - **Verdict:** confirmed
+- Legendary 0.21.1 is in nixpkgs as `legendary-gl`
+  - **Source:** https://github.com/NixOS/nixpkgs/blob/master/pkgs/by-name/le/legendary-gl/package.nix
+  - **Date:** undated (master)
+  - **Verdict:** confirmed
+- Legendary moved to the `legendary-gl` org, handed to the Heroic fork's contributors
+  - **Source:** https://www.gamingonlinux.com/2026/04/legendary-the-free-and-open-source-epic-games-launcher-has-moved-to-a-new-organisation
+  - **Date:** 2026-04-10
+  - **Verdict:** confirmed for the move; date from a secondary source
+- Legendary repo is active and not archived
+  - **Source:** https://github.com/legendary-gl/legendary
+  - **Date:** 2026-10-28
+  - **Verdict:** confirmed
+- umu-launcher latest release is 1.4.4; commits continue
+  - **Source:** https://github.com/Open-Wine-Components/umu-launcher/releases/tag/1.4.4
+  - **Date:** 2026-07-25
+  - **Verdict:** confirmed
+- umu-launcher 1.4.4 is in nixpkgs
+  - **Source:** https://github.com/NixOS/nixpkgs/blob/master/pkgs/by-name/um/umu-launcher-unwrapped/package.nix
+  - **Date:** undated (master)
+  - **Verdict:** confirmed
+- Epic released a Preview of its rebuilt launcher for Windows, macOS and, for the first time, Linux
+  - **Source:** https://store.epicgames.com/news/epic-games-launcher-preview
+  - **Date:** 2026-10-14
+  - **Verdict:** confirmed
+- Epic supports Ubuntu 22.04+, Fedora 43+ and Debian 12+; others may work but aren't tested or supported
+  - **Source:** https://launcher.epicgames.com
+  - **Date:** undated, current with the Preview
+  - **Verdict:** confirmed
+- The launcher runs natively, but many games are Windows-only and may need a compatibility layer; no titles named
+  - **Source:** https://launcher.epicgames.com
+  - **Date:** undated
+  - **Verdict:** confirmed
+- Fortnite comes to Linux through the launcher once rebuilt EAC works with distro maintainers; no date
+  - **Source:** https://store.epicgames.com/news/epic-games-launcher-preview
+  - **Date:** 2026-10-14
+  - **Verdict:** confirmed
+- Epic's AMA said a Linux client was coming soon, not in the next preview
+  - **Source:** https://www.techpowerup.com/351601/epic-games-launcher-coming-soon-to-linux
+  - **Date:** 2026-08-13
+  - **Verdict:** superseded by the 2026-10-14 Preview
+- The Preview is a native build and reached 0.100.0 by 2026-10-21
+  - **Source:** https://shattered.io/gaming-on-linux-steam-proton-vs-epic-linux-launcher-gog-heroic-2026
+  - **Date:** undated
+  - **Verdict:** unconfirmed
+- Heroic #5726 (Legendary login error on large libraries) is open; no source ties it to an Epic API change
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/issues/5726
+  - **Date:** 2026-09-09
+  - **Verdict:** confirmed open; cause not established
+
+### Alan Wake II
+
+- No Steam listing
+  - **Source:** https://store.steampowered.com/search/?term=alan+wake+2
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed
+- Remedy says the PC version is only on the Epic Games Store
+  - **Source:** https://www.alanwake.com/story/alan-wake-2-faq/
+  - **Date:** 2024-10-22
+  - **Verdict:** confirmed
+- Epic's CEO said it won't come to Steam; Remedy defended the deal
+  - **Source:** https://www.ign.com/articles/alan-wake-2-developer-defends-deal-with-excellent-partner-epic-games-despite-the-fact-its-still-missing-from-rival-storefront-steam
+  - **Date:** undated
+  - **Verdict:** unconfirmed
+- A possible Steam release, from a renamed bundle
+  - **Source:** https://en.gamegpu.com/news/igry/alan-wake-2-mozhet-vyjti-v-steam
+  - **Date:** 2026-01-21
+  - **Verdict:** contradicted by the live Steam search
+- No ProtonDB page, since ProtonDB is keyed to Steam app IDs
+  - **Source:** none fetched
+  - **Date:** undated
+  - **Verdict:** unconfirmed
+- Epic's record: Windows only, 16 GB RAM, 90 GB SSD, minimum RX 5600 XT, recommended RX 6600 XT
+  - **Source:** https://store-content.ak.epicgames.com/api/en-US/content/products/alan-wake-2
+  - **Date:** 2024-02-06
+  - **Verdict:** confirmed
+- Deluxe includes the Expansion Pass (Night Springs and Lake House)
+  - **Source:** same record; https://www.alanwake.com/story/alan-wake-2-faq/
+  - **Date:** 2024
+  - **Verdict:** confirmed
+- Mesh shaders aren't required to launch, since the minimum card is RDNA1
+  - **Source:** Epic record; https://docs.mesa3d.org/relnotes/23.0.0.html
+  - **Date:** 2023-02-22
+  - **Verdict:** confirmed
+- Mesh shaders are required for best performance
+  - **Source:** https://www.pcgamingwiki.com/wiki/Alan_Wake_II
+  - **Date:** undated
+  - **Verdict:** unconfirmed
+- RADV mesh shaders on RDNA2 sat behind `RADV_PERFTEST=ext_ms`
+  - **Source:** https://docs.mesa3d.org/relnotes/22.3.0.html
+  - **Date:** 2022-12-02
+  - **Verdict:** superseded by Mesa 23.0
+- RADV enables `VK_EXT_mesh_shader` by default on RDNA2; 23.1 lists GFX11; latest Mesa is 26.2.0
+  - **Source:** https://docs.mesa3d.org/relnotes/23.0.0.html, https://docs.mesa3d.org/relnotes/26.2.0.html
+  - **Date:** 2023-02-22, 2026-08-05
+  - **Verdict:** confirmed
+- AMD glitches need Mesa past 23.2.1; `RADV_ZERO_VRAM=false` for stutter
+  - **Source:** https://www.pcgamingwiki.com/wiki/Alan_Wake_II
+  - **Date:** undated
+  - **Verdict:** unconfirmed
+- GE-Proton 8-22 added an AW2 HDR fixup
+  - **Source:** proton-ge-custom releases
+  - **Date:** 2023-10-30
+  - **Verdict:** confirmed
+- No later AW2 entry in any GE-Proton release through GE-Proton11-12
+  - **Source:** proton-ge-custom releases
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed
+- Valve Proton latest is 11.0-2e; the 11.0 notes don't mention AW2
+  - **Source:** https://github.com/ValveSoftware/Proton/releases
+  - **Date:** 2026-10-09
+  - **Verdict:** confirmed
+- No owning source recommends a Proton version for AW2
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/wiki/How-To:-Wine-and-Proton
+  - **Date:** 2021-12-26
+  - **Verdict:** confirmed absence; community advice unconfirmed
+- umu-database maps AW2 (egs) to `umu-93f2a8c3547846eda966cb3c152a026e`; no file in `gamefixes-umu`, `gamefixes-egs` unchecked
+  - **Source:** https://github.com/Open-Wine-Components/umu-database
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed for `gamefixes-umu` only
+- The EOS Overlay isn't supported on Linux or Steam Deck
+  - **Source:** https://dev.epicgames.com/docs/epic-online-services/eos-get-started/working-with-the-eos-sdk/eos-overlay-overview
+  - **Date:** undated
+  - **Verdict:** confirmed
+- Heroic installs the EOS Overlay once and enables it per game, DXVK required
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/wiki/EOS-Overlay
+  - **Date:** 2022-09-30
+  - **Verdict:** confirmed; AW2 behaviour unconfirmed
+- Legendary can sync Epic cloud saves and download DLC
+  - **Source:** https://github.com/legendary-gl/legendary
+  - **Date:** 2026-09-08
+  - **Verdict:** confirmed for capability; AW2 cloud sync unconfirmed
+- `-EpicPortal` launches without the Epic client and uses the `Default-Epic-User` save path; `-epicuserid=Default-Epic-User` for gamepad
+  - **Source:** https://www.pcgamingwiki.com/wiki/Alan_Wake_II
+  - **Date:** undated
+  - **Verdict:** unconfirmed
+- Patch 1.2.10 added FSR 4 and FSR Frame Generation on PC
+  - **Source:** https://www.alanwake.com/story/alan-wake-2-update-notes
+  - **Date:** 2026-08-18
+  - **Verdict:** superseded by 1.2.11 for the FSR version
+- Patch 1.2.11 moved PC to FSR 4.1 and fixed the HDR toggle
+  - **Source:** https://bsky.app/profile/remedygames.com/post/3myf6ugy4n224
+  - **Date:** 2026-10-21
+  - **Verdict:** confirmed
+- FSR 4.1 INT8 runs on RX 7000 desktop cards through AMD's Windows driver
+  - **Source:** https://www.tomshardware.com/pc-components/gpu-drivers/amd-brings-official-fsr-4-1-support-to-rx-7000-series-gpus-int8-model-now-available-in-300-games-rdna-3-apus-also-getting-fsr-4-1-soon
+  - **Date:** 2026-06-22
+  - **Verdict:** unconfirmed
+- FSR 4 reached RDNA3 cards on Linux through Proton Experimental
+  - **Source:** https://www.gamingonlinux.com/2026/06/amd-fsr-4-lands-on-rdna3-dgpus-for-linux-steamos-and-steam-machine-via-proton-experimental
+  - **Date:** 2026-06-24
+  - **Verdict:** unconfirmed
+- AW2's native FSR 4 path working under Proton
+  - **Source:** none
+  - **Date:** undated
+  - **Verdict:** unconfirmed; `PROTON_FSR4_UPGRADE` passes through in GE-Proton11-12, AW2 has no protonfix
+- AW2 has software and hardware ray and path tracing
+  - **Source:** https://www.pcgamingwiki.com/wiki/Alan_Wake_II
+  - **Date:** undated
+  - **Verdict:** unconfirmed
+
+### Launching from Steam
+
+- Heroic's shortcut runs the Heroic binary with `--no-gui --no-sandbox "heroic://launch?appName=X&runner=Y"`
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/blob/v2.22.4/src/backend/shortcuts/nonesteamgame/nonesteamgame.ts
+  - **Date:** 2026-10-15
+  - **Verdict:** confirmed
+- The shortcut is a Linux binary, so Steam doesn't run it under Proton; legendary runs the game with Heroic's chosen Wine or Proton, using umu when present
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/blob/v2.22.4/src/backend/storeManagers/legendary/games.ts
+  - **Date:** 2026-10-15
+  - **Verdict:** confirmed
+- Under `--no-gui`, Heroic stays alive while the game runs
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/blob/v2.22.4/src/backend/launcher.ts
+  - **Date:** 2026-10-15
+  - **Verdict:** confirmed from source, not run
+- With Heroic already open, the Steam-launched process hands off and exits, and the open Heroic runs the game
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/blob/v2.22.4/src/backend/main.ts
+  - **Date:** 2026-10-15
+  - **Verdict:** confirmed from source; Steam's reaction unconfirmed
+- With Steam running, Heroic adds shortcuts over Steam's CEF debug port, falling back to `steam://addnonsteamgame`
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/blob/v2.22.4/src/backend/shortcuts/nonesteamgame/steamClient.ts
+  - **Date:** 2026-10-15
+  - **Verdict:** confirmed
+- Steam must be closed for Heroic to write `shortcuts.vdf`
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/issues/3653
+  - **Date:** 2024-10-15
+  - **Verdict:** superseded by the v2.22.4 code above
+- Heroic's Steam Deck wiki steers installs and config to Desktop Mode and warns off running Heroic in Game Mode
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/wiki/Steam-Deck
+  - **Date:** 2025-05-30
+  - **Verdict:** confirmed
+- The wiki says nothing about Steam Input or the Steam overlay
+  - **Source:** same wiki
+  - **Date:** undated
+  - **Verdict:** unconfirmed (silent)
+- The Steam overlay doesn't attach to Heroic-launched games; a user workaround is `ENABLE_VK_LAYER_VALVE_steam_overlay_1=1` plus `LD_PRELOAD` of the overlay library; Steam Input reported broken without it
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/issues/4941
+  - **Date:** 2026-04-05
+  - **Verdict:** unconfirmed
+- Flatpak shortcuts use `flatpak run`; Flatpak Steam needs `flatpak-spawn --host`
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/issues/3653
+  - **Date:** 2024-10-15
+  - **Verdict:** unconfirmed
+- nixpkgs patches the shortcut Exe to bare `heroic` and StartDir to `$HOME`
+  - **Source:** https://github.com/NixOS/nixpkgs/blob/master/pkgs/by-name/he/heroic-unwrapped/fix-non-steam-shortcuts.patch
+  - **Date:** 2026-10-02
+  - **Verdict:** confirmed
+- Bare `heroic` only works if Steam's PATH includes the wrapper
+  - **Source:** same patch
+  - **Date:** 2026-10-02
+  - **Verdict:** unconfirmed; needs a test
+- Upstream closed the wrong-exe bug as specific to unofficial packages
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/issues/4325
+  - **Date:** 2026-03-19
+  - **Verdict:** confirmed
+- NixOS wiki: x86_64 only, FHS wrapper, gamescope and gamemode not in the wrapper
+  - **Source:** https://wiki.nixos.org/wiki/Heroic_Games_Launcher
+  - **Date:** undated
+  - **Verdict:** confirmed
+- Steam now runs Windows binaries added as non-Steam games through Proton by default
+  - **Source:** https://steamcommunity.com/games/593110/announcements/detail/710037059469839721
+  - **Date:** 2026-10-13
+  - **Verdict:** confirmed
+- That default doesn't touch the Heroic shortcut, since it's a Linux binary
+  - **Source:** derived from the rows above
+  - **Date:** 2026-10-13
+  - **Verdict:** unconfirmed (inference)
+- `legendary launch <App> --offline --dry-run` prints the launch command for use in other launchers
+  - **Source:** https://github.com/legendary-gl/legendary/blob/master/README.md
+  - **Date:** 2026-09-08
+  - **Verdict:** confirmed
+- Online launches pass an exchange code and user args; `requires_ot` titles also fetch an ownership token; `--offline` skips both
+  - **Source:** https://github.com/legendary-gl/legendary/blob/master/legendary/core.py
+  - **Date:** 2026-09-08
+  - **Verdict:** confirmed
+- A bare exe is effectively the offline path, and `requires_ot` titles can't get a token outside legendary; AW2's flag unchecked
+  - **Source:** derived from the row above
+  - **Date:** n/a
+  - **Verdict:** unconfirmed (inference)
+- NonSteamLaunchers installs UMU, GE-Proton and the real Epic launcher in one shared prefix
+  - **Source:** https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed
+- Junk Store is a Decky plugin built for Game Mode, latest 1.1.13
+  - **Source:** https://github.com/ebenbruyns/junkstore
+  - **Date:** 2026-01-23
+  - **Verdict:** confirmed; weak fit for this host
+
+### Sunshine and Moonlight
+
+- Sunshine's Big Picture example detaches `setsid steam steam://open/bigpicture`, undo `steam://close/bigpicture`
+  - **Source:** https://docs.lizardbyte.dev/projects/sunshine/master/md_docs_2app__examples.html
+  - **Date:** undated
+  - **Verdict:** confirmed
+- Detached commands aren't tracked and outlive the stream
+  - **Source:** LizardByte/Sunshine `src/process.cpp`; issue 260
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed
+- A cmd app runs while its process group lives; `waitpid(-pgid)` only sees direct children
+  - **Source:** `src/process.cpp`, `src/platform/linux/misc.cpp`
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed
+- `auto_detach` treats a cmd that exits 0 within 5 s as detached
+  - **Source:** `src/process.cpp`
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed
+- An app with no cmd stays up until terminated, so a game exiting doesn't end the stream. This covers the repo's Steam entry
+  - **Source:** `src/process.cpp`; `hosts/desktop/modules/sunshine.nix`
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed
+- Sunshine stops the stream when a tracked application shuts down, and starting an app ends the running one
+  - **Source:** https://docs.lizardbyte.dev/projects/sunshine/v0.23.1/about/setup.html
+  - **Date:** undated
+  - **Verdict:** confirmed
+- Disconnecting leaves the app running; `/cancel` terminates it and runs undo
+  - **Source:** `src/stream.cpp`, `src/nvhttp.cpp`
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed
+- `gamepad` defaults to `auto`; docs say to test with Steam Input on and off
+  - **Source:** https://docs.lizardbyte.dev/projects/sunshine/latest/md_docs_2configuration.html, https://docs.lizardbyte.dev/projects/libvirtualhid/latest/md_docs_2end-user-gamepad-guide.html
+  - **Date:** undated
+  - **Verdict:** confirmed as documented; not tested here
+- `capture = wlr` is the way to capture Hyprland virtual displays
+  - **Source:** Sunshine config docs
+  - **Date:** undated
+  - **Verdict:** confirmed
+- `output_name = STREAM` is ignored on a Hyprland headless output
+  - **Source:** https://github.com/LizardByte/Sunshine/issues/5087
+  - **Date:** 2026-05-08
+  - **Verdict:** superseded by PR 5071 (merged 2026-05-06), in the release this repo's nixpkgs ships
+- Can't stream a Hyprland headless monitor
+  - **Source:** Sunshine issue 2955
+  - **Date:** 2025-04-14
+  - **Verdict:** superseded by PR 3783
+- wlroots capture black screen
+  - **Source:** Sunshine issue 5018
+  - **Date:** 2026-04-21
+  - **Verdict:** superseded by PR 5030; not relevant to VAAPI
+- The desktop and start-menu entries run `xdg-open heroic://launch?...`
+  - **Source:** Heroic `src/backend/shortcuts/shortcuts/shortcuts.ts`
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed
+- Heroic in the middle is needed for play tracking and save sync; a user reports Steam not seeing the game and no overlay
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/issues/3619
+  - **Date:** 2024-03-08
+  - **Verdict:** confirmed as Heroic's position; the symptom is a user report
+- Steam Input missing on Amazon games launched from a Heroic shortcut
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/issues/3251
+  - **Date:** 2023-11-21
+  - **Verdict:** unconfirmed
+- PR 5804 changes how shortcuts are added and removed, not launch or exit
+  - **Source:** Heroic PR 5804
+  - **Date:** 2026-09-12
+  - **Verdict:** confirmed
+- Steam Remote Play uses Steam Input to carry input
+  - **Source:** https://partner.steamgames.com/doc/features/steam_controller/steam_input_gamepad_emulation_bestpractices
+  - **Date:** undated
+  - **Verdict:** confirmed, context only
+- Sunshine's docs show an Epic URI as a cmd and call the URI method the most consistent
+  - **Source:** https://docs.lizardbyte.dev/projects/sunshine/master/md_docs_2app__examples.html
+  - **Date:** undated
+  - **Verdict:** confirmed
+- A Sunshine app entry running Heroic can't track the game itself either
+  - **Source:** derived from Sunshine and Heroic source
+  - **Date:** n/a
+  - **Verdict:** unconfirmed (inference)
+
+### This desktop
+
+- The discrete GPU is PCI ID 1002:744c, a Navi 31 (RX 7900 series), so RADV mesh shaders are on by default
+  - **Source:** `/sys/class/drm/card1/device`
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed for the ID; memory records it as a 7900 XTX
+- Control Resonant ran FSR 4.1.1 (INT8 model) on this card with GE-Proton 11-6 and `PROTON_FSR4_UPGRADE=1` in Steam's launch options, shown by the on-screen FSR text in her screenshot, with frame generation also working
+  - **Source:** vex conversation 6358; Steam's `localconfig.vdf` still holds the launch option
+  - **Date:** 2026-10-16
+  - **Verdict:** confirmed on this desktop, for that game launched by Steam
+- GE-Proton 11-5 and 11-6 read `PROTON_USE_OPTISCALER` and `PROTON_FSR4_UPGRADE`, and Control Ultimate Edition (870780) already has both in its Steam launch options
+  - **Source:** `compatibilitytools.d/GE-Proton11-6-x86_64/proton`, `protonfixes/upscalers.py`, Steam's `localconfig.vdf`
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed for the setting; whether it worked in Control wasn't checked
+- Heroic merges its own inherited environment into the game's, so variables from a Steam launch option should reach the game when Steam's process is the one launching it
+  - **Source:** https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/blob/v2.22.4/src/backend/storeManagers/legendary/games.ts
+  - **Date:** 2026-10-15
+  - **Verdict:** confirmed from source, not run; an already open Heroic would launch with its own environment instead
+- Epic's install data marks Alan Wake II as able to run offline with no ownership token, at 117 GB
+  - **Source:** Heroic's Legendary `installed.json`
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed on this desktop
+- Run from Steam with GE-Proton 11-6 and `-EpicPortal`, the game started under the `Default-Epic-User` save folder, without her saves or DLC
+  - **Source:** tested on this desktop; `renderer.ini` and `eos.log` in that Proton folder
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed on this desktop
+- Run from Heroic with GE-Proton 11-6 and her Epic cloud save downloaded first, the game showed her saves and DLC
+  - **Source:** tested on this desktop, reported by Shane; whether the EOS step was needed wasn't recorded
+  - **Date:** 2026-11-04
+  - **Verdict:** confirmed on this desktop; launching it from Steam and streaming it weren't tested
+- No Epic launcher was installed when this research started
+  - **Source:** `which heroic legendary umu-run`
+  - **Date:** 2026-11-03
+  - **Verdict:** confirmed
+
+### Reddit reports
+
+Astra read these through a browser on the Code Girly provider. Every verdict here is a user report
+unless it says otherwise, and they weren't re-read by the session that wrote this file.
+
+**Proton and launch options**
+
+- Four hours with no problems through Heroic on CachyOS Proton 11.0-20260428, about 10% slower than an earlier Windows session by estimate
+  - **Source:** https://www.reddit.com/r/linux_gaming/comments/1t62wyv/alan_wake_2/
+  - **Date:** 2026-05-07
+  - **Verdict:** user report, 1 report
+- Heroic's Verify and Repair fixed missing textures and black floors on an RTX 5090, ending on `cachyos-11.0-20260702-slr`
+  - **Source:** https://www.reddit.com/r/linux_gaming/comments/1uywg8z/alan_wake_2_graphical_glitchesmissing_textures_on/
+  - **Date:** 2026-07-18
+  - **Verdict:** user report, 1 report, NVIDIA
+- `USE_FAKE_EPIC_EXE=true` fixed a black screen for one Heroic user; others needed no tweaks, one naming GE-Proton 10-4
+  - **Source:** https://www.reddit.com/r/linux_gaming/comments/1ldr6pd/alan_wake_2_working_on_linux_with_protonge/
+  - **Date:** 2025-06-17 to 2025-07-01
+  - **Verdict:** user reports, 1 workaround and at least 3 with no tweaks; older than 12 months
+- Freezes on an RTX 5060 through Heroic and Epic's AppImage, often after the Mind Place; another user on an RTX 4070 Super had no problems in Heroic
+  - **Source:** https://www.reddit.com/r/Bazzite/comments/1xieg6t/alan_wake_2_congela/
+  - **Date:** 2026-10-29
+  - **Verdict:** user reports, 2 reports in conflict, runner not named
+
+**RDNA3 and FSR**
+
+- RX 7900 GRE ran the forest smoothly and the town badly at medium, 1080p and FSR2; moving to GE-Proton 10-10 didn't help
+  - **Source:** https://www.reddit.com/r/Lutris/comments/1mjysy2/alan_wake_2/
+  - **Date:** 2025-08-07 to 2025-08-09
+  - **Verdict:** user report, 1 report, older than 12 months; used AMD's `.deb` driver, so not RADV evidence
+- An RX 7800 XT owner called path tracing too slow and played with ray tracing off
+  - **Source:** https://www.reddit.com/r/AlanWake/comments/1m8xi8q/alan_wake_2_how_is_performance_on_amd_linux/
+  - **Date:** 2025-07-25
+  - **Verdict:** user report, 1 report, older than 12 months, not on Linux
+- OptiScaler worked with `PROTON_FSR4_UPGRADE=1` and `DXIL_SPIRV_CONFIG=wmma_rdna3_workaround` on an RX 6700 XT; the user didn't know if either was needed
+  - **Source:** https://www.reddit.com/r/linux_gaming/comments/1p0n6vq/are_there_any_clear_instructions_on_how_to_run/
+  - **Date:** 2025-11-18
+  - **Verdict:** user report, 1 report, not RDNA3, predates the native FSR 4 patches
+- Another player used FSR 4 through OptiScaler but couldn't recall the launch variables
+  - **Source:** https://www.reddit.com/r/linux_gaming/comments/1t62wyv/alan_wake_2/
+  - **Date:** 2026-05-08
+  - **Verdict:** user report, 1 report, no GPU given, predates the native FSR 4 patches
+
+**DLC and saves**
+
+- Enabling EOS from the game's menu in Heroic fixed Deluxe ownership not being recognised
+  - **Source:** https://www.reddit.com/r/linux_gaming/comments/1pbkyz6/has_anyone_managed_to_get_alan_wake_2_deluxe/
+  - **Date:** 2025-12-01, 2026-02-11
+  - **Verdict:** user reports, 2 reports; Night Springs and Lake House not tested separately
+- Signing out and into Epic restored DLC for one user and failed for another
+  - **Source:** https://www.reddit.com/r/HeroicGamesLauncher/comments/1onkrca/alan_wake_2_dlc/
+  - **Date:** 2025-11-03, 2025-11-07
+  - **Verdict:** user reports, 1 success and 1 failure
+- Heroic reported cloud uploads as successful but the saves didn't appear in Epic's launcher on another PC
+  - **Source:** https://www.reddit.com/r/SteamDeck/comments/1sq3syd/need_help_with_heroic_launcer_cloud_save_sync/
+  - **Date:** 2026-04-19
+  - **Verdict:** user report, 1 report, games not named, not Alan Wake II evidence
+
+**Steam shortcuts and streaming**
+
+- With a Heroic shortcut, Steam's process exited before the game started, leaving the controller in lizard mode; no fix posted
+  - **Source:** https://www.reddit.com/r/linux_gaming/comments/1x6u6ns/current_best_practices_for_egs_and_steam_input/
+  - **Date:** 2026-10-15
+  - **Verdict:** user report, 1 report, exact Alan Wake title unclear
+- Steam flipped back to Play while an EA game kept running, with overlay and input lost for one user; another saw Big Picture focus problems with non-Steam games
+  - **Source:** https://www.reddit.com/r/SteamController/comments/1u0w56d/steam_no_longer_detects_nonsteam_games_overlay/
+  - **Date:** 2026-06-09 to 2026-08-29
+  - **Verdict:** user reports, 3 on tracking and 1 on focus; mainly Windows and EA, not Heroic
+- A Windows, Apollo and Moonlight user found a Heroic Steam shortcut launched on the PC but didn't show as expected on the Deck
+  - **Source:** https://www.reddit.com/r/MoonlightStreaming/comments/1k4sl13/how_do_i_stream_heroic_launcher_games_to_steam/
+  - **Date:** 2025-04-21
+  - **Verdict:** user report, 1 report, older than 12 months, cause unknown
+- Two Sunshine users couldn't make a shortcut that opens Heroic in console mode
+  - **Source:** https://www.reddit.com/r/MoonlightStreaming/comments/1uhe0ro/heroic_links/
+  - **Date:** 2026-06-27 to 2026-06-28
+  - **Verdict:** user reports, 2 reports; about navigating Heroic, not launching a game
+
+**Other ways to launch**
+
+- `-epicportal` fixed controller recognition in Alan Wake II, but existing saves disappeared from the game
+  - **Source:** https://www.reddit.com/r/SteamController/comments/17y7krk/alan_wake_2_not_recognizing_controller_as_gamepad/
+  - **Date:** 2023-11-18
+  - **Verdict:** user report, 1 report, older than 12 months, OS and Proton not stated
+- A Linux user added the Epic launcher itself to Steam as a non-Steam game and played on Proton Experimental
+  - **Source:** https://www.reddit.com/r/linux_gaming/comments/1t62wyv/alan_wake_2/
+  - **Date:** 2026-05-07
+  - **Verdict:** user report, 1 report
+- Alan Wake II worked in Epic's Linux Preview with all NVIDIA features on; a commenter found GE-Proton 10-34 in the launcher's `compat` folder
+  - **Source:** https://www.reddit.com/r/linux_gaming/comments/1x5wj6g/ai_first_company_is_at_least_honest_about_egs/
+  - **Date:** 2026-10-14
+  - **Verdict:** user reports, 1 success and 1 folder inspection; answers the earlier gap on compatibility layers, not officially
+- Epic's Preview can't make desktop shortcuts, and a user asking how to use it in SteamOS game mode got no visible answer
+  - **Source:** https://www.reddit.com/r/linux_gaming/comments/1x5wj6g/ai_first_company_is_at_least_honest_about_egs/
+  - **Date:** 2026-10-17
+  - **Verdict:** user report, 1 report
+
+## Gaps
+
+- Nothing was run on the desktop. Heroic under Steam, bare `heroic` on Steam's PATH, and the game itself are all untested.
+- Valve documents neither how Steam decides a non-Steam shortcut has exited nor what the overlay hooks, so those claims rest on Heroic's source and user reports.
+- No current report on an RX 7900 with RADV: no benchmarks, Mesa versions or ray tracing results. Most recent reports are NVIDIA.
+- Whether the in-game FSR 4.1 option works in Alan Wake II under Proton. It's proven on this card in Control Resonant, not in this game, and not through Heroic.
+- No report of Heroic, Steam, Sunshine and Moonlight working end to end.
+- No direct exe recipe with Proton and `-EpicPortal`, including where saves go.
+- No Alan Wake II cloud save round trip through Heroic.
+- Whether Alan Wake II sets `requires_ot`. `legendary info` on the installed game would show it.
+- Whether Epic's Linux Preview works on NixOS or with AMD, DLC, cloud saves or Sunshine.
+- Whether Epic's new launcher changes the APIs Legendary uses.
+- Which Moonlight action sends `/cancel`.
