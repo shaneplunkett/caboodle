@@ -8,7 +8,8 @@
 #   scripts/terraform.sh          # plan
 #   scripts/terraform.sh apply    # plan, then apply that plan
 #
-# The Incus provider reads its client certificate from INCUS_CONF.
+# The Incus provider reads its client certificate from INCUS_CONF. The job only
+# applies what scripts/terraform-guard.sh passes, and the desktop applies anything.
 set -eu
 
 if [ -z "${TERRAFORM_SECRETS_DIR:-}" ]; then
@@ -47,5 +48,9 @@ terraform init -input=false -no-color >/dev/null
 terraform plan -input=false -no-color -lock-timeout=10m -out="$creds/tfplan"
 
 if [ "$mode" = apply ]; then
+  if [ -n "${TERRAFORM_SECRETS_DIR:-}" ]; then
+    terraform show -json -no-color "$creds/tfplan" >"$creds/tfplan.json"
+    "$root/scripts/terraform-guard.sh" "$creds/tfplan.json"
+  fi
   terraform apply -input=false -no-color -lock-timeout=10m "$creds/tfplan"
 fi
