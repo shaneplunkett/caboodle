@@ -62,13 +62,16 @@ outer one.
   all 8 cores.
 - **Disk.** `limits.disk.priority = 0` gives an `io.weight` of 10. This does
   nothing yet, see below.
-- **Memory.** `github-runner-homelab.service` and `nix-daemon.service` each
-  have `MemoryMax=28G`, under the guest's 32 GB, and PVE has no swap to thrash.
-  The cap is on the service rather than in `scripts/quietly.sh`, so everything
-  a job spawns is under it, wrapper or no wrapper. Evaluation runs in the job's
-  own process and builds run in the daemon, which is why both have it.
-  `OOMPolicy=continue` means the kernel kills the biggest process and the
-  listener survives to report a red job.
+- **Memory.** `github-runner-homelab.service` and `nix-daemon.service` share
+  `runner.slice`, whose `MemoryMax` sits a few GB under the guest's limit, and
+  PVE has no swap to thrash. One slice rather than a cap on each service,
+  because evaluation runs in the job's process and builds run in the daemon,
+  and two separate caps would add up to more than the guest has. The cap is on
+  the slice rather than in `scripts/quietly.sh`, so everything a job spawns is
+  under it, wrapper or no wrapper. `OOMPolicy=continue` means the kernel kills
+  the biggest process and the listener survives to report a red job. The
+  daemon's `max-jobs` and `cores` are pinned low so a cold hive build can't
+  run eight compilers at once into that cap.
 
 `scripts/quietly.sh` still gives a job its lock and `nice`. Its
 `systemd-run --user` scope can't work here, since the service has no user
@@ -76,7 +79,7 @@ manager, so it falls back as it does on a Mac. Getting one would mean lingering
 and opening `/run/user` in the unit's sandbox, for a cap that a bare `nix eval`
 in a job would walk around.
 
-Inside the guest, the service's `CPUWeight=idle` and `IOWeight=1` let SSH and
+Inside the guest, the slice's `CPUWeight=idle` and `IOWeight=1` let SSH and
 Tailscale win, and the daemon runs at idle CPU and I/O priority.
 
 **The disk priority has no effect until PVE enforces `io.weight`.** Only the
@@ -88,10 +91,11 @@ that file at boot turns iocost on, for every guest on that disk.
 ### Garbage collection
 
 `nh clean` already runs weekly on every NixOS host through `modules/nixos.nix`,
-and NixOS warns against `nix.gc.automatic` beside it. `min-free` starts a collection
-at 40 GB free and `max-free` stops it at 80 GB, so the 200 GB disk collects
-before it reaches the 85% disk alert. The desktop's closure alone is 32 GB, and
-the disk is thin, so it only takes what it uses from PVE's pool.
+and NixOS warns against `nix.gc.automatic` beside it. `min-free` and `max-free`
+in the module start a collection well before the disk alert fires and stop it
+once there's room for a workstation closure, which is the biggest thing a
+build leaves behind. The disk is thin, so it only takes what it uses from
+PVE's pool.
 
 ### Proving the fence
 
@@ -118,11 +122,17 @@ On PVE, `incus delete --force runner`. Then from the repo on the desktop:
 ```sh
 scripts/terraform.sh apply
 (cd modules/agenix && agenix -d runner-ssh-host-key.age) \
-  | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@192.168.1.161 \
-    'umask 077; cat > /etc/ssh/ssh_host_ed25519_key'
+  | ssh root@pve 'incus exec runner -- sh -c "umask 077 \
+      && cat > /etc/ssh/ssh_host_ed25519_key \
+      && ssh-keygen -y -f /etc/ssh/ssh_host_ed25519_key > /etc/ssh/ssh_host_ed25519_key.pub \
+      && systemctl restart sshd"'
 scripts/deploy.sh runner
 ```
 
+The key goes in through PVE and `incus exec`, not SSH, because the new guest
+answers with a freshly generated key that the desktop's `known_hosts` would
+refuse. Writing the file isn't enough on its own: sshd keeps serving the key
+it loaded at boot until it restarts, and the `.pub` beside it has to match.
 Terraform keeps the MAC and the UniFi reservation, and its plan should only
 touch `runner`. The runner mints a token, and `replace` takes over the old
 registration's name. In the Tailscale console, delete the old node and rename

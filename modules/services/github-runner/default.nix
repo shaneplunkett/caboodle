@@ -15,8 +15,9 @@ let
   tokenFile = "/run/${tokenDir}/token";
   gib = n: n * 1024 * 1024 * 1024;
 
+  slice = "runner";
   fence = {
-    MemoryMax = "28G";
+    Slice = "${slice}.slice";
     OOMPolicy = "continue";
   };
 
@@ -51,7 +52,15 @@ in
     settings = {
       min-free = gib 40;
       max-free = gib 80;
+      max-jobs = 2;
+      cores = 4;
     };
+  };
+
+  systemd.slices.${slice}.sliceConfig = {
+    MemoryMax = "28G";
+    CPUWeight = "idle";
+    IOWeight = 1;
   };
 
   systemd.services.nix-daemon.serviceConfig = fence;
@@ -69,8 +78,6 @@ in
     extraPackages = [ pkgs.util-linux ];
     workDir = work;
     serviceOverrides = fence // {
-      CPUWeight = "idle";
-      IOWeight = 1;
       Restart = lib.mkForce "on-failure";
       RestartSec = "30s";
     };

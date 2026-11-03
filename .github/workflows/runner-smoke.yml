@@ -17,8 +17,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Show where the job is running
         run: uname -n
-      - name: Show the job's memory cap
-        run: cat "/sys/fs/cgroup$(cut -d: -f3 /proc/self/cgroup)/memory.max"
+      - name: Show the memory cap the job and the daemon share
+        run: cat /sys/fs/cgroup/runner.slice/memory.max
       - name: Build through the wrapper
         run: scripts/quietly.sh nix build nixpkgs#hello --no-link --print-out-paths
       - name: Run an evaluation past the cap
