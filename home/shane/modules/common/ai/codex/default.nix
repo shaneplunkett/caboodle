@@ -243,9 +243,12 @@ let
 
       managed = read_toml(managed_path)
       target = read_toml(target_path)
+      hook_state = target.get("hooks", {}).get("state")
 
       for path in REPLACE_SUBTREES:
           delete_path(target, path)
+      if hook_state is not None:
+          target.setdefault("hooks", {})["state"] = hook_state
       for path in leaf_paths(managed):
           is_replaced_subtree = any(
               path[: len(subtree)] == subtree for subtree in REPLACE_SUBTREES
