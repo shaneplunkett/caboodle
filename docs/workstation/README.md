@@ -61,6 +61,25 @@ rule arrives with it.
 also why `colmena apply-local` doesn't work on a Mac: it matches the node
 name against the hostname.
 
+## Asking a host what it runs
+
+Every host in the hive knows the commit it was built from:
+
+```sh
+ssh plex nixos-version --configuration-revision    # any NixOS host
+ssh mini darwin-version --configuration-revision   # the mini or the MacBook
+```
+
+A switch from a checkout with uncommitted changes prints `<commit>-dirty`,
+which means that commit plus edits that were never committed. "Unknown" and
+an exit code of 1 mean the host last switched before this was set, or from
+something that isn't a git checkout.
+
+The revision is part of the closure, so every commit is a new generation on
+every host, even when nothing else changed. Switching to one reloads
+dbus-broker, and on the desktop and the Deck it also restarts polkit and
+accounts-daemon, which read the system path.
+
 ## The store as the cache
 
 The machine that compiled something serves it, so nothing builds twice for
