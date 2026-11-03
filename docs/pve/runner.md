@@ -67,9 +67,10 @@ store gains none. It has four steps:
 
 1. **Build.** `scripts/build-linux-hosts.sh` builds every Linux host in the hive,
    the hand-switched ones included, so a merge that breaks PVE fails before
-   anything switches. It takes the list from the flake's `linuxHosts`, the same
-   filter as `nixosConfigurations` without `incus-base`, which takes seconds to
-   evaluate. A tag would be the obvious alternative, but a host's own
+   anything switches. It builds one host per call, tries every host, and a failure
+   stops the push and the apply. It takes the list from the flake's `linuxHosts`,
+   the same filter as `nixosConfigurations` without `incus-base`, which takes
+   seconds to evaluate. A tag would be the obvious alternative, but a host's own
    `deployment.tags` replaces whatever the hive's defaults set, and the first-boot
    guard in the README sets it to nothing.
 2. **Push.** `scripts/push-to-cache.sh` copies each closure to the
@@ -87,6 +88,24 @@ would hold about 15 GB of the slice's 28 while the compilers ran. The same cache
 makes each build inside `push-to-cache.sh` a lookup. It needs a clean tree, which a
 checkout always is.
 
+Each host then gets its own `nix build`, because the daemon's worker for a call
+holds the goal graph of every derivation in that call until the call ends. One call
+over the whole hive would hold every graph beside the compilers. One call per host
+holds one graph at a time and hands the memory back between hosts, though a large
+host can still need plenty, so the slice's cap stays the backstop. That has three
+costs:
+
+- **Less to run at once.** `max-jobs` can only pick from the current host's
+  derivations, so a slot can sit idle that a whole-hive call would have filled, and
+  a cold run can take longer.
+- **A shared failure repeats.** Nix forgets a failed build between calls, so a
+  derivation every host needs fails once per host. An expensive one can run the job
+  into its timeout, which still stops the push and the apply.
+- **A collection can undo the dry run.** A host's `.drv` files have no GC root until
+  its turn, so a `min-free` collection before then takes them and that host evaluates
+  again, keeping the heap for the length of its build. It costs memory and time, and
+  the result is the same.
+
 The runner trusts the same upstream caches as the workstations, from
 `modules/workstation/upstream-caches.nix`. Without them it would compile
 everything Noctalia's and Numtide's caches already hold.
@@ -100,8 +119,9 @@ the mini's own [build-only runner](../mini/README.md#the-runner).
 A failure is a red cross on the merge commit and an email from GitHub. Which step
 failed says what state things are in:
 
-- **Build.** A host that doesn't evaluate fails in the dry run, and one that
-  doesn't compile fails after `--keep-going` has finished the others. Nothing was
+- **Build.** A host that doesn't evaluate fails in the dry run, before anything
+  builds. One that doesn't compile fails its own call, every other host still gets
+  its turn, and the end of the step's log names the hosts that failed. Nothing was
   pushed and nothing switched, so the cache and every host stay on the last good
   commit. What did build stays in the store, so a re-run picks up from there.
 - **Push.** The hosts before the failure have this commit on the cache, and the
@@ -277,12 +297,13 @@ that file at boot turns iocost on, for every guest on that disk.
 ### Garbage collection
 
 `nh clean` already runs weekly on every NixOS host through `modules/nixos.nix`,
-and NixOS warns against `nix.gc.automatic` beside it. While a run is going, the
-build's out-links under the job's temp directory root every closure it built, so
-neither the weekly clean nor a `min-free` collection can take one between the
-build and its push. The job's last step removes the links whatever happened
-before it, so after the run nothing roots them, the clean takes them, and nothing
-notices: the next run fetches them back from the cache.
+and NixOS warns against `nix.gc.automatic` beside it. While a run is going, each
+host's out-link, at `closures/<host>` under the job's temp directory, roots its
+closure from the moment that host finishes, so neither the weekly clean nor a
+`min-free` collection can take one between its build and its push. The job's last
+step removes the links whatever happened before it, so after the run nothing roots
+them, the clean takes them, and nothing notices: the next run fetches them back from
+the cache.
 
 The store holds one set of every Linux closure plus whatever a cold build had to
 compile, and a lock-file bump lands most of that again beside it. `min-free` and
