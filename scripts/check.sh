@@ -2,9 +2,13 @@
 # The gate: the one check for this repo. Pre-commit, CI and the agents'
 # hooks all run exactly this, so there's one answer to "is the repo clean".
 # Terraform is checked offline: validate needs the providers' schemas but
-# not the backend, so it runs without any tokens. The plan stays in CI.
+# not the backend, so it runs without any tokens. It keeps its own data dir
+# because init reads the backend a real run recorded in terraform/.terraform,
+# then asks for a token even with -backend=false. The plan stays in CI.
 set -eu
 cd "$(git rev-parse --show-toplevel)"
+TF_DATA_DIR="$(git rev-parse --absolute-git-dir)/check-terraform"
+export TF_DATA_DIR
 
 scripts/check-suppressions.sh
 
