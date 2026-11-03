@@ -16,9 +16,17 @@
 # failure leaves push-to-cache.sh nothing to push. An interrupt stops the loop,
 # since nix exits on one like any other failure and the next host would start.
 #
-# With CLOSURE_LINKS set, each result is linked at $CLOSURE_LINKS/<host>, and the
-# links are GC roots: a collection can't take a closure between this build and
-# its push. Remove the directory when the run is done and nothing roots them.
+# With CLOSURE_LINKS set, two sets of links under it are GC roots. Right after
+# the dry run, $CLOSURE_LINKS/drv/<host> roots each host's derivations, so a
+# collection during a long build can't make a host still waiting its turn evaluate
+# again beside the compilers. A host that can't be rooted only gets a warning, since
+# it still builds. Each result is then linked at $CLOSURE_LINKS/<host>, so a
+# collection can't take a closure between this build and its push. Remove the
+# directory when the run is done and nothing roots any of them.
+#
+# nix path-info reads the .drv's path from the eval cache. nix build on a .drv with
+# no ^ takes it as a plain store path: it builds nothing and links it through the
+# daemon, the same as an out-link.
 #
 #   scripts/push-to-cache.sh $(scripts/build-linux-hosts.sh)
 #   CLOSURE_LINKS=/tmp/closures scripts/build-linux-hosts.sh
@@ -27,6 +35,11 @@ set -eu
 trap 'exit 130' INT
 
 cd "$(git rev-parse --show-toplevel)"
+
+root_derivation() {
+  drv="$(scripts/quietly.sh nix path-info --derivation ".#hydraJobs.$1")" &&
+    scripts/quietly.sh nix build --out-link "$CLOSURE_LINKS/drv/$1" "$drv" >&2
+}
 
 hosts="$(scripts/quietly.sh nix eval --raw .#linuxHosts --apply toString)"
 
@@ -38,7 +51,12 @@ done
 scripts/quietly.sh nix build --dry-run "$@" >&2
 
 if [ -n "${CLOSURE_LINKS:-}" ]; then
-  mkdir -p "$CLOSURE_LINKS"
+  mkdir -p "$CLOSURE_LINKS/drv"
+  for host in $hosts; do
+    if ! root_derivation "$host"; then
+      echo "build-linux-hosts: couldn't root $host's derivations, so a collection could make it evaluate again" >&2
+    fi
+  done
 fi
 
 failed=""

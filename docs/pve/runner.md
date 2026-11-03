@@ -210,11 +210,22 @@ would hold about 15 GB of the slice's 28 while the compilers ran. The same cache
 makes each build inside `push-to-cache.sh` a lookup. It needs a clean tree, which a
 checkout always is.
 
+Between the dry run and the first build, each host's derivations get a GC root at
+`closures/drv/<host>`. A cold run compiles for hours, so a `min-free` collection
+could otherwise take the `.drv` files of every host still waiting its turn, and that
+host would evaluate again inside its build, with the heap beside its compilers.
+`nix path-info --derivation` reads the path from the eval cache, and `nix build
+--out-link` on a `.drv` with no `^` links it without building it, through the daemon
+like any other out-link. A host it can't root gets a warning in the log and builds
+anyway. The root covers the `.drv` closure and its input sources, and `keep-outputs`
+is off, so a collection can still take a dependency a host compiled earlier, which
+costs a rebuild or a download rather than an evaluation.
+
 Each host then gets its own `nix build`, because the daemon's worker for a call
 holds the goal graph of every derivation in that call until the call ends. One call
 over the whole hive would hold every graph beside the compilers. One call per host
 holds one graph at a time and hands the memory back between hosts, though a large
-host can still need plenty, so the slice's cap stays the backstop. That has three
+host can still need plenty, so the slice's cap stays the backstop. That has two
 costs:
 
 - **Less to run at once.** `max-jobs` can only pick from the current host's
@@ -223,10 +234,6 @@ costs:
 - **A shared failure repeats.** Nix forgets a failed build between calls, so a
   derivation every host needs fails once per host. An expensive one can run the job
   into its timeout, which still stops the push and the apply.
-- **A collection can undo the dry run.** A host's `.drv` files have no GC root until
-  its turn, so a `min-free` collection before then takes them and that host evaluates
-  again, keeping the heap for the length of its build. It costs memory and time, and
-  the result is the same.
 
 The runner trusts the same upstream caches as the workstations, from
 `modules/workstation/upstream-caches.nix`. Without them it would compile
@@ -537,13 +544,21 @@ that file at boot turns iocost on, for every guest on that disk.
 ### Garbage collection
 
 `nh clean` already runs weekly on every NixOS host through `modules/nixos.nix`,
-and NixOS warns against `nix.gc.automatic` beside it. While a run is going, each
-host's out-link, at `closures/<host>` under the job's temp directory, roots its
-closure from the moment that host finishes, so neither the weekly clean nor a
-`min-free` collection can take one between its build and its push. The job's last
-step removes the links whatever happened before it, so after the run nothing roots
-them, the clean takes them, and nothing notices: the next run fetches them back from
-the cache.
+and NixOS warns against `nix.gc.automatic` beside it. A run roots things in this
+order, under `closures/` in the job's temp directory:
+
+1. **The dry run** writes every host's `.drv` files and roots none of them. A
+   collection in the moment before the next step only means `nix path-info`
+   evaluates that host again and writes them back, with no compilers running.
+2. **`closures/drv/<host>`** roots each host's derivations before anything compiles,
+   so a collection can't send a waiting host back to evaluating.
+3. **`closures/<host>`** roots a host's closure from the moment it finishes, so
+   neither the weekly clean nor a `min-free` collection can take one between its
+   build and its push.
+
+The job's last step removes the whole directory whatever happened before it, so after
+the run nothing roots them, the clean takes them, and nothing notices: the next run
+fetches them back from the cache.
 
 The store holds one set of every Linux closure plus whatever a cold build had to
 compile, and a lock-file bump lands most of that again beside it. `min-free` and
