@@ -125,6 +125,9 @@ in
     tokenType = "registration";
     replace = true;
     extraLabels = [ name ];
+    extraEnvironment.ACTIONS_RUNNER_HOOK_JOB_STARTED = lib.getExe (
+      pkgs.callPackage ./job-started.nix { }
+    );
     extraPackages = [
       pkgs.colmena
       pkgs.dnsutils
@@ -135,6 +138,7 @@ in
     ];
     workDir = work;
     serviceOverrides = fence // {
+      ExecStartPre = lib.mkBefore [ "${pkgs.coreutils}/bin/rm -f ${state}/.env" ];
       Restart = lib.mkForce "on-failure";
       RestartSec = "30s";
     };

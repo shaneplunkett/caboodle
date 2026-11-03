@@ -58,6 +58,122 @@ without narrowing inherits it, so
 [the other mints narrow](../github/README.md#github-app-and-inputs-token).
 Anyone with the private key can still mint one that doesn't.
 
+## The guard
+
+caboodle is public, so a workflow asking for `runs-on: [self-hosted, homelab]` can
+come from any pushed branch, or from a fork's pull request once GitHub's contributor
+approval lets it run. This runner holds [the deploy key, the inputs token and the
+Terraform secrets](#what-it-holds), so it refuses every job unless `GITHUB_REPOSITORY`
+is exactly `shaneplunkett/caboodle` and `GITHUB_REF` is exactly `refs/heads/main`.
+Anything missing, empty or different is refused. The
+[mini's runner](../mini/README.md#the-guard) runs the same script.
+
+`modules/services/github-runner/job-started.sh` is the runner's job-started hook,
+which the service names in `ACTIONS_RUNNER_HOOK_JOB_STARTED`. It runs first in every
+job, in a step called `Set up runner`. A refused job goes red with `Job refused` in
+that step and on the run's page, and every step after it is skipped. The run also
+shows "The runner has received a shutdown signal". That's the hook's doing,
+and the listener carries on and takes the next job. `job-started-test.sh` runs in
+`scripts/check.sh`.
+
+**Failing the hook isn't enough.** GitHub's docs say the job won't run if the hook
+exits non-zero, but the runner's `JobExtension.cs` and `StepsRunner.cs` say otherwise.
+The hook is one step in the job's list. Its failure fails the job and the runner keeps
+walking the list, so a step with `if: always()` still runs, with everything this runner
+holds. So the hook stops the worker instead. SIGTERM makes `Runner.Worker` shut down,
+and during a shutdown the runner skips every remaining step without evaluating its
+condition. A worker still there after 30 seconds gets SIGKILL.
+
+What a job can't change:
+
+- **The values.** The runner starts a hook with an empty step environment and sets
+  `GITHUB_*` from the job's `github` context, which comes from GitHub. A workflow's
+  `env:` never reaches the hook, so neither do `GITHUB_REF`, `BASH_ENV` or `PATH`. No
+  step has run yet, so nothing has touched `GITHUB_ENV`.
+- **The hook.** The script is in the store, and systemd sets the variable. The one way
+  round that is `.env`: the listener reads `$RUNNER_ROOT/.env` when it starts, and that
+  file beats the service's environment. The job's user owns that directory, so the
+  service removes the file before every start.
+- **The repository.** This runner is registered on caboodle alone, so GitHub never
+  sends it another repo's job, whatever else the App is installed on. The check on
+  `GITHUB_REPOSITORY` is a second lock.
+
+The limits:
+
+- **`main` is the boundary, and it has no review rule.** Its ruleset wants a green
+  check, so anyone who can push can land a workflow on `main` and it runs with all of
+  the above. The guard stops unmerged code, not merged code.
+- **Some events read as `main` whoever caused them.** `pull_request_target`,
+  `workflow_run`, `issue_comment` and `schedule` all have `GITHUB_REF` on the default
+  branch, with the workflow file from there too. A workflow on one of these that checked
+  out a pull request's code would pass the guard, so none of them belongs on this
+  runner. Re-running an old run on `main` passes as well.
+- **The runner fetches actions first.** It downloads and reads a job's `uses:` actions
+  before the hook, and none of their code runs. They sit in the work directory until the
+  next start empties it.
+- **Refused jobs still take the runner.** One takes a few seconds, but a fork's pull
+  requests can queue enough of them to hold up a deploy.
+- **It leans on how the runner behaves.** A runner bump could change what SIGTERM does
+  or what a hook sees, and the test here can't tell. Run
+  [Proving the guard](#proving-the-guard) when the runner's version moves.
+
+### Proving the guard
+
+This proves the worker's side, which only a real job can. Do it after the runner and
+the mini have both deployed the hook. The steps only echo, so a guard that fails leaks
+nothing. On a throwaway branch from `main`, replace
+`.github/workflows/runner-smoke.yml` with this:
+
+```yaml
+on:
+  push:
+    branches: [guard-test]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  homelab:
+    runs-on: [self-hosted, homelab]
+    timeout-minutes: 5
+    steps:
+      - run: echo "the guard let this through"
+        if: ${{ always() }}
+  darwin:
+    runs-on: [self-hosted, darwin]
+    timeout-minutes: 5
+    steps:
+      - run: echo "the guard let this through"
+        if: ${{ always() }}
+```
+
+Then push it, which starts one run, dispatch a second, and read both:
+
+```sh
+git switch -c guard-test origin/main
+# replace the workflow, then commit it
+git push -u origin guard-test
+gh workflow run runner-smoke.yml --repo shaneplunkett/caboodle --ref guard-test
+gh run list --repo shaneplunkett/caboodle --branch guard-test --workflow runner-smoke.yml
+gh run view <id> --repo shaneplunkett/caboodle --json jobs \
+  --jq '.jobs[] | {name, conclusion, steps: [.steps[] | {name, conclusion}]}'
+gh run view <id> --repo shaneplunkett/caboodle --log | grep -E 'Job refused|let this through'
+gh api repos/shaneplunkett/caboodle/actions/runners --jq '.runners[] | {name, status}'
+git push origin --delete guard-test
+```
+
+Both jobs in both runs should be `failure`, the `echo` step `skipped` or missing, `Job
+refused` in the log, and `let this through` nowhere. Both runners should still be
+online. Then check `main` still gets through:
+
+```sh
+gh workflow run runner-smoke.yml --repo shaneplunkett/caboodle --ref main
+```
+
+That run should pass, with `This job is from shaneplunkett/caboodle on refs/heads/main`
+under `Set up runner`.
+
 ## The deploy job
 
 `.github/workflows/deploy.yml` runs on every push to `main` that touches
@@ -442,10 +558,6 @@ registration's name. In the Tailscale console, delete the old node and rename
 
 ## Gotchas
 
-- **A workflow on any branch can reach the runner.** A file with
-  `runs-on: [self-hosted, homelab]` on a pushed branch can run here, with the
-  deploy key and the Terraform secrets, without merging. Only who can push to
-  caboodle limits that.
 - **A registered runner keeps an old token on disk.** The module stores
   `.current-token` in its state directory, mode 600. A registration token
   lasts an hour, so it's dead long before it could matter, but the file only

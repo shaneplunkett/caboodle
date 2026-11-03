@@ -212,9 +212,18 @@ sudo launchctl kickstart -k system/org.nixos.github-runner-mini
 
 The logs are in `/var/log/github-runners`.
 
-A workflow on any pushed branch with `runs-on: [self-hosted, darwin]` can run here
-without merging, with the cache key and the inputs token. Only who can push to
-caboodle limits that, as on PVE.
+### The guard
+
+This runner holds the cache key and the inputs token, so it takes the same
+job-started hook as the one on PVE and refuses every job that isn't from caboodle's
+`main`. [The guard on PVE](../pve/runner.md#the-guard) has how it works, its limits and
+how to prove it, and all of that applies here. Two things differ:
+
+- launchd sets `ACTIONS_RUNNER_HOOK_JOB_STARTED` from the plist, where PVE has systemd.
+- The runner's user removes `.env` from the state directory at the top of the job's
+  script, since launchd has no step before it.
+
+A Mac has no `ps` on the job's `PATH`, so the hook adds `/bin` to find the worker.
 
 ## Deploying
 
