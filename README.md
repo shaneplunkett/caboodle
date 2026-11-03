@@ -41,7 +41,8 @@ host, and the NixOS half and the darwin half each read the same facts.
 A merge builds every Linux host on the runner, pushes the closures to the cache
 and deploys the containers; see
 [docs/pve/runner](docs/pve/runner.md#the-deploy-job). The mini is a server, and
-only `scripts/deploy.sh` from the desktop deploys it; see
+only `scripts/deploy.sh` from the desktop deploys it, but a merge does build both
+Macs on it and push them to the cache; see
 [docs/mini](docs/mini/README.md). PVE, Cube, the MacBook, the desktop and the
 Deck are switched by hand; see
 [docs/pve](docs/pve/README.md), [docs/cube](docs/cube/README.md),

@@ -2,8 +2,8 @@
 
 The MacBook is a host in the hive, evaluated with nix-darwin like the mini,
 but nothing deploys it. Shane switches it by hand on the laptop, and it
-pulls what the mini has already built
-([the store as the cache](../workstation/README.md#the-store-as-the-cache)).
+pulls from the [cache](../pve/cache.md), where the
+[mini's runner](../mini/README.md#the-runner) pushes its closure on every merge.
 [docs/workstation](../workstation/README.md) covers what it shares with the
 mini and the desktop.
 

@@ -195,15 +195,22 @@ in
     shane
     mirror
     runner
+    mini
   ];
   "github-app-private-key.age".publicKeys = [
     shane
     mirror
     runner
+    mini
   ];
   "github-inputs-token.age".publicKeys = [
     shane
     runner
+    mini
+  ];
+  "mini-cache-ssh-key.age".publicKeys = [
+    shane
+    mini
   ];
   "runner-ssh-key.age".publicKeys = [
     shane
@@ -311,10 +318,6 @@ in
   "norish-obscura-env.age".publicKeys = [
     shane
     recipes
-  ];
-  "nix-store-key-mini.age".publicKeys = [
-    shane
-    mini
   ];
   "nix-store-key-cache.age".publicKeys = [
     shane

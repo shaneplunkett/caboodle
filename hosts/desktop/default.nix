@@ -11,6 +11,7 @@ in
     ./hardware-configuration.nix
     ./modules
     ../../modules/workstation
+    ../../modules/services/harmonia/pusher.nix
     ../../modules/workstation/nixos
   ];
 

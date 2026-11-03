@@ -16,10 +16,12 @@ scripts/push-to-cache.sh plex rss
 
 [The deploy job](runner.md#the-deploy-job) does this for every Linux host on every
 merge, and this is the same thing by hand. For each host, that builds through
-`scripts/quietly.sh`, runs `nix copy --to ssh-ng://root@cache`, and sets
+`scripts/quietly.sh`, runs `nix copy --to ssh-ng://root@cache.home.arpa`, and sets
 `/nix/var/nix/profiles/per-host/<host>` on the cache. Root is a trusted user
 over `ssh-ng`, so a push needs no signature. Harmonia signs each path as it
-serves it, with the agenix key `nix-store-key-cache`.
+serves it, with the agenix key `nix-store-key-cache`. Root takes Shane's key, the
+runner's, and the [mini's](../mini/README.md#the-runner), which `hosts/cache.nix`
+adds so that no other guest accepts it.
 
 There's no `--substitute-on-destination`, so a push never depends on the
 cache's internet.
@@ -72,8 +74,10 @@ A client away from home reaches the address through PVE's subnet route if it
 accepts routes, which Macs do. One that doesn't times out and carries on as
 if the cache were down.
 
-Pushes do use `cache`, over SSH, because the desktop has MagicDNS and
-`known_hosts` has the key under that name.
+Pushes use it too, over SSH, so they don't depend on MagicDNS. Servers don't take
+it, and the mini only gets it from its Homebrew Tailscale app.
+`modules/services/harmonia/pusher.nix` puts the cache's host key in
+`known_hosts` under this name on each host that pushes.
 
 ## Disk
 
@@ -160,8 +164,9 @@ path that fails to fetch gets built locally rather than failing the switch.
   for an hour, so push before applying.
 - **The cache lists itself as a substituter**, like every host. It only asks
   for paths it doesn't have, gets a 404, and moves on.
-- **Darwin closures can't come from the desktop.** The script is Linux only,
-  and a Mac's closure is pushed from the mini.
+- **Darwin closures can't come from the desktop or the runner.** A host only
+  builds on its own system, so a Mac's closure is pushed from the
+  [mini's runner](../mini/README.md#the-runner).
 - **To replace the key**, generate a new one and put its public half in
   `cache.nix`. Hosts stop trusting the old one as they switch, so pulls
   fall back until they all have.

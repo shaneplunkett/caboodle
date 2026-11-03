@@ -57,6 +57,12 @@ A local checkout works the same way with `.` in place of the GitHub URL. A
 new Mac's first switch asks for a password, since the passwordless sudo
 rule arrives with it.
 
+Once a merge's `darwin` run is green, the [mini's
+runner](../mini/README.md#the-runner) has pushed that commit's closure, so
+switching to it only downloads. Switch before that and the Mac builds what's
+missing, then won't look on the cache for those paths for an hour
+([the gotcha](../pve/cache.md#gotchas)).
+
 `-H` names the node because a Mac's hostname isn't its node name. That's
 also why `colmena apply-local` doesn't work on a Mac: it matches the node
 name against the hostname.
@@ -88,7 +94,9 @@ to the [cache](../pve/cache.md), so neither compiles what the runner already
 built. `nrs` on the desktop still evaluates locally, and the result is the same
 derivation the runner built, whether it's evaluated from GitHub or a checkout,
 as long as the commit matches. The Deck doesn't evaluate at all:
-[its recipe](../deck/README.md#switching) reads the closure's name off the cache.
+[its recipe](../deck/README.md#switching) reads the closure's name off the
+cache. The Macs pull from the same cache: the mini builds both darwin closures
+on a merge and pushes them, so the MacBook fetches instead of building.
 
 Three things make `nrs` compile anyway, and only the first costs real time:
 
@@ -101,11 +109,6 @@ Three things make `nrs` compile anyway, and only the first costs real time:
 - **The cache is down.** `fallback` builds what no other cache has, as
   [the cache's doc](../pve/cache.md#when-its-down) says.
 
-The MacBook pulls from the mini instead. The mini signs with `mini-1`, and the
-MacBook's `nix-daemon` signs in as `shane` with its SSH host key, through a key
-whose only allowed command is `nix-daemon --stdio`. Paths the mini built before
-the key existed carry no signature, so the MacBook rebuilds those once. Away from
-the LAN it builds locally, and `ConnectTimeout 5` keeps the wait short.
 
 ## Homebrew on the Macs
 
