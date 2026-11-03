@@ -2,7 +2,8 @@
 
 A Hetzner Storage Box is the offsite restic target for the servers' backups. It's
 defined in `terraform/hetzner.tf`, with state in Terraform Cloud, and applied
-from the desktop with `scripts/terraform.sh apply`.
+by the merge that changes it, or from the desktop with
+`scripts/terraform.sh apply`.
 
 ## Nix host backups
 

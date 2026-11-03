@@ -21,6 +21,15 @@ let
   deployed = lib.filterAttrs (_: node: node.config.homelab.deployedByRunner) nodes;
   gib = n: n * 1024 * 1024 * 1024;
 
+  terraformSecrets = [
+    "terraform-cloud-token"
+    "terraform-hcloud-token"
+    "terraform-cloudflare-token"
+    "terraform-access-emails"
+    "terraform-unifi-token"
+    "terraform-incus-key"
+  ];
+
   slice = "runner";
   fence = {
     Slice = "${slice}.slice";
@@ -47,9 +56,12 @@ in
     "github-app-private-key"
     "github-inputs-token"
     "runner-ssh-key"
-  ];
+  ]
+  ++ terraformSecrets;
 
-  age.secrets.runner-ssh-key.owner = user;
+  age.secrets = lib.genAttrs ([ "runner-ssh-key" ] ++ terraformSecrets) (_: {
+    owner = user;
+  });
 
   users.users.${user} = {
     group = user;
@@ -115,6 +127,7 @@ in
       pkgs.colmena
       pkgs.dnsutils
       pkgs.openssh
+      pkgs.terraform
       pkgs.util-linux
     ];
     workDir = work;

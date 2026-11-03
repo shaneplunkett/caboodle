@@ -221,21 +221,27 @@ in
   ];
   "terraform-cloud-token.age".publicKeys = [
     shane
+    runner
   ];
   "terraform-hcloud-token.age".publicKeys = [
     shane
+    runner
   ];
   "terraform-cloudflare-token.age".publicKeys = [
     shane
+    runner
   ];
   "terraform-access-emails.age".publicKeys = [
     shane
+    runner
   ];
   "terraform-unifi-token.age".publicKeys = [
     shane
+    runner
   ];
   "terraform-incus-key.age".publicKeys = [
     shane
+    runner
   ];
   "backup-r2-plex.age".publicKeys = [
     shane
