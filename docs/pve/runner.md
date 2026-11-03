@@ -112,6 +112,12 @@ The limits:
   next start empties it.
 - **Refused jobs still take the runner.** One takes a few seconds, but a fork's pull
   requests can queue enough of them to hold up a deploy.
+- **An allowed job can rewrite the runner.** `.env` isn't the only file in the state
+  directory the listener reads at start: `.runner` and `.credentials*` are there too,
+  the job's user owns them, and nothing removes them. A job that runs, so one from
+  `main`, can change where the runner registers or what it registers with, and that
+  survives a restart. The guard is for unmerged code; after a bad merge, the recovery
+  is the [nuke](#nuking-it) and a fresh registration.
 - **It leans on how the runner behaves.** A runner bump could change what SIGTERM does
   or what a hook sees, and the test here can't tell. Run
   [Proving the guard](#proving-the-guard) when the runner's version moves.
