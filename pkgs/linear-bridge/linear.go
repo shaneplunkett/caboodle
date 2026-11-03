@@ -74,40 +74,76 @@ func newLinear(graphqlURL, tokenURL, clientID, clientSecret string) *linear {
 	}
 }
 
+type issueNode struct {
+	issue
+	State struct {
+		Type string `json:"type"`
+	} `json:"state"`
+}
+
+func (n issueNode) toIssue() issue {
+	found := n.issue
+	found.StateType = n.State.Type
+	return found
+}
+
 func (l *linear) find(ctx context.Context, attachmentURL string) ([]issue, error) {
-	const query = `query Find($url: String!) {
-  attachmentsForURL(url: $url, includeArchived: true, first: 250) {
+	issues := []issue{}
+	var after *string
+	for {
+		page, next, err := l.findPage(ctx, attachmentURL, after)
+		if err != nil {
+			return nil, err
+		}
+		issues = append(issues, page...)
+		if next == nil {
+			return issues, nil
+		}
+		if after != nil && *next == *after {
+			return nil, errors.New("linear's answer repeats its page cursor")
+		}
+		after = next
+	}
+}
+
+func (l *linear) findPage(ctx context.Context, attachmentURL string, after *string) (page []issue, next *string, err error) {
+	const query = `query Find($url: String!, $after: String) {
+  attachmentsForURL(url: $url, includeArchived: true, first: 250, after: $after) {
     nodes { issue { id identifier number completedAt canceledAt state { type } } }
+    pageInfo { hasNextPage endCursor }
   }
 }`
 	var out struct {
 		AttachmentsForURL *struct {
 			Nodes []struct {
-				Issue struct {
-					issue
-					State struct {
-						Type string `json:"type"`
-					} `json:"state"`
-				} `json:"issue"`
+				Issue issueNode `json:"issue"`
 			} `json:"nodes"`
+			PageInfo struct {
+				HasNextPage bool    `json:"hasNextPage"`
+				EndCursor   *string `json:"endCursor"`
+			} `json:"pageInfo"`
 		} `json:"attachmentsForURL"`
 	}
-	if err := l.do(ctx, query, map[string]any{"url": attachmentURL}, &out); err != nil {
-		return nil, err
+	if err := l.do(ctx, query, map[string]any{"url": attachmentURL, "after": after}, &out); err != nil {
+		return nil, nil, err
 	}
 	if out.AttachmentsForURL == nil {
-		return nil, errors.New("linear's answer has no attachmentsForURL")
+		return nil, nil, errors.New("linear's answer has no attachmentsForURL")
 	}
-	issues := make([]issue, 0, len(out.AttachmentsForURL.Nodes))
 	for _, node := range out.AttachmentsForURL.Nodes {
-		found := node.Issue.issue
-		if found.ID == "" {
-			return nil, errors.New("linear's answer has an attachment with no issue")
+		if node.Issue.ID == "" {
+			return nil, nil, errors.New("linear's answer has an attachment with no issue")
 		}
-		found.StateType = node.Issue.State.Type
-		issues = append(issues, found)
+		page = append(page, node.Issue.toIssue())
 	}
-	return issues, nil
+	if !out.AttachmentsForURL.PageInfo.HasNextPage {
+		return page, nil, nil
+	}
+	cursor := out.AttachmentsForURL.PageInfo.EndCursor
+	if cursor == nil || *cursor == "" {
+		return nil, nil, errors.New("linear's answer says there is another page but gives no cursor")
+	}
+	return page, cursor, nil
 }
 
 func (l *linear) createIssue(ctx context.Context, input newIssue) (issue, error) {

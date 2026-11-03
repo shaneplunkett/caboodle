@@ -267,6 +267,66 @@ func TestFindReadsEveryIssueAttachedToTheURL(t *testing.T) {
 	}
 }
 
+func findNode(identifier string, number int) string {
+	return fmt.Sprintf(`{"issue":{"id":%q,"identifier":%q,"number":%d,"state":{"type":"triage"}}}`, identifier, identifier, number)
+}
+
+func TestFindWalksEveryPage(t *testing.T) {
+	stub, client := newAPIStub(t, nil)
+	stub.graphql = func(w http.ResponseWriter, _ *http.Request) {
+		switch len(stub.variables) {
+		case 1:
+			fmt.Fprintf(w, `{"data":{"attachmentsForURL":{"nodes":[%s],"pageInfo":{"hasNextPage":true,"endCursor":"page-2"}}}}`, findNode("SHA-1", 1))
+		case 2:
+			fmt.Fprintf(w, `{"data":{"attachmentsForURL":{"nodes":[%s],"pageInfo":{"hasNextPage":true,"endCursor":"page-3"}}}}`, findNode("SHA-2", 2))
+		default:
+			fmt.Fprintf(w, `{"data":{"attachmentsForURL":{"nodes":[%s],"pageInfo":{"hasNextPage":false,"endCursor":"page-3"}}}}`, findNode("SHA-3", 3))
+		}
+	}
+	issues, err := client.find(context.Background(), "https://alert")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := []string{}
+	for _, found := range issues {
+		got = append(got, found.Identifier)
+	}
+	if strings.Join(got, ",") != "SHA-1,SHA-2,SHA-3" {
+		t.Errorf("issues = %v", got)
+	}
+	if len(stub.variables) != 3 {
+		t.Fatalf("made %d calls", len(stub.variables))
+	}
+	for call, want := range []any{nil, "page-2", "page-3"} {
+		if stub.variables[call]["after"] != want {
+			t.Errorf("call %d after = %v, want %v", call, stub.variables[call]["after"], want)
+		}
+		if stub.variables[call]["url"] != "https://alert" {
+			t.Errorf("call %d url = %v", call, stub.variables[call]["url"])
+		}
+	}
+}
+
+func TestFindStopsOnACursorThatDoesntMove(t *testing.T) {
+	for name, cursor := range map[string]string{"no cursor": `null`, "same cursor": `"page-2"`} {
+		t.Run(name, func(t *testing.T) {
+			calls := 0
+			_, client := newAPIStub(t, func(w http.ResponseWriter, _ *http.Request) {
+				calls++
+				more := calls <= 3
+				if !more {
+					t.Error("still walking pages")
+				}
+				fmt.Fprintf(w, `{"data":{"attachmentsForURL":{"nodes":[],"pageInfo":{"hasNextPage":%t,"endCursor":%s}}}}`, more, cursor)
+			})
+			_, err := client.find(context.Background(), "https://alert")
+			if err == nil || isRetryable(err) {
+				t.Errorf("err = %v", err)
+			}
+		})
+	}
+}
+
 func TestCreateIssueSendsTheChosenID(t *testing.T) {
 	stub, client := newAPIStub(t, respond(`{"data":{"issueCreate":{"success":true,"issue":{"id":"chosen","identifier":"SHA-7"}}}}`))
 	created, err := client.createIssue(context.Background(), newIssue{
