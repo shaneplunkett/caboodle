@@ -35,6 +35,7 @@ in
                   annotations = {
                     summary = "{{ $labels.host }}'s root disk is {{ $value | humanizePercentage }} full";
                     condition = "Root disk over ${percent} for 10m";
+                    description = "When a root disk runs out, things break in a messy order: services fail their writes, databases stop, the journal goes quiet, and Nix can't switch, so the next deploy fails too. There's still room to work, so this isn't a panic. The check lists the biggest folders. A huge `/var/log/journal` or `/nix/store` is housekeeping that's fallen behind, and a service's folder under `/var/lib` is real growth. A guest takes more room by raising `disk` in its `homelab.guest` and merging.";
                     check = "ssh {{ $labels.host }} sudo du -xh -d2 / | sort -h | tail";
                     dashboard = links.hostHealth "{{ $labels.host }}";
                   };
