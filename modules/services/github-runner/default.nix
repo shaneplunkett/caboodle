@@ -37,6 +37,8 @@ let
   };
 in
 {
+  imports = [ ../../workstation/upstream-caches.nix ];
+
   homelab.secrets = [
     "github-app-client-id"
     "github-app-private-key"

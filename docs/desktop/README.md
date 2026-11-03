@@ -16,7 +16,8 @@ resolver, and its mDNS is off because Avahi already has port 5353.
 
 ## Building here
 
-The desktop builds the hive, and it's also where Shane plays games, so a
+A merge builds every Linux host on the runner. The desktop builds to check a
+change or when the runner is down, and it's also where Shane plays games, so a
 build never gets to win against what she's doing. Everything goes through
 `scripts/quietly.sh`, which holds one lock per machine
 (`$XDG_RUNTIME_DIR/caboodle-build.lock`) so a second build waits rather
@@ -36,13 +37,14 @@ build the host that changed. Two at once is what used to take the box down.
 `nrs` isn't wrapped: it's Shane's own switch, and the daemon's idle
 priority already covers the build half of it.
 
-What the desktop builds, it signs and serves to the Deck; see
+The desktop's store serves nothing. Every host pulls from the cache; see
 [the store as the cache](../workstation/README.md#the-store-as-the-cache).
 
 ## Switching
 
-Run `nrs`, which builds here and switches to GitHub's `main`. To switch to unmerged work,
-`git add` any new files in the caboodle checkout and run either of:
+Run `nrs`, which evaluates here, pulls the closure the merge's run built from
+the cache, and switches to GitHub's `main`. To switch to unmerged work, `git add`
+any new files in the caboodle checkout and run either of:
 
 ```sh
 colmena apply-local --sudo

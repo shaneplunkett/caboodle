@@ -20,7 +20,6 @@ let
     mirror
     pve
     cube
-    desktop
     mini
     cache
     runner
@@ -312,10 +311,6 @@ in
   "norish-obscura-env.age".publicKeys = [
     shane
     recipes
-  ];
-  "nix-store-key-desktop.age".publicKeys = [
-    shane
-    desktop
   ];
   "nix-store-key-mini.age".publicKeys = [
     shane

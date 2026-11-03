@@ -2,9 +2,9 @@
 
 The Deck is an LCD model running NixOS through
 [Jovian-NixOS](https://github.com/Jovian-Experiments/Jovian-NixOS). It's a
-host in the hive like the desktop, and nothing deploys it: the desktop
-builds it and the Deck pulls the result. It boots into Game Mode, and Switch to
-Desktop opens Plasma. Jovian only supports nixos-unstable and has no
+host in the hive like the desktop, and nothing deploys it: a merge builds it
+on the runner and the Deck pulls the result from the cache. It boots into Game
+Mode, and Switch to Desktop opens Plasma. Jovian only supports nixos-unstable and has no
 releases, so it moves with whatever commit the lock holds. It brings
 Valve's kernel, Steam client, fan control and power controls, and stubs
 SteamOS's own OS updates, since those are NixOS generations here.
@@ -16,16 +16,44 @@ instead, and joins once with `sudo tailscale up`.
 
 ## Switching
 
-`nrs` doesn't work on the Deck: evaluating the hive there would take
-gigabytes. Build it on the desktop instead, and the Deck pulls the result
-from the desktop's store, signed, over `ssh-ng`
-([the store as the cache](../workstation/README.md#the-store-as-the-cache)),
-so nothing compiles on the Deck:
+A merge leaves the Deck's closure in the [cache](../pve/cache.md), and its
+profile there names the newest one. Read that name and hand it to the Deck,
+which fetches the closure from the cache itself, so nothing compiles on the
+Deck and no other machine's store is involved. From anything holding Shane's
+key:
 
 ```sh
-p=$(scripts/quietly.sh nix build --no-link --print-out-paths .#hydraJobs.deck)
+p=$(ssh root@cache readlink -f /nix/var/nix/profiles/per-host/deck)
 ssh deck "sudo nix-env --profile /nix/var/nix/profiles/system --set $p && sudo $p/bin/switch-to-configuration switch"
 ```
+
+On the Deck itself, with her key there, it's the same without the `ssh deck`:
+
+```sh
+p=$(ssh root@cache readlink -f /nix/var/nix/profiles/per-host/deck)
+sudo nix-env --profile /nix/var/nix/profiles/system --set "$p" && sudo "$p/bin/switch-to-configuration" switch
+```
+
+Each path prints `copying path '...' from 'http://cache.home.arpa:5000'`, and
+a closure the Deck already has prints nothing. Then
+`nixos-version --configuration-revision` gives the commit it's on.
+
+- **The merge's run hasn't pushed yet.** The profile still names the last
+  closure pushed, so this switches to that commit and does no harm. To see
+  which commit the profile holds before switching:
+  `ssh root@cache "$p/sw/bin/nixos-version" --configuration-revision`.
+- **The cache is down, or the Deck can't reach it.** `nix-env` tries each
+  substituter, fails with `path '...' is required, but there is no substituter
+  that can build it`, and the `&&` stops there, so the Deck stays as it was.
+  The Deck only has the output's name, with no derivation to build from, so it
+  can't fall back to compiling. A Deck away from home needs to accept
+  Tailscale's routes to reach the address.
+- **`nrs` is the other way in**, for a Deck without her key. It evaluates this
+  one host, about 4 GB of heap, which needs
+  [the inputs token](../workstation/README.md#the-inputs-token) and enough
+  memory free, so not with a game running. It then pulls the same closure, and
+  it does have a derivation, so with the cache down it compiles what no other
+  cache has, the Valve kernel included. It hasn't been tried on the Deck yet.
 
 Sudo needs no password on the Deck, as on SteamOS. SSH only takes Shane's
 key, so that's only reachable with the Deck in hand or her key.
@@ -75,7 +103,7 @@ nix run --inputs-from . nixpkgs#nixos-anywhere -- --flake .#deck \
   `holo-firmware-update`. Run `sudo jupiter-biosupdate` instead.
 - Steam's 80% battery charge limit doesn't show up yet (Jovian issue #537).
 - Jovian has no binary cache, so the Valve kernel builds from source on the
-  desktop whenever it changes.
+  runner whenever it changes.
 - `jovian.steam.desktopSession` has to name a real session, and
   steamos-manager rejects any session whose name contains "gamescope"
   (Jovian issue #586).

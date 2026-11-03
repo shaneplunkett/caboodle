@@ -15,8 +15,10 @@ and the Mac mini. Read `README.md` for how it fits together.
   hive. The local gate is `scripts/check.sh`. Flakes ignore untracked
   files, so `git add` new files first. Nix code reads for itself, with no
   comments.
-- **Deploy:** a merge to `main` deploys the guests from the runner, through
-  `.github/workflows/deploy.yml`, dns2 after dns1. The desktop is the
+- **Deploy:** a merge to `main` builds every Linux host on the runner, pushes
+  the closures to the cache and deploys the guests, through
+  `.github/workflows/deploy.yml`, dns2 after dns1. A host that doesn't build
+  stops the run before anything switches. The desktop is the
   fallback: `scripts/deploy.sh <host>` builds a host here and applies it over
   SSH, and with no arguments it applies every server. Only the desktop applies
   the runner and the mini, which builds on itself. PVE, Cube, the desktop, the

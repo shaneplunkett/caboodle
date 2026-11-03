@@ -53,22 +53,59 @@ change repo settings or delete a repo. Anyone with the private key can too.
 
 ## The deploy job
 
-`.github/workflows/deploy.yml` runs `scripts/deploy.sh` on every push to `main`
-that touches anything outside `docs/`. That applies the `deploy` tag, then dns2
-once dns1 answers, the same as the desktop. There's no approval step, so
-choosing when to merge is choosing when it lands. The workflow holds no
-secrets, and the Actions secret store gains none.
+`.github/workflows/deploy.yml` runs on every push to `main` that touches
+anything outside `docs/`. There's no approval step, so choosing when to merge is
+choosing when it lands. The workflow holds no secrets, and the Actions secret
+store gains none. It has three steps:
+
+1. **Build.** `scripts/build-linux-hosts.sh` builds every Linux host in the hive,
+   the hand-switched ones included, so a merge that breaks PVE fails before
+   anything switches. It takes the list from the flake's `linuxHosts`, the same
+   filter as `nixosConfigurations` without `incus-base`, which takes seconds to
+   evaluate. A tag would be the obvious alternative, but a host's own
+   `deployment.tags` replaces whatever the hive's defaults set, and the first-boot
+   guard in the README sets it to nothing.
+2. **Push.** `scripts/push-to-cache.sh` copies each closure to the
+   [cache](cache.md) and moves that host's profile there.
+3. **Apply.** `scripts/deploy.sh` applies the `deploy` tag, then dns2 once dns1
+   answers, the same as the desktop. Colmena evaluates the hive again but finds
+   everything built, so a run costs two evaluations.
+
+The build evaluates in a dry run of its own and then builds from Nix's eval
+cache. An evaluator keeps its heap until it exits, so a `nix build` that did both
+would hold about 15 GB of the slice's 28 while the compilers ran. The same cache
+makes each build inside `push-to-cache.sh` a lookup. It needs a clean tree, which a
+checkout always is.
+
+The runner trusts the same upstream caches as the workstations, from
+`modules/workstation/upstream-caches.nix`. Without them it would compile
+everything Noctalia's and Numtide's caches already hold.
 
 The mini is outside it. Its tag is `deploy-mini`, the runner has no key to it,
 and the job can't build darwin, so only the desktop applies it.
 
 ### When it fails
 
-A failure is a red cross on the merge commit and an email from GitHub. Colmena
-applies every host it can before it exits, and a failure in the first apply
-stops the script before dns2. Rollback is a revert pull request. Re-run failed
-jobs on the newest run is fine, but re-running an older run applies that older
-commit over whatever came after it.
+A failure is a red cross on the merge commit and an email from GitHub. Which step
+failed says what state things are in:
+
+- **Build.** A host that doesn't evaluate fails in the dry run, and one that
+  doesn't compile fails after `--keep-going` has finished the others. Nothing was
+  pushed and nothing switched, so the cache and every host stay on the last good
+  commit. What did build stays in the store, so a re-run picks up from there.
+- **Push.** The hosts before the failure have this commit on the cache, and the
+  rest keep their last closure. The apply still runs and the run still goes red.
+  The cache is one of the guests the apply deploys, so stopping here would leave
+  a broken cache unable to take its own fix, and colmena ships closures to the
+  guests itself. A hand-switched host compiles what the cache doesn't have yet.
+- **Apply.** Colmena applies every host it can before it exits, and a failure in
+  the first apply stops the script before dns2. The cache already has this commit,
+  so a hand-switched host can switch to a closure whose guests didn't all land.
+
+A job that hits its timeout or gets cancelled stops where it is and doesn't apply.
+Rollback is a revert pull request. Re-run failed jobs on the newest run is fine,
+but re-running an older run applies that older commit over whatever came after
+it, and moves every host's profile on the cache back to it until the next merge.
 
 `concurrency: deploy` never cancels a running deploy, and `queue: max` keeps
 every later merge waiting in order instead of GitHub's default of one pending
@@ -114,9 +151,15 @@ it's a red cross with the same fix.
 
 ### When the runner is down
 
-`scripts/deploy.sh` from the desktop does what the job does, plus the mini.
+`scripts/deploy.sh` from the desktop applies what the job applies, plus the mini.
 There's no lock between the two, and
-[ADR 0005](../adr/0005-merges-deploy-from-a-runner-at-home.md) says why.
+[ADR 0005](../adr/0005-merges-deploy-from-a-runner-at-home.md) says why. The
+build and push steps run from the desktop too, from a clean checkout of `main`,
+if the workstations want their closures before the runner is back:
+
+```sh
+scripts/push-to-cache.sh $(scripts/build-linux-hosts.sh)
+```
 
 ## Fencing
 
@@ -139,7 +182,9 @@ outer one.
   under it, wrapper or no wrapper. `OOMPolicy=continue` means the kernel kills
   the biggest process and the listener survives to report a red job. The
   daemon's `max-jobs` and `cores` are pinned low so a cold hive build can't
-  run eight compilers at once into that cap.
+  run eight compilers at once into that cap. A cold run compiles the Valve kernel,
+  Node, Mesa and Gamescope among others, at idle priority, which is why the job's
+  timeout is six hours.
 
 `scripts/quietly.sh` still gives a job its lock and `nice`. Its
 `systemd-run --user` scope can't work here, since the service has no user
@@ -159,11 +204,17 @@ that file at boot turns iocost on, for every guest on that disk.
 ### Garbage collection
 
 `nh clean` already runs weekly on every NixOS host through `modules/nixos.nix`,
-and NixOS warns against `nix.gc.automatic` beside it. `min-free` and `max-free`
-in the module start a collection well before the disk alert fires and stop it
-once there's room for a workstation closure, which is the biggest thing a
-build leaves behind. The disk is thin, so it only takes what it uses from
-PVE's pool.
+and NixOS warns against `nix.gc.automatic` beside it. The job leaves no GC roots,
+so that clean takes every closure it built, and nothing notices: the next run
+fetches them back from the cache.
+
+Every Linux closure, plus what a cold build needs to compile them, comes to about
+70 GB. A Sunday bump can land about that much again beside it. `min-free` and
+`max-free` in the module start a collection well before the disk alert fires and
+stop it once there's room for one more of those, so a bump rarely collects in the
+middle of a build. If it does, a build's own session holds temporary roots on what
+it has already built, so the collection takes last week's paths and not this
+run's. The disk is thin, so it only takes what it uses from PVE's pool.
 
 ### Proving the fence
 
