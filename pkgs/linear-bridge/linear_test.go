@@ -169,43 +169,77 @@ func TestGraphQLErrorsAreRefusalsEvenOnHTTP200(t *testing.T) {
 	}
 }
 
-func TestServerErrorsAndNetworkFailuresAreNotRefusals(t *testing.T) {
+func isRetryable(err error) bool {
+	var retry *retryableError
+	return errors.As(err, &retry)
+}
+
+func TestServerErrorsAndNetworkFailuresAreRetryable(t *testing.T) {
 	_, client := newAPIStub(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusBadGateway)
 		fmt.Fprint(w, `<html>bad gateway</html>`)
 	})
-	_, err := client.find(context.Background(), "https://alert")
-	var refused *refusal
-	if err == nil || errors.As(err, &refused) {
+	if _, err := client.find(context.Background(), "https://alert"); !isRetryable(err) {
 		t.Errorf("502: err = %v", err)
 	}
 
 	gone := newLinear("http://127.0.0.1:1/graphql", "http://127.0.0.1:1/oauth/token", "id", testSecret)
-	_, err = gone.find(context.Background(), "https://alert")
-	if err == nil || errors.As(err, &refused) {
+	if _, err := gone.find(context.Background(), "https://alert"); !isRetryable(err) {
 		t.Errorf("network: err = %v", err)
 	}
 }
 
+func TestAnAnswerItCantReadIsNotRetryable(t *testing.T) {
+	for name, body := range map[string]string{
+		"not json":           `<html>not graphql</html>`,
+		"wrong shape":        `{"data":{"attachmentsForURL":"nope"}}`,
+		"null data":          `{"data":null}`,
+		"missing field":      `{"data":{}}`,
+		"node with no issue": `{"data":{"attachmentsForURL":{"nodes":[{"issue":null}]}}}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			_, client := newAPIStub(t, respond(body))
+			_, err := client.find(context.Background(), "https://alert")
+			if err == nil {
+				t.Fatal("wanted an error, an empty lookup would file a twin")
+			}
+			if isRetryable(err) {
+				t.Errorf("err = %v", err)
+			}
+		})
+	}
+}
+
 func TestTokenEndpointFailuresSplitTheSameWayWithoutLeakingTheSecret(t *testing.T) {
-	var refused *refusal
+	notRetryable := map[string]http.HandlerFunc{
+		"http 400": func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, `{"error":"invalid_client","echo":%q}`, testSecret)
+		},
+		"http 200 not json": func(w http.ResponseWriter, _ *http.Request) {
+			fmt.Fprintf(w, `not json %s`, testSecret)
+		},
+		"http 200 no access token": func(w http.ResponseWriter, _ *http.Request) {
+			fmt.Fprintf(w, `{"echo":%q}`, testSecret)
+		},
+	}
+	for name, handler := range notRetryable {
+		t.Run(name, func(t *testing.T) {
+			stub, client := newAPIStub(t, respond(emptyFind))
+			stub.token = handler
+			_, err := client.find(context.Background(), "https://alert")
+			if err == nil || isRetryable(err) {
+				t.Errorf("err = %v", err)
+			}
+			if err != nil && strings.Contains(err.Error(), testSecret) {
+				t.Error("the error carries the client secret")
+			}
+		})
+	}
 
 	stub, client := newAPIStub(t, respond(emptyFind))
-	stub.token = func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, `{"error":"invalid_client","echo":%q}`, testSecret)
-	}
-	_, err := client.find(context.Background(), "https://alert")
-	if !errors.As(err, &refused) {
-		t.Errorf("400: err = %v", err)
-	}
-	if err != nil && strings.Contains(err.Error(), testSecret) {
-		t.Error("the error carries the client secret")
-	}
-
-	stub, client = newAPIStub(t, respond(emptyFind))
 	stub.token = func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusServiceUnavailable) }
-	if _, err := client.find(context.Background(), "https://alert"); err == nil || errors.As(err, &refused) {
+	if _, err := client.find(context.Background(), "https://alert"); !isRetryable(err) {
 		t.Errorf("503: err = %v", err)
 	}
 }

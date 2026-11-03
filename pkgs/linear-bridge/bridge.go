@@ -56,15 +56,18 @@ func (b *bridge) handle(ctx context.Context, a alert, reason string) (retry bool
 	}
 	did, identifier, err := b.act(ctx, a)
 	log = log.With("verb", did, "issue", identifier)
+	var transient *retryableError
 	var refused *refusal
 	switch {
 	case err == nil:
 		log.Info("alert handled")
+	case errors.As(err, &transient):
+		log.Warn("linear failed, asking Alertmanager to retry", "error", err)
+		return true
 	case errors.As(err, &refused):
 		log.Error("linear refused, nothing more happens until Alertmanager next sends this alert", "code", refused.Code, "message", refused.Message)
 	default:
-		log.Warn("linear failed, asking Alertmanager to retry", "error", err)
-		return true
+		log.Error("linear's answer can't be used, nothing more happens until Alertmanager next sends this alert", "error", err)
 	}
 	return false
 }

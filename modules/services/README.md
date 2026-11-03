@@ -12,11 +12,12 @@ by Prometheus on another host.
   `checkConfig` is off because the placeholder URL isn't valid at build time.
 - Alerts go to the Linear bridge's webhook on loopback, and `docs/adr/0006`
   says why the bridge files and comments but never closes. Alertmanager only
-  retries a 5xx and retries the whole post, so the bridge answers 5xx for
-  network failures and Linear's own 5xx and 200 for anything else. A retry
-  storm against a refusing Linear burned 60+ issue numbers in the prototype.
-- A refusal, such as Linear's usage limit, is lost until Alertmanager next
-  sends that alert, and the only sign of it is an error line in the bridge's
+  retries a 5xx and retries the whole post, so the bridge answers 5xx only for
+  network failures and Linear's own 5xx. A retry storm against a refusing Linear
+  burned 60+ issue numbers in the prototype.
+- Everything else answers 200: Linear's refusals, such as its usage limit, and
+  anything it answers that the bridge can't read. That alert is lost until
+  Alertmanager next sends it, and the only sign is an error line in the bridge's
   journal. `journalctl -u linear-bridge` has one line per alert, with its verb,
   fingerprint and issue, so a missing issue can be traced from there.
 

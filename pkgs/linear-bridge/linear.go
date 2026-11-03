@@ -30,6 +30,18 @@ type refusal struct {
 
 func (r *refusal) Error() string { return "linear refused: " + r.Code + ": " + r.Message }
 
+type retryableError struct {
+	err error
+}
+
+func (r *retryableError) Error() string { return r.err.Error() }
+
+func (r *retryableError) Unwrap() error { return r.err }
+
+func retryable(format string, args ...any) error {
+	return &retryableError{err: fmt.Errorf(format, args...)}
+}
+
 type newIssue struct {
 	ID          string   `json:"id"`
 	TeamID      string   `json:"teamId"`
@@ -69,7 +81,7 @@ func (l *linear) find(ctx context.Context, attachmentURL string) ([]issue, error
   }
 }`
 	var out struct {
-		AttachmentsForURL struct {
+		AttachmentsForURL *struct {
 			Nodes []struct {
 				Issue struct {
 					issue
@@ -83,9 +95,15 @@ func (l *linear) find(ctx context.Context, attachmentURL string) ([]issue, error
 	if err := l.do(ctx, query, map[string]any{"url": attachmentURL}, &out); err != nil {
 		return nil, err
 	}
+	if out.AttachmentsForURL == nil {
+		return nil, errors.New("linear's answer has no attachmentsForURL")
+	}
 	issues := make([]issue, 0, len(out.AttachmentsForURL.Nodes))
 	for _, node := range out.AttachmentsForURL.Nodes {
 		found := node.Issue.issue
+		if found.ID == "" {
+			return nil, errors.New("linear's answer has an attachment with no issue")
+		}
 		found.StateType = node.Issue.State.Type
 		issues = append(issues, found)
 	}
@@ -182,15 +200,15 @@ func (l *linear) post(ctx context.Context, token, query string, variables map[st
 	req.Header.Set("Authorization", "Bearer "+token)
 	resp, err := l.http.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("calling linear: %w", err)
+		return false, retryable("calling linear: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= http.StatusInternalServerError {
-		return false, fmt.Errorf("linear answered http %d", resp.StatusCode)
+		return false, retryable("linear answered http %d", resp.StatusCode)
 	}
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return false, fmt.Errorf("reading linear's answer: %w", err)
+		return false, retryable("reading linear's answer: %w", err)
 	}
 	var answer struct {
 		Data   json.RawMessage `json:"data"`
@@ -208,6 +226,9 @@ func (l *linear) post(ctx context.Context, token, query string, variables map[st
 	}
 	if decodeErr != nil {
 		return false, fmt.Errorf("decoding linear's answer: %w", decodeErr)
+	}
+	if len(answer.Data) == 0 || string(answer.Data) == "null" {
+		return false, errors.New("linear's answer has no data")
 	}
 	if err := json.Unmarshal(answer.Data, out); err != nil {
 		return false, fmt.Errorf("decoding linear's data: %w", err)
@@ -267,19 +288,23 @@ func (l *linear) fetchToken(ctx context.Context) (string, error) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := l.http.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("fetching token: %w", err)
+		return "", retryable("fetching token: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= http.StatusInternalServerError {
-		return "", fmt.Errorf("token endpoint answered http %d", resp.StatusCode)
+		return "", retryable("token endpoint answered http %d", resp.StatusCode)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return "", &refusal{Code: fmt.Sprintf("TOKEN_HTTP_%d", resp.StatusCode), Message: "the token endpoint refused the client credentials"}
 	}
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", retryable("reading the token endpoint's answer: %w", err)
+	}
 	var answer struct {
 		AccessToken string `json:"access_token"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&answer); err != nil {
+	if err := json.Unmarshal(raw, &answer); err != nil {
 		return "", errors.New("the token endpoint's answer did not decode")
 	}
 	if answer.AccessToken == "" {

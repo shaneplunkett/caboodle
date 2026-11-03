@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -31,6 +32,7 @@ type fakeLinear struct {
 	failAttach   int
 	refuseCreate string
 	failFind     map[string]bool
+	garbleFind   bool
 }
 
 func (f *fakeLinear) find(url string) []map[string]any {
@@ -86,6 +88,10 @@ func (f *fakeLinear) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		url := body.Variables["url"].(string)
 		if f.failFind[url] {
 			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		if f.garbleFind {
+			fmt.Fprint(w, `<html>not graphql</html>`)
 			return
 		}
 		data["attachmentsForURL"] = map[string]any{"nodes": f.find(url)}
@@ -184,6 +190,21 @@ func (r *rig) post(t *testing.T, reason string, alerts ...alert) int {
 	return recorder.Code
 }
 
+func (r *rig) record(t *testing.T, attr string) string {
+	t.Helper()
+	for _, line := range strings.Split(r.logs.String(), "\n") {
+		if hasAttr(line, attr) {
+			return line
+		}
+	}
+	t.Fatalf("no record with %s in %s", attr, r.logs.String())
+	return ""
+}
+
+func hasAttr(line, attr string) bool {
+	return slices.Contains(strings.Fields(line), attr)
+}
+
 func diskAlert() alert {
 	a := firing(map[string]string{
 		"summary":   "Disk on cube is 91% full",
@@ -256,8 +277,8 @@ func TestStillFiringFilesNothingNew(t *testing.T) {
 	if len(r.fake.issues) != 1 {
 		t.Errorf("filed %d issues", len(r.fake.issues))
 	}
-	if !strings.Contains(r.logs.String(), "verb=still-firing") || !strings.Contains(r.logs.String(), "issue=SHA-1") {
-		t.Errorf("logs = %s", r.logs.String())
+	if line := r.record(t, "verb=still-firing"); !hasAttr(line, "issue=SHA-1") {
+		t.Errorf("record = %s", line)
 	}
 }
 
@@ -371,6 +392,23 @@ func TestARefusalIsNotRetriedAndSaysWhatWasLost(t *testing.T) {
 	for _, part := range []string{"level=ERROR", "verb=fire", "alertname=HostDiskFilling", "code=USAGE_LIMIT_EXCEEDED"} {
 		if !strings.Contains(r.logs.String(), part) {
 			t.Errorf("log %q has no %q", r.logs.String(), part)
+		}
+	}
+}
+
+func TestAnAnswerItCantReadIsLostNotRetried(t *testing.T) {
+	r := newRig(t)
+	r.fake.garbleFind = true
+	if code := r.post(t, "first notification", diskAlert()); code != http.StatusOK {
+		t.Fatalf("status = %d, a retry can't fix this", code)
+	}
+	if len(r.fake.issues) != 0 {
+		t.Errorf("filed %d issues without knowing what was already open", len(r.fake.issues))
+	}
+	line := r.record(t, "verb=lookup")
+	for _, attr := range []string{"level=ERROR", "alertname=HostDiskFilling", "fingerprint=003b0a0f7d3fa569"} {
+		if !hasAttr(line, attr) {
+			t.Errorf("record %q has no %s", line, attr)
 		}
 	}
 }
