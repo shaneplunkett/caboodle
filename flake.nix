@@ -109,6 +109,9 @@
         }
         // settings;
       incus = guest ./modules/incus.nix;
+      linuxNodes = nixpkgs.lib.filterAttrs (
+        _: node: node.config.deployment.systemType == "nixos"
+      ) self.colmenaHive.nodes;
       systems = [
         "x86_64-linux"
         "aarch64-darwin"
@@ -210,20 +213,18 @@
         }
       );
 
-      nixosConfigurations =
-        nixpkgs.lib.filterAttrs (
-          _: node: node.config.deployment.systemType == "nixos"
-        ) self.colmenaHive.nodes
-        // {
-          incus-base = nixpkgs.lib.nixosSystem {
-            modules = [
-              ./modules/homelab.nix
-              ./modules/nixos.nix
-              ./modules/incus.nix
-              { homelab.monitoring.enable = false; }
-            ];
-          };
+      linuxHosts = builtins.attrNames linuxNodes;
+
+      nixosConfigurations = linuxNodes // {
+        incus-base = nixpkgs.lib.nixosSystem {
+          modules = [
+            ./modules/homelab.nix
+            ./modules/nixos.nix
+            ./modules/incus.nix
+            { homelab.monitoring.enable = false; }
+          ];
         };
+      };
 
       darwinConfigurations = nixpkgs.lib.filterAttrs (
         _: node: node.config.deployment.systemType == "darwin"

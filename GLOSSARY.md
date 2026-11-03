@@ -28,7 +28,7 @@ _Avoid_: machine Shane sits at
 A host that runs in an Incus container on PVE or Cube.
 
 **Runner**:
-The guest that runs the deploy job when `main` moves, and nothing else. It builds every Linux host and applies the servers, and the desktop deploys it.
+The guest that runs the deploy job when `main` moves, and nothing else. It builds every Linux host, pushes them to the cache and applies the servers, and the desktop deploys it.
 _Avoid_: builder, CI box
 
 **Cache**:

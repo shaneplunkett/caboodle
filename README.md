@@ -38,7 +38,8 @@ A service that runs on both kinds of host keeps its options in an
 `options.nix` next to its `default.nix`, so the hive can read them from any
 host, and the NixOS half and the darwin half each read the same facts.
 
-A merge deploys the containers from the runner; see
+A merge builds every Linux host on the runner, pushes the closures to the cache
+and deploys the containers; see
 [docs/pve/runner](docs/pve/runner.md#the-deploy-job). The mini is a server, and
 only `scripts/deploy.sh` from the desktop deploys it; see
 [docs/mini](docs/mini/README.md). PVE, Cube, the MacBook, the desktop and the
@@ -71,6 +72,7 @@ scripts/quietly.sh colmena build --on <host>   # build here, one at a time, out 
 scripts/deploy.sh <host>                        # the fallback: build and apply over SSH
 scripts/deploy.sh                               # the fallback: every server, dns2 after dns1
 scripts/push-to-cache.sh <host>                 # build and push to the cache
+scripts/build-linux-hosts.sh                    # build every Linux host, print their names
 scripts/terraform.sh                            # plan; `apply` applies
 ```
 
@@ -170,9 +172,9 @@ the host's `lanAddress`, and Terraform makes the UniFi rule.
 
 ## Changes and deploys
 
-The check runs `scripts/check.sh` and nothing else. A merge to `main` deploys
-the containers from the [runner](docs/pve/runner.md#the-deploy-job), unless
-only `docs/` changed. The desktop is the fallback, through `scripts/deploy.sh`,
+The check runs `scripts/check.sh` and nothing else. A merge to `main` builds
+every Linux host, pushes them to the cache and deploys the containers from the
+[runner](docs/pve/runner.md#the-deploy-job), unless only `docs/` changed. The desktop is the fallback, through `scripts/deploy.sh`,
 and it still applies the mini and the runner and runs `scripts/terraform.sh`.
 `AGENTS.md` has the routine and
 [ADR 0005](docs/adr/0005-merges-deploy-from-a-runner-at-home.md) the why,

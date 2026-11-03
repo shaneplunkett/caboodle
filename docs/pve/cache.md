@@ -14,8 +14,9 @@ refill it.
 scripts/push-to-cache.sh plex rss
 ```
 
-For each host, that builds through `scripts/quietly.sh`, runs
-`nix copy --to ssh-ng://root@cache`, and sets
+[The deploy job](runner.md#the-deploy-job) does this for every Linux host on every
+merge, and this is the same thing by hand. For each host, that builds through
+`scripts/quietly.sh`, runs `nix copy --to ssh-ng://root@cache`, and sets
 `/nix/var/nix/profiles/per-host/<host>` on the cache. Root is a trusted user
 over `ssh-ng`, so a push needs no signature. Harmonia signs each path as it
 serves it, with the agenix key `nix-store-key-cache`.
@@ -95,8 +96,9 @@ is what Incus does. A cap on a disposable store isn't worth that on the NAS.
 Never give this guest a `disk` without first moving the pool off the shared
 drive.
 
-What bounds the store instead is [garbage collection](#garbage-collection),
-which keeps a few generations per host, and the drive's room. Watch it with
+What bounds the store instead is [garbage collection](#garbage-collection) and the
+drive's room. Every Linux closure together is under about 70 GB, and only a
+lock-file bump replaces most of it, so the store holds two or three of those. Watch it with
 `btrfs filesystem df /mnt/cache` on PVE:
 
 - **Nothing inside the guest can see its own share.** `df` there shows the
@@ -111,7 +113,9 @@ which keeps a few generations per host, and the drive's room. Watch it with
 `nix.gc` runs weekly with `--delete-older-than 7d`. For each host's profile
 that keeps the last 7 days of generations, the generation that was live 7 days
 ago, and the current one. A host nobody has pushed for months keeps its last
-closure.
+closure. Every merge makes a new generation for every Linux host, since the
+revision is part of each closure, so that's a week of merges rather than a set
+number of them. Most of each one is shared with the one before it.
 
 `nh clean` is off on this one host, because `nh clean all` only looks at
 symlinks directly in `/nix/var/nix/profiles` and in `per-user/*`. It never

@@ -15,10 +15,18 @@ permissions:
 jobs:
   deploy:
     runs-on: [self-hosted, homelab]
-    timeout-minutes: 180
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Build every Linux host
+        id: build
+        run: |
+          hosts="$(scripts/build-linux-hosts.sh)"
+          echo "hosts=$hosts" >> "$GITHUB_OUTPUT"
+      - name: Push every closure to the cache
+        run: scripts/push-to-cache.sh ${{ steps.build.outputs.hosts }}
       - name: Apply the servers
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: scripts/deploy.sh

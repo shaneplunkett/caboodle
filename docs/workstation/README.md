@@ -83,27 +83,29 @@ path.
 
 ## The store as the cache
 
-The machine that compiled something serves it, so nothing builds twice for
-the same architecture. The desktop signs every path it builds with
-`desktop-1` and serves its store over `ssh-ng` through `nix.sshServe`, and
-the Deck lists it as a substituter. The mini signs with `mini-1` and the
-MacBook pulls from it the same way, as `shane`, through a key whose only
-allowed command is `nix-daemon --stdio`. Both signing keys are agenix
-secrets, and every workstation trusts both public keys. The puller's
-`nix-daemon` runs as root and signs in with the machine's own SSH host key,
-which is already in `modules/agenix/host-keys.nix`, so there are no new
-keys to hand around.
+A merge builds the desktop and the Deck on the runner and pushes both closures
+to the [cache](../pve/cache.md), so neither compiles what the runner already
+built. `nrs` on the desktop still evaluates locally, and the result is the same
+derivation the runner built, whether it's evaluated from GitHub or a checkout,
+as long as the commit matches. The Deck doesn't evaluate at all:
+[its recipe](../deck/README.md#switching) reads the closure's name off the cache.
 
-Paths the desktop or mini built before the key existed carry no signature,
-so a puller rebuilds those once. To sign what's already there:
+Three things make `nrs` compile anyway, and only the first costs real time:
 
-```sh
-sudo nix store sign --all -k /run/agenix/nix-store-key-desktop
-```
+- **The run hasn't pushed yet.** Wait for the push step before `nrs`. Nix
+  remembers a miss for an hour, so one that runs too early keeps compiling for
+  that hour even after the push lands. A Sunday bump is the expensive case.
+- **`main` moved on a docs-only merge.** That has no run, and the revision is
+  part of every closure, so `nrs` builds the handful of small derivations that
+  hold it. Everything else comes from the cache.
+- **The cache is down.** `fallback` builds what no other cache has, as
+  [the cache's doc](../pve/cache.md#when-its-down) says.
 
-A puller away from the LAN just builds locally; `ConnectTimeout 5` keeps
-the wait short. If a path is in neither store it compiles where it's
-needed, as before.
+The MacBook pulls from the mini instead. The mini signs with `mini-1`, and the
+MacBook's `nix-daemon` signs in as `shane` with its SSH host key, through a key
+whose only allowed command is `nix-daemon --stdio`. Paths the mini built before
+the key existed carry no signature, so the MacBook rebuilds those once. Away from
+the LAN it builds locally, and `ConnectTimeout 5` keeps the wait short.
 
 ## Homebrew on the Macs
 

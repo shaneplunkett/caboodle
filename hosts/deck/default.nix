@@ -1,13 +1,8 @@
 {
-  config,
   inputs,
   pkgs,
   ...
 }:
-let
-  hostKeys = import ../../modules/agenix/host-keys.nix;
-  desktop = config.homelab.devices.nixDesktop.ip;
-in
 {
   imports = [
     inputs.jovian.nixosModules.default
@@ -63,20 +58,6 @@ in
   '';
 
   environment.systemPackages = [ pkgs.moonlight-qt ];
-
-  nix.settings.substituters = [ "ssh-ng://nix-ssh@${desktop}" ];
-  programs.ssh = {
-    knownHosts.desktop-lan = {
-      hostNames = [ desktop ];
-      publicKey = hostKeys.desktop;
-    };
-    extraConfig = ''
-      Match localuser root host ${desktop}
-        IdentityFile /etc/ssh/ssh_host_ed25519_key
-        IdentitiesOnly yes
-        ConnectTimeout 5
-    '';
-  };
 
   security.sudo.wheelNeedsPassword = false;
 

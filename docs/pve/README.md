@@ -22,7 +22,9 @@ Per-service docs:
 Nothing deploys PVE. It's the hypervisor and the NAS, so a bad switch takes
 every guest down with it. Shane switches it by hand.
 
-Build it on the desktop, push the closure to PVE over SSH, and switch:
+A merge builds PVE on the runner, so a config that doesn't build shows as a red
+run on the day, and the cache already holds the closure. Build it on the desktop,
+which fetches rather than compiles, push the closure to PVE over SSH, and switch:
 
 ```sh
 path=$(scripts/quietly.sh nix build --no-link --print-out-paths .#hydraJobs.pve)
