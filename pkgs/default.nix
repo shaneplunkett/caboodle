@@ -28,12 +28,14 @@ in
 // optionalAttrs isDarwin {
   bluebubbles-server = pkgs.callPackage ./bluebubbles-server { };
 }
+// optionalAttrs (isDarwin || isX86Linux) {
+  slack-themed = pkgs.callPackage ./slack-themed { };
+}
 // optionalAttrs isX86Linux {
   linear-desktop = pkgs.callPackage ./linear-desktop {
     typography = import ../home/typography.nix;
   };
   opendeck = pkgs.callPackage ./opendeck { };
-  slack-themed = pkgs.callPackage ./slack-themed { };
   bambu-studio-bin = pkgs.callPackage ./bambu-studio-bin { };
   orca-studio = pkgs.callPackage ./orca-studio { };
   shadps4-cache-fixed = pkgs.callPackage ./shadps4-cache-fixed { };

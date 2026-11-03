@@ -27,3 +27,7 @@ Use the recipe in
 
 - Spotlight's Command+Space (symbolic hotkey 64) is off so vicinae can have
   it.
+- Slack is `pkgs/slack-themed`, patched and re-signed ad hoc, so it loses
+  Slack's own entitlements. Sign in through the browser, since passkeys in
+  the app and `slack.com` links opening it depend on those entitlements. The
+  version moves with nixpkgs, not Slack's updater.

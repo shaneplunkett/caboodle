@@ -13,7 +13,7 @@
     ./packages.nix
     ./linear.nix
     ./bloodborne.nix
-    ./vesktop.nix
+    ../vesktop.nix
     ./waydroid.nix
     ./hyprland.nix
     ./vicinae.nix

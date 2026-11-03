@@ -65,6 +65,8 @@ in
 
       focus.followsWindowToMonitor = true;
 
+      niri.defaultContainerPrimarySpan = 1.0;
+
       gaps = {
         size = 20.0;
         fullscreenUsesOuterGaps = true;
@@ -100,11 +102,13 @@ in
         map (
           {
             key,
+            scrolling ? false,
             secondary ? false,
             ...
           }:
           {
             displayName = key;
+            layoutType = if scrolling then "niri" else "default";
             monitorAssignment.type = if secondary then "secondary" else "main";
           }
         ) workspaces
