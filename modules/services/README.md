@@ -28,6 +28,19 @@ by Prometheus on another host.
   and no module says so. A local build can't catch a port clash; the first sign
   was `bind: address already in use` in the bridge's journal after a deploy.
 
+- The bridge has one other client. A failed deploy posts from the runner, through
+  `scripts/report-deploy-failure.sh`, to the bridge's LAN address, in Alertmanager's
+  shape. Alertmanager stays on loopback. The bridge has no login and anything that
+  reaches it can file an urgent issue, so the firewall lets in only the addresses in
+  `allowedSources`, the way paperless-gpt lets in only the ingress host. If the LAN
+  address isn't up yet the bridge exits and `Restart` brings it back, so loopback
+  waits on the LAN for those few seconds.
+- A `DeployFailed` issue's card links to Prometheus's alerts page, like every card,
+  because that URL is how the bridge finds the issue again. Prometheus has never
+  heard of this alert, so the page is empty. The run's link is in the issue's body.
+  Its annotations carry that link in the text, not as `generatorURL` or `dashboard`,
+  since the bridge would label those a graph or a dashboard and add a time range.
+
 ## Prometheus
 
 - Use `ruleFiles` with `pkgs.writeText`, one file per module. `rules` joins

@@ -102,6 +102,12 @@ goes, since every host pulls from the cache instead, and
 - A failed deploy is a red cross on the commit and an email from GitHub.
   Shane wants it in Linear's inbox without an issue being filed, and that
   is open; so is moving Alertmanager off Discord.
+
+  Note, 2026-11-04: both are answered by
+  [0006](0006-alerts-become-linear-issues.md). Nothing can reach Linear's inbox
+  without an issue, so a failed deploy files one through the bridge
+  (SHA-291), and Alertmanager left Discord for the same bridge.
+
 - `scripts/deploy.sh` from the desktop and the runner have no lock between
   them. The desktop path is for when the runner is down, which is when they
   cannot collide.

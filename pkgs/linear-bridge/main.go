@@ -12,7 +12,7 @@ import (
 )
 
 type config struct {
-	listen       string
+	listen       []string
 	clientID     string
 	clientSecret string
 	defaults     issueDefaults
@@ -38,14 +38,21 @@ func loadConfig(getenv func(string) string) (config, error) {
 			StateID:    require("LINEAR_STATE_ID"),
 			LabelIDs:   strings.Split(require("LINEAR_LABEL_IDS"), ","),
 		},
-		listen:     net.JoinHostPort("127.0.0.1", require("BRIDGE_PORT")),
 		alertsPage: require("BRIDGE_ALERTS_PAGE"),
 	}
+	addresses, port := require("BRIDGE_LISTEN_ADDRESSES"), require("BRIDGE_PORT")
 	if ignored := getenv("BRIDGE_IGNORED_ALERTS"); ignored != "" {
 		cfg.ignored = strings.Split(ignored, ",")
 	}
 	if len(missing) > 0 {
 		return config{}, errors.New("missing environment: " + strings.Join(missing, ", "))
+	}
+	for _, address := range strings.Split(addresses, ",") {
+		address = strings.TrimSpace(address)
+		if net.ParseIP(address) == nil {
+			return config{}, fmt.Errorf("BRIDGE_LISTEN_ADDRESSES: %q is not an IP address", address)
+		}
+		cfg.listen = append(cfg.listen, net.JoinHostPort(address, port))
 	}
 	return cfg, nil
 }
@@ -67,6 +74,31 @@ func newServer(addr string, handler http.Handler) *http.Server {
 	}
 }
 
+func listenAll(addresses []string) ([]net.Listener, error) {
+	listeners := make([]net.Listener, 0, len(addresses))
+	for _, address := range addresses {
+		listener, err := net.Listen("tcp", address)
+		if err != nil {
+			for _, open := range listeners {
+				open.Close()
+			}
+			return nil, fmt.Errorf("listening: %w", err)
+		}
+		listeners = append(listeners, listener)
+	}
+	return listeners, nil
+}
+
+func serveAll(listeners []net.Listener, handler http.Handler) error {
+	stopped := make(chan error, len(listeners))
+	for _, listener := range listeners {
+		go func() {
+			stopped <- newServer(listener.Addr().String(), handler).Serve(listener)
+		}()
+	}
+	return fmt.Errorf("serving: %w", <-stopped)
+}
+
 func run(log *slog.Logger) error {
 	cfg, err := loadConfig(os.Getenv)
 	if err != nil {
@@ -81,6 +113,10 @@ func run(log *slog.Logger) error {
 		now:        time.Now,
 		log:        log,
 	})
-	log.Info("listening", "address", cfg.listen)
-	return fmt.Errorf("serving: %w", newServer(cfg.listen, mux).ListenAndServe())
+	listeners, err := listenAll(cfg.listen)
+	if err != nil {
+		return err
+	}
+	log.Info("listening", "addresses", cfg.listen)
+	return serveAll(listeners, mux)
 }

@@ -16,6 +16,9 @@ jobs:
   deploy:
     runs-on: [self-hosted, homelab]
     timeout-minutes: 360
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -25,13 +28,15 @@ jobs:
         env:
           CLOSURE_LINKS: ${{ runner.temp }}/closures
         run: |
-          hosts="$(scripts/build-linux-hosts.sh)"
+          hosts="$(scripts/build-linux-hosts.sh 2> >(tee "$RUNNER_TEMP/build.log" >&2))"
           echo "hosts=$hosts" >> "$GITHUB_OUTPUT"
       - name: Push every closure to the cache
-        run: scripts/push-to-cache.sh ${{ steps.build.outputs.hosts }}
+        id: push
+        run: scripts/push-to-cache.sh ${{ steps.build.outputs.hosts }} 2>&1 | tee "$RUNNER_TEMP/push.log"
       - name: Apply the servers
+        id: apply
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: scripts/deploy.sh
+        run: scripts/deploy.sh 2>&1 | tee "$RUNNER_TEMP/apply.log"
       - name: See whether this push changed Terraform
         id: terraform
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
@@ -39,10 +44,16 @@ jobs:
           BEFORE: ${{ github.event.before }}
         run: echo "changed=$(scripts/terraform-changed.sh "$BEFORE" "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
       - name: Apply Terraform
+        id: terraform-apply
         if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.terraform.outputs.changed != 'false' }}
         env:
           TERRAFORM_SECRETS_DIR: /run/agenix
-        run: scripts/terraform.sh apply
+        run: scripts/terraform.sh apply 2>&1 | tee "$RUNNER_TEMP/terraform-apply.log"
+      - name: File the failure in Linear
+        if: ${{ failure() }}
+        env:
+          STEPS: ${{ toJSON(steps) }}
+        run: scripts/report-deploy-failure.sh
       - name: Let the runner's garbage collection have the closures
         if: ${{ always() }}
         run: rm -rf "$RUNNER_TEMP/closures"

@@ -5,6 +5,10 @@ on:
         description: Also push an evaluation past the memory cap. The job should fail with exit 137.
         type: boolean
         default: false
+      report_failure:
+        description: Also fail on purpose and report it the way a failed deploy does. This files a real, urgent Linear issue.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -24,3 +28,14 @@ jobs:
       - name: Run an evaluation past the cap
         if: inputs.runaway
         run: scripts/quietly.sh nix eval --expr 'builtins.deepSeq (builtins.genList toString 2000000000) 1'
+      - name: Fail on purpose
+        id: smoke
+        if: inputs.report_failure
+        run: |
+          echo "runner-smoke: failing on purpose, to prove a failed deploy reaches Linear" | tee "$RUNNER_TEMP/smoke.log"
+          exit 1
+      - name: File the failure in Linear
+        if: ${{ failure() && inputs.report_failure }}
+        env:
+          STEPS: ${{ toJSON(steps) }}
+        run: scripts/report-deploy-failure.sh

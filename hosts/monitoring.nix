@@ -1,3 +1,4 @@
+{ config, nodes, ... }:
 {
   imports = [
     ../modules/services/prometheus
@@ -15,4 +16,12 @@
     ../modules/services/backup/monitoring.nix
     ../modules/services/vex-brain/alerts.nix
   ];
+
+  homelab.linearBridge = {
+    listenAddresses = [
+      "127.0.0.1"
+      config.homelab.lanAddress
+    ];
+    allowedSources = [ nodes.runner.config.homelab.lanAddress ];
+  };
 }

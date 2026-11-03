@@ -19,6 +19,7 @@ let
   hostKeys = import ../../agenix/host-keys.nix;
   cache = import ../harmonia/cache.nix;
   deployed = lib.filterAttrs (_: node: node.config.homelab.deployedByRunner) nodes;
+  monitoring = nodes.monitoring.config.homelab;
   gib = n: n * 1024 * 1024 * 1024;
 
   terraformSecrets = [
@@ -125,11 +126,13 @@ in
     tokenType = "registration";
     replace = true;
     extraLabels = [ name ];
-    extraEnvironment.ACTIONS_RUNNER_HOOK_JOB_STARTED = lib.getExe (
-      pkgs.callPackage ./job-started.nix { }
-    );
+    extraEnvironment = {
+      ACTIONS_RUNNER_HOOK_JOB_STARTED = lib.getExe (pkgs.callPackage ./job-started.nix { });
+      LINEAR_BRIDGE_URL = "http://${monitoring.lanAddress}:${toString monitoring.linearBridge.port}/alerts";
+    };
     extraPackages = [
       pkgs.colmena
+      pkgs.curl
       pkgs.dnsutils
       pkgs.jq
       pkgs.openssh
