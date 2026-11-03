@@ -1,0 +1,24 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "deploy",
+  "notification_reason": "deploy job failed",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "DeployFailed",
+        "severity": "critical",
+        "host": "monitoring"
+      },
+      "annotations": {
+        "summary": "Deploy of cd0a11f failed",
+        "condition": "Commit [cd0a11f](https://github.com/shaneplunkett/caboodle/commit/cd0a11f3aaaabbbbccccddddeeeeffff00001111) failed to deploy, in step `apply`, on `monitoring`. [Read the run](https://github.com/shaneplunkett/caboodle/actions/runs/41635043424).",
+        "description": "Last lines of the apply step:\n\n```\nERROR Failed to deploy to monitoring - Last 20 lines of logs:\nERROR   stderr) warning: the following units failed: linear-bridge.service\nERROR  failure) Activation unit colmena-activate-e5ba on host monitoring failed with result exit-code, exit status 4\nERROR Failed to complete requested operation - Last 1 lines of logs:\n```",
+        "check": "gh run view 41635043424 --repo shaneplunkett/caboodle --log-failed"
+      },
+      "startsAt": "2026-11-03T12:44:09Z",
+      "fingerprint": "deploy-41635043424"
+    }
+  ]
+}
