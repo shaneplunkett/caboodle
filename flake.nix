@@ -529,8 +529,6 @@
             pool = "nas-cache";
             disk = null;
           };
-          homelab.monitoring.enable = false;
-          deployment.tags = [ ];
         };
 
         runner = incus "runner" {
@@ -542,7 +540,6 @@
             disk = 200;
             background = true;
           };
-          homelab.monitoring.enable = false;
           deployment.tags = [ ];
         };
 
