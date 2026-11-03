@@ -83,24 +83,28 @@ disk.
 
 The mover only walks `Media`, `Programs` and `Games`, so it never touches the
 pool. The same drive is where `/mnt/user` puts new files first, though, and
-mergerfs stops using it at 100 GB free. `disk = 300` caps the guest so the
-store can't eat that landing zone. A full cap still takes 300 GiB of room from
-incoming media, which is the trade. Bump it if pushes hit the cap and the
-drive has room.
+mergerfs stops using it at 100 GB free, so the store and incoming media share
+the room.
 
-The cap has costs:
+The guest has no size cap (`disk = null`), on purpose. The first time Incus
+sets a size on a btrfs pool it runs `btrfs quota enable` on the whole
+filesystem, so every write to `/mnt/cache`, media included, gets accounted
+from then on, and btrfs's own docs warn that quotas can stall the filesystem
+and lose track of usage, worst around creating and deleting subvolumes, which
+is what Incus does. A cap on a disposable store isn't worth that on the NAS.
+Never give this guest a `disk` without first moving the pool off the shared
+drive.
 
-- **It turns on btrfs quotas for the whole drive.** The first time Incus sets
-  a size on this driver it runs `btrfs quota enable` and a rescan, so every
-  write to `/mnt/cache`, media included, gets accounted from then on. Removing
-  the cap and running `btrfs quota disable /mnt/cache` undoes it without
-  touching data.
-- **Nothing inside the guest can see the cap.** `df` there shows the whole
-  drive, so node exporter's disk alert reads the drive too. Hitting the cap
-  shows up as `Disk quota exceeded` from `nix copy`.
-- **`IncusPoolFilling` reads the whole drive too**, media included, and its
-  `lvs` hint doesn't apply to this pool. Look at `btrfs filesystem df
-  /mnt/cache` instead.
+What bounds the store instead is [garbage collection](#garbage-collection),
+which keeps a few generations per host, and the drive's room. Watch it with
+`btrfs filesystem df /mnt/cache` on PVE:
+
+- **Nothing inside the guest can see its own share.** `df` there shows the
+  whole drive, so node exporter's disk alert reads the drive too, and
+  **`IncusPoolFilling` reads the whole drive**, media included; its `lvs`
+  hint doesn't apply to this pool.
+- **If the store outgrows the room**, shorten the GC window on the cache or
+  push fewer hosts, before touching quotas.
 
 ## Garbage collection
 

@@ -126,11 +126,13 @@ resource "incus_instance" "guest" {
   device {
     name = "root"
     type = "disk"
-    properties = {
-      path = "/"
-      pool = each.value.pool
-      size = "${each.value.disk}GiB"
-    }
+    properties = merge(
+      {
+        path = "/"
+        pool = each.value.pool
+      },
+      each.value.disk == null ? {} : { size = "${each.value.disk}GiB" }
+    )
   }
 
   lifecycle {

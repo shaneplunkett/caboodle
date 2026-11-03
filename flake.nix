@@ -525,7 +525,7 @@
           homelab.guest = {
             host = "pve";
             pool = "nas-cache";
-            disk = 300;
+            disk = null;
           };
           homelab.monitoring.enable = false;
           deployment.tags = [ ];

@@ -25,9 +25,9 @@
               description = "Memory in MiB.";
             };
             disk = lib.mkOption {
-              type = lib.types.ints.positive;
+              type = lib.types.nullOr lib.types.ints.positive;
               default = 8;
-              description = "Root disk in GiB.";
+              description = "Root disk in GiB, or null for the whole pool.";
             };
             pool = lib.mkOption {
               type = lib.types.str;
