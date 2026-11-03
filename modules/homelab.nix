@@ -44,6 +44,11 @@
               default = true;
               description = "Whether the container should be running.";
             };
+            background = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+              description = "Whether every other guest beats this one to CPU and disk when they're contended.";
+            };
             vlans = lib.mkOption {
               type = lib.types.listOf (
                 lib.types.submodule {

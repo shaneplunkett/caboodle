@@ -531,6 +531,19 @@
           deployment.tags = [ ];
         };
 
+        runner = incus "runner" {
+          homelab.lanAddress = "192.168.1.161";
+          homelab.guest = {
+            host = "pve";
+            cores = 8;
+            memory = 32768;
+            disk = 200;
+            background = true;
+          };
+          homelab.monitoring.enable = false;
+          deployment.tags = [ ];
+        };
+
         pve = {
           imports = [ ./hosts/pve ];
           deployment.tags = [ ];

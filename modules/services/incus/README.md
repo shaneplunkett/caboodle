@@ -62,6 +62,11 @@ Terraform ignores newer builds. To refresh it, run
 `running = false` creates the container without starting it. Use it when a
 guest takes over another's MAC, so the two never share the LAN.
 
+`background = true` puts a guest at the bottom of the CPU and disk weights, so
+the rest win when they're contended
+([runner](../../../docs/pve/runner.md#fencing) has the numbers, and the catch
+on disk).
+
 `mounts` bind-mounts host directories into the guest as Incus `disk`
 devices, and `devices` passes character devices through as `unix-char`
 ones, with `gid` owning the device inside, like plex's Quick Sync

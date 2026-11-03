@@ -1,0 +1,26 @@
+on:
+  workflow_dispatch:
+    inputs:
+      runaway:
+        description: Also push an evaluation past the memory cap. The job should fail with exit 137.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: [self-hosted, homelab]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Show where the job is running
+        run: uname -n
+      - name: Show the job's memory cap
+        run: cat "/sys/fs/cgroup$(cut -d: -f3 /proc/self/cgroup)/memory.max"
+      - name: Build through the wrapper
+        run: scripts/quietly.sh nix build nixpkgs#hello --no-link --print-out-paths
+      - name: Run an evaluation past the cap
+        if: inputs.runaway
+        run: scripts/quietly.sh nix eval --expr 'builtins.deepSeq (builtins.genList toString 2000000000) 1'

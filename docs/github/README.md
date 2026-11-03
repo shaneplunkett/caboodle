@@ -100,8 +100,10 @@ Both are in Bitwarden and in caboodle's Actions secrets.
   (`APP_CLIENT_ID` and `APP_PRIVATE_KEY` in Actions, and agenix for the
   mirror). It's installed on every repo on Shane's account, with read and
   write on contents, pull requests, issues, actions, workflows and commit
-  statuses, and read on checks and Dependabot alerts. Jobs, Renovate and
-  the mirror mint an hour-long installation token from it. Pull requests it
+  statuses, and read on checks and Dependabot alerts. The
+  [runner](../pve/runner.md#registration) also needs write on administration
+  to register. Jobs, Renovate, the mirror and the runner mint an hour-long
+  installation token from it. Pull requests it
   opens run the check, which ones opened with `GITHUB_TOKEN` don't.
   Bitwarden holds the key base64'd, since `rbw` keeps one line:
   `rbw get github-app-private-key | base64 -d`.

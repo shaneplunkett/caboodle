@@ -1,11 +1,6 @@
 # shellcheck shell=bash
 owner=$1
 dir=$2
-key=$CREDENTIALS_DIRECTORY/private-key
-
-b64url() {
-  openssl base64 -A | tr '+/' '-_' | tr -d '='
-}
 
 api() {
   curl -fsS --retry 3 \
@@ -13,16 +8,7 @@ api() {
     -H 'X-GitHub-Api-Version: 2022-11-28' "$@"
 }
 
-now=$(date +%s)
-header=$(printf '{"alg":"RS256","typ":"JWT"}' | b64url)
-claims=$(jq -nc --arg iss "$(<"$CREDENTIALS_DIRECTORY/client-id")" --argjson now "$now" \
-  '{iss: $iss, iat: ($now - 60), exp: ($now + 540)}' | b64url)
-signature=$(printf '%s.%s' "$header" "$claims" | openssl dgst -sha256 -sign "$key" | b64url)
-jwt=$header.$claims.$signature
-
-installation=$(api -H "Authorization: Bearer $jwt" "https://api.github.com/users/$owner/installation" | jq -er .id)
-token=$(api -X POST -H "Authorization: Bearer $jwt" \
-  "https://api.github.com/app/installations/$installation/access_tokens" | jq -er .token)
+token=$(github-app-token "$owner")
 
 names=()
 page=1
