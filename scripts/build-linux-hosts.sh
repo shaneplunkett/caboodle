@@ -9,7 +9,12 @@
 # push-to-cache.sh read the cache instead of evaluating. A dirty tree has no eval
 # cache, so each of those evaluates again.
 #
+# With CLOSURE_LINKS set, the results are linked under that directory, and the
+# links are GC roots: a collection can't take a closure between this build and
+# its push. Remove the directory when the run is done and nothing roots them.
+#
 #   scripts/push-to-cache.sh $(scripts/build-linux-hosts.sh)
+#   CLOSURE_LINKS=/tmp/closures scripts/build-linux-hosts.sh
 set -eu
 
 cd "$(git rev-parse --show-toplevel)"
@@ -22,6 +27,11 @@ for host in $hosts; do
 done
 
 scripts/quietly.sh nix build --dry-run "$@" >&2
-scripts/quietly.sh nix build --no-link --keep-going "$@" >&2
+if [ -n "${CLOSURE_LINKS:-}" ]; then
+  mkdir -p "$CLOSURE_LINKS"
+  scripts/quietly.sh nix build --out-link "$CLOSURE_LINKS/system" --keep-going "$@" >&2
+else
+  scripts/quietly.sh nix build --no-link --keep-going "$@" >&2
+fi
 
 echo "$hosts"

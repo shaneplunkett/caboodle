@@ -102,7 +102,10 @@ failed says what state things are in:
   the first apply stops the script before dns2. The cache already has this commit,
   so a hand-switched host can switch to a closure whose guests didn't all land.
 
-A job that hits its timeout or gets cancelled stops where it is and doesn't apply.
+A job that hits its timeout or gets cancelled before the apply never applies. One
+cancelled during the apply stops wherever it was, which can leave some guests
+switched and the rest not; the next run or `scripts/deploy.sh` from the desktop
+finishes the job.
 Rollback is a revert pull request. Re-run failed jobs on the newest run is fine,
 but re-running an older run applies that older commit over whatever came after
 it, and moves every host's profile on the cache back to it until the next merge.
@@ -204,17 +207,20 @@ that file at boot turns iocost on, for every guest on that disk.
 ### Garbage collection
 
 `nh clean` already runs weekly on every NixOS host through `modules/nixos.nix`,
-and NixOS warns against `nix.gc.automatic` beside it. The job leaves no GC roots,
-so that clean takes every closure it built, and nothing notices: the next run
-fetches them back from the cache.
+and NixOS warns against `nix.gc.automatic` beside it. While a run is going, the
+build's out-links under the job's temp directory root every closure it built, so
+neither the weekly clean nor a `min-free` collection can take one between the
+build and its push. The job's last step removes the links whatever happened
+before it, so after the run nothing roots them, the clean takes them, and nothing
+notices: the next run fetches them back from the cache.
 
-Every Linux closure, plus what a cold build needs to compile them, comes to about
-70 GB. A Sunday bump can land about that much again beside it. `min-free` and
+The store holds one set of every Linux closure plus whatever a cold build had to
+compile, and a lock-file bump lands most of that again beside it. `min-free` and
 `max-free` in the module start a collection well before the disk alert fires and
-stop it once there's room for one more of those, so a bump rarely collects in the
-middle of a build. If it does, a build's own session holds temporary roots on what
-it has already built, so the collection takes last week's paths and not this
-run's. The disk is thin, so it only takes what it uses from PVE's pool.
+stop it once there's room for another set. To see what a set costs today, `du -sh`
+the links while a run is going, or `nix path-info -S` the cache's `per-host`
+profiles; if a bump keeps collecting mid-run, raise the guest's disk. The disk is
+thin, so it only takes what it uses from PVE's pool.
 
 ### Proving the fence
 

@@ -22,6 +22,8 @@ jobs:
           persist-credentials: false
       - name: Build every Linux host
         id: build
+        env:
+          CLOSURE_LINKS: ${{ runner.temp }}/closures
         run: |
           hosts="$(scripts/build-linux-hosts.sh)"
           echo "hosts=$hosts" >> "$GITHUB_OUTPUT"
@@ -30,3 +32,6 @@ jobs:
       - name: Apply the servers
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: scripts/deploy.sh
+      - name: Let the runner's garbage collection have the closures
+        if: ${{ always() }}
+        run: rm -rf "$RUNNER_TEMP/closures"
