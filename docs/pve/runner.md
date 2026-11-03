@@ -55,7 +55,7 @@ Applications.
 
 That grant covers every repo the App is installed on, and any token minted
 without narrowing inherits it, so
-[every other mint narrows](../github/README.md#github-app-and-inputs-token).
+[the other mints narrow](../github/README.md#github-app-and-inputs-token).
 Anyone with the private key can still mint one that doesn't.
 
 ## The deploy job
