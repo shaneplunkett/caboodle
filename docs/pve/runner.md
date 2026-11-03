@@ -295,11 +295,13 @@ in `upstream-caches.nix`, which the workstations share.
   and `dev` wasn't, so even an honest match can differ. `dev` isn't in the Deck's
   closure. To compare again, read `narHash` from `nix path-info --json` on each
   store.
-- **Downstream can't tell.** `scripts/push-to-cache.sh` copies with
+- **Downstream doesn't check.** `scripts/push-to-cache.sh` copies with
   `--no-check-sigs` and Harmonia signs what it serves, so a path from Nyx reaches
-  every host whose closure holds it, under the home cache's key. The runner is
-  the only place that checks Nyx's signature, and the only store where
-  `nix path-info --sigs <path>` still names it.
+  every host whose closure holds it under the home cache's key, and the runner
+  is the only place that checks Nyx's signature. The copy keeps Nyx's signature
+  beside ours, so `nix path-info --sigs <path>` on the cache or on a host still
+  names Nyx; that answers where a path came from after the fact, it doesn't gate
+  anything.
 - **A miss just builds.** A path Nyx doesn't have is a 404, and the runner compiles
   it as before. With Nyx down, `fallback` and `connect-timeout` in
   `modules/services/harmonia/client.nix` bench it [the same way as the
