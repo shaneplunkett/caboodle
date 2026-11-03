@@ -34,11 +34,6 @@ in
     shane
     monitoring
   ];
-  "discord-webhook.age".publicKeys = [
-    shane
-    monitoring
-
-  ];
   "unpoller-api-key.age".publicKeys = [
     shane
     monitoring

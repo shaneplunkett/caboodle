@@ -71,9 +71,9 @@ Check how old the checkout is before trusting what it says:
 
 ## Gotchas
 
-- Alerts go to Discord, and Alertmanager needs DNS to find it. With DNS
-  down it can't resolve `discord.com`, so the alert fires and never
-  arrives. Look in Grafana instead.
+- Alerts become Linear issues, and the bridge needs DNS to find Linear. With
+  DNS down it can't resolve `api.linear.app`, so the alert fires and doesn't
+  arrive until DNS is back. Look in Grafana instead.
 - Deploying from the laptop mid-incident leaves the host on something
   `main` doesn't have. The next merge deploy quietly puts `main` back and
   restarts whatever differs, so land the fix as a PR before anything else
