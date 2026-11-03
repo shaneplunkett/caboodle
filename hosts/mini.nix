@@ -13,6 +13,7 @@ in
     systemType = "darwin";
     targetUser = "shane";
     buildOnTarget = true;
+    tags = [ "deploy-mini" ];
   };
 
   homelab = {

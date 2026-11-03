@@ -1,7 +1,9 @@
 #!/bin/sh
-# Deploys the hive from the desktop. Builds happen here, through
-# scripts/quietly.sh, and colmena pushes each closure over SSH and switches
-# the host. The mini builds on itself, since the desktop can't build darwin.
+# Deploys the hive. .github/workflows/deploy.yml runs this on the runner when
+# main moves, and the desktop runs it by hand as the fallback. Builds happen
+# on whichever one runs it, through scripts/quietly.sh, and colmena pushes
+# each closure over SSH and switches the host. The mini builds on itself, and
+# the runner holds no key to it, so only the desktop applies it.
 #
 #   scripts/deploy.sh plex rss    # these hosts
 #   scripts/deploy.sh             # every server: the deploy tag, then dns2
@@ -20,7 +22,12 @@ if [ $# -gt 0 ]; then
   )"
 fi
 
-scripts/quietly.sh colmena apply --on @deploy
+servers=@deploy
+if [ -z "${GITHUB_ACTIONS:-}" ]; then
+  servers=@deploy,@deploy-mini
+fi
+
+scripts/quietly.sh colmena apply --on "$servers"
 
 for attempt in $(seq 30); do
   if dig +short +time=2 +tries=1 @dns1 auth.shaneplunkett.com A | grep -q '^[^;]'; then

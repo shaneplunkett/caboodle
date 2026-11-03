@@ -32,9 +32,10 @@ them, and both merge themselves once the check passes. One holds every
 dependency update. The other is lock file maintenance, which runs
 `nix flake update` and so moves every input that isn't pinned in
 `flake.nix`; Renovate never groups it with anything else. The check builds
-nothing, so a bump that breaks a host lands anyway and shows up at the next
-`scripts/deploy.sh`. Revert it then. The `flake-update` skill still triages
-a lock file change when asked.
+nothing, so a bump that breaks a host merges anyway and turns
+[the deploy job](../pve/runner.md#the-deploy-job) red on the merge commit.
+Revert it then. The `flake-update` skill still triages a lock file change
+when asked.
 
 `ai-skills` doesn't wait for Sunday. Each push to its `main` dispatches
 `.github/workflows/ai-skills.yml` here as the App, which bumps only that
@@ -126,4 +127,5 @@ printf '%s' "$(rbw get github-inputs-token)" | gh secret set INPUTS_TOKEN --repo
 
 The workstations read it from `~/.config/nix/access-tokens.conf`
 ([workstation](../workstation/README.md#the-inputs-token)), so rewrite that
-too.
+too. The runner takes the new token from agenix at its next
+`scripts/deploy.sh runner`.

@@ -3,8 +3,9 @@
 Incus guest on PVE that runs GitHub Actions jobs for caboodle, one at a time.
 The service is `modules/services/github-runner`, and
 [ADR 0005](../adr/0005-merges-deploy-from-a-runner-at-home.md) has the why.
-`.github/workflows/runner-smoke.yml` is the only workflow on it so far. Run
-workflow on its Actions page prints the hostname and the job's memory cap,
+It runs [the deploy job](#the-deploy-job), and
+`.github/workflows/runner-smoke.yml` proves the guest works. Run workflow on
+the smoke test's Actions page prints the hostname and the job's memory cap,
 then builds `hello` through `scripts/quietly.sh`.
 
 ## The three rules
@@ -49,6 +50,72 @@ Applications.
 That grant covers every repo the App is installed on, and any token minted
 without narrowing inherits it, so Renovate's token and the mirror's can now
 change repo settings or delete a repo. Anyone with the private key can too.
+
+## The deploy job
+
+`.github/workflows/deploy.yml` runs `scripts/deploy.sh` on every push to `main`
+that touches anything outside `docs/`. That applies the `deploy` tag, then dns2
+once dns1 answers, the same as the desktop. There's no approval step, so
+choosing when to merge is choosing when it lands. The workflow holds no
+secrets, and the Actions secret store gains none.
+
+The mini is outside it. Its tag is `deploy-mini`, the runner has no key to it,
+and the job can't build darwin, so only the desktop applies it.
+
+### When it fails
+
+A failure is a red cross on the merge commit and an email from GitHub. Colmena
+applies every host it can before it exits, and a failure in the first apply
+stops the script before dns2. Rollback is a revert pull request. Re-run failed
+jobs on the newest run is fine, but re-running an older run applies that older
+commit over whatever came after it.
+
+`concurrency: deploy` never cancels a running deploy. GitHub keeps only one
+pending run per group, so a third merge during a deploy cancels the pending
+second, and the third's commit carries both.
+
+### What it holds
+
+- **The inputs token.** `nix-inputs-token.service` writes
+  `/run/nix-inputs-token/access-tokens.conf`, the file `nix.conf` includes, from
+  the agenix copy, which stays root's. The job's user owns the new file, since
+  Nix fetches flake inputs in the process that evaluates, not in the daemon.
+  A workstation's daemon has no token either, and its deploys work. Nix silently skips an `!include` it can't read, so a root-only file
+  shows up as a 404 on the first private input.
+- **Its root SSH key.** `/run/agenix/runner-ssh-key` belongs to the job's user,
+  and `/etc/ssh/ssh_config` names it. A job can read that key, since applying a
+  guest needs it. Running colmena as root instead would need `sudo`, which the service's
+  `NoNewPrivileges` forbids, and root on the runner could read the App's key,
+  which [Registration](#registration) keeps away from jobs. Hive defaults set
+  `homelab.deployedByRunner` from a host's tags, and `modules/guest.nix` only
+  authorises the key where that's true, so PVE, Cube, the workstations and the
+  Macs never see it.
+
+### Reaching the guests
+
+A guest's `deployment.targetHost` is its hive name. MagicDNS answers that on
+the desktop, but no server takes tailnet DNS, so on the runner it wouldn't
+resolve. `networking.hosts` maps each deployed guest's name to its LAN address,
+which also covers `dig @dns1`. Its `known_hosts` comes from
+`modules/agenix/host-keys.nix` the same way. Accepting MagicDNS or adding
+mappings to Blocky would make a deploy depend on Tailscale, or on the DNS guests
+it's in the middle of switching.
+
+The cost is that these are the names and keys from the runner's last deploy. A
+new guest or a changed host key fails with a red cross until
+`scripts/deploy.sh runner` from the desktop, then re-run the failed job.
+
+Colmena, `dig` and `ssh` are on the service's `PATH` rather than coming from
+`nix develop .#full`, which would compile terraform and colmena on a cold store
+to reach two binaries. That means a colmena bump reaches the job at the runner's
+next deploy. If a Sunday bump makes the old command and the new flake disagree,
+it's a red cross with the same fix.
+
+### When the runner is down
+
+`scripts/deploy.sh` from the desktop does what the job does, plus the mini.
+There's no lock between the two, and
+[ADR 0005](../adr/0005-merges-deploy-from-a-runner-at-home.md) says why.
 
 ## Fencing
 
@@ -140,6 +207,9 @@ registration's name. In the Tailscale console, delete the old node and rename
 
 ## Gotchas
 
+- **A workflow on any branch can reach the runner.** A file with
+  `runs-on: [self-hosted, homelab]` on a pushed branch can run here, with the
+  deploy key, without merging. Only who can push to caboodle limits that.
 - **A registered runner keeps an old token on disk.** The module stores
   `.current-token` in its state directory, mode 600. A registration token
   lasts an hour, so it's dead long before it could matter, but the file only

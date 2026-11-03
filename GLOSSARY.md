@@ -18,7 +18,7 @@ A machine Nix configures as a member of the colmena hive: PVE, Cube, a guest, th
 _Avoid_: node, hive node
 
 **Server**:
-A host that runs services: PVE, Cube, every guest, and the mini. All but PVE and Cube deploy when a merge lands on `main`. The mini is a workstation too.
+A host that runs services: PVE, Cube, every guest, and the mini. The guests deploy when a merge lands on `main`, the desktop applies the mini and the runner, and PVE and Cube are switched by hand. The mini is a workstation too.
 
 **Workstation**:
 A host that carries Shane's own setup: home-manager, fish and fonts. The desktop, the MacBook and the mini.

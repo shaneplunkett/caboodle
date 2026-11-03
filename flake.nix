@@ -291,6 +291,8 @@
               if config.homelab.tailscale.enable then name else config.homelab.lanAddress
             );
             deployment.tags = lib.mkDefault [ "deploy" ];
+            homelab.deployedByRunner =
+              lib.intersectLists [ "deploy" "deploy-after-dns1" ] config.deployment.tags != [ ];
             system.configurationRevision = self.rev or self.dirtyRev or null;
             imports = [
               ./modules/homelab.nix

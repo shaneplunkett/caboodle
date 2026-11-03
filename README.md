@@ -38,7 +38,9 @@ A service that runs on both kinds of host keeps its options in an
 `options.nix` next to its `default.nix`, so the hive can read them from any
 host, and the NixOS half and the darwin half each read the same facts.
 
-The mini is a server, deployed with `scripts/deploy.sh` like the containers; see
+A merge deploys the containers from the runner; see
+[docs/pve/runner](docs/pve/runner.md#the-deploy-job). The mini is a server, and
+only `scripts/deploy.sh` from the desktop deploys it; see
 [docs/mini](docs/mini/README.md). PVE, Cube, the MacBook, the desktop and the
 Deck are switched by hand; see
 [docs/pve](docs/pve/README.md), [docs/cube](docs/cube/README.md),
@@ -66,16 +68,16 @@ A service backs up its data by listing it in `homelab.backup.paths`. See
 
 ```sh
 scripts/quietly.sh colmena build --on <host>   # build here, one at a time, out of the way
-scripts/deploy.sh <host>                        # build and apply over SSH
-scripts/deploy.sh                               # every server, dns2 after dns1
+scripts/deploy.sh <host>                        # the fallback: build and apply over SSH
+scripts/deploy.sh                               # the fallback: every server, dns2 after dns1
 scripts/push-to-cache.sh <host>                 # build and push to the cache
 scripts/terraform.sh                            # plan; `apply` applies
 ```
 
 Flakes only see tracked files, so `git add` new files before building.
-Builds happen on the desktop, through the wrapper
-([docs/desktop](docs/desktop/README.md#building-here)); CI only runs
-`scripts/check.sh`.
+Builds here go through the wrapper
+([docs/desktop](docs/desktop/README.md#building-here)). A merge builds on the
+runner, and the check only runs `scripts/check.sh`.
 
 ### Adding a host
 
@@ -107,7 +109,7 @@ New hosts are Incus containers, on PVE or Cube.
    (`ssh-keyscan -t ed25519 <ip>`), name it in `agenix-rules.nix`, add it to
    the secrets it needs, and `agenix -r` to rekey. Shane's key is root on
    every guest through `guest.nix`, which is what lets the desktop deploy
-   there.
+   there. The runner's key joins it once the host has a deploy tag.
 4. Deploy it once by hand to join Tailscale and start its services. Its
    hive name doesn't resolve until it's on the tailnet, so push the first
    build to its LAN address yourself:
@@ -121,7 +123,9 @@ New hosts are Incus containers, on PVE or Cube.
 
    A rebuilt host joins Tailscale as `<host>-1` while its old node exists,
    so delete the old node and rename the new one in the admin console.
-   Then drop step 1's guards.
+   Then drop step 1's guards. The runner doesn't know the new name or key
+   until it's deployed, so that merge's deploy goes red. Run
+   `scripts/deploy.sh runner` and re-run the failed job.
 
 ## Secrets
 
@@ -164,9 +168,11 @@ the host's `lanAddress`, and Terraform makes the UniFi rule.
 
 ## Changes and deploys
 
-CI runs `scripts/check.sh` and nothing else. Builds and deploys happen on
-the desktop, through `scripts/quietly.sh`, `scripts/deploy.sh` and
-`scripts/terraform.sh`; `AGENTS.md` has the routine and
+The check runs `scripts/check.sh` and nothing else. A merge to `main` deploys
+the containers from the [runner](docs/pve/runner.md#the-deploy-job), unless
+only `docs/` changed. The desktop is the fallback, through `scripts/deploy.sh`,
+and it still applies the mini and the runner and runs `scripts/terraform.sh`.
+`AGENTS.md` has the routine and
 [ADR 0005](docs/adr/0005-merges-deploy-from-a-runner-at-home.md) the why,
 and where it is going.
 [docs/github](docs/github/README.md) covers the check, Renovate and the App.
