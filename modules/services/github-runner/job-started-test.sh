@@ -137,11 +137,28 @@ if [ ! -e "$SIGNALLED" ]; then
   fail "signalled the process in between, not the worker"
 fi
 
-# With no worker above it, the hook signals its parent.
-reset
-"$dir/Some.Parent" "$dir/takes-signal" || true
-if [ ! -e "$SIGNALLED" ]; then
-  fail "left its parent running with no worker to find"
+# With no worker above it, the hook signals its parent. Inside a job there is a
+# real Runner.Worker above this test, the walk finds it, and the hook stops the
+# job that's running the gate, so the case only runs where there isn't one.
+worker_above() {
+  process=$PPID
+  while [ "$process" -gt 1 ] 2>/dev/null; do
+    if [ "$(PATH=$PATH:/bin:/usr/bin ps -o comm= -p "$process" 2>/dev/null)" = Runner.Worker ]; then
+      return 0
+    fi
+    process=$(PATH=$PATH:/bin:/usr/bin ps -o ppid= -p "$process" 2>/dev/null | tr -d ' ') || return 1
+    [ -n "$process" ] || return 1
+  done
+  return 1
+}
+if worker_above; then
+  echo "job-started hook: a Runner.Worker is above this test, so the no-worker case is skipped"
+else
+  reset
+  "$dir/Some.Parent" "$dir/takes-signal" || true
+  if [ ! -e "$SIGNALLED" ]; then
+    fail "left its parent running with no worker to find"
+  fi
 fi
 
 # A worker that ignores SIGTERM gets SIGKILL when the grace period runs out. The
