@@ -20,6 +20,10 @@ by Prometheus on another host.
 - Inside a container, node exporter's CPU numbers come from the host's
   counters and are wrong. Guests' CPU comes from Incus instead (see the
   [Incus README](incus/README.md#metrics)).
+- Every alert rule but the Watchdog carries a `summary` (the title), a `condition` (the trigger
+  in one sentence), a `description` (a paragraph to Shane: what it means, why
+  it matters now, what to do first) and a `check` (one command that shows the
+  thing).
 
 ## Alloy
 

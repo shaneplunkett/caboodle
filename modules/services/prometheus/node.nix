@@ -35,6 +35,7 @@ in
                   annotations = {
                     summary = "{{ $labels.host }}'s root disk is {{ $value | humanizePercentage }} full";
                     condition = "Root disk over ${percent} for 10m";
+                    description = "When a root disk runs out, things break in a messy order: services fail their writes, databases stop, the journal goes quiet, and Nix can't switch, so the next deploy fails too. There's still room, but nothing here says how fast it's going, so look today. The check lists the biggest folders. A huge `/var/log/journal` or `/nix/store` is housekeeping that's fallen behind, and a service's folder under `/var/lib` is real growth. A guest takes more room by raising `disk` in its `homelab.guest`, merging, then `scripts/terraform.sh apply` from the desktop, since a merge only runs Terraform when `terraform/` changed. The cache guest is the exception: it has no `disk` on purpose, and `docs/pve/cache.md` says why.";
                     check = "ssh {{ $labels.host }} sudo du -xh -d2 / | sort -h | tail";
                     dashboard = links.hostHealth "{{ $labels.host }}";
                   };

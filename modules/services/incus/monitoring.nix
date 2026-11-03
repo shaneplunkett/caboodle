@@ -16,9 +16,12 @@ let
       alert,
       severity,
       value,
+      urgency,
       ratio,
       summary,
+      description,
       check,
+      ...
     }:
     {
       inherit alert;
@@ -28,26 +31,24 @@ let
       annotations = {
         inherit summary check;
         condition = "Over ${toString (builtins.floor (value * 100))}% full for 10m";
+        description = "${description} ${urgency}";
       };
     };
 
   filling =
-    {
-      name,
-      ratio,
-      summary,
-      check,
-    }:
-    map (rule: full (rule // { inherit ratio summary check; })) [
+    { name, ... }@shared:
+    map (rule: full (shared // rule)) [
       {
         alert = "${name}Filling";
         severity = "warning";
         value = 0.8;
+        urgency = "There's room for now, but nothing here says how fast it's filling, so look at the trend before deciding it can wait.";
       }
       {
         alert = "${name}AlmostFull";
         severity = "critical";
         value = 0.9;
+        urgency = "It's close now, so this goes ahead of whatever else is on today.";
       }
     ];
 
@@ -71,6 +72,7 @@ let
           annotations = {
             summary = "Incus on {{ $labels.host }} is answering but not reporting pool {{ $labels.pool }}, so its fill alerts are blind";
             condition = "Scrape up but the pool's size or used bytes missing for 10m";
+            description = "Incus leaves a pool out of its metrics when it can't read it, while the scrape still looks healthy, so nothing is watching how full {{ $labels.pool }} is. That failed read can be the real problem: a dead drive or a lost mount under the pool. Look for storage errors in the journal, and `incus storage list` on {{ $labels.host }} shows the pool's state. For `nas-cache`, start with whether `/mnt/cache` is mounted.";
             check = "ssh {{ $labels.host }} sudo journalctl -u incus -n 50";
           };
         }
@@ -108,12 +110,14 @@ in
                   name = "IncusPool";
                   ratio = "incus_storage_pool_used_bytes / incus_storage_pool_size_bytes";
                   summary = "Incus pool {{ $labels.pool }} on {{ $labels.host }} is {{ $value | humanizePercentage }} full";
+                  description = "The guests on {{ $labels.host }} write into this pool, and when it runs out their writes fail all at once, databases included. The check lists each guest's volume, so find the one that has grown and clean up inside it. The volume group already takes the rest of the drive, so clean-up is the way out rather than growing the pool. `nas-cache` isn't in that list: it's the btrfs NAS cache, shared with NAS files waiting for the mover, so read `df -h /mnt/cache` and see whether last night's `nas-mover` ran.";
                   check = "ssh {{ $labels.host }} sudo lvs incus";
                 }
                 ++ filling {
                   name = "IncusThinPoolMetadata";
                   ratio = "homelab_incus_thinpool_metadata_ratio{${hostMatcher}}";
                   summary = "Thin pool {{ $labels.vg }}/{{ $labels.lv }} on {{ $labels.host }} has {{ $value | humanizePercentage }} of its metadata used";
+                  description = "Metadata is the pool's own record of which block belongs to which guest, and it can fill before the data does. When it's full the pool stops taking writes for every guest on {{ $labels.host }}, and getting it back can take a repair, which is much worse than running out of space. `vgs {{ $labels.vg }}` shows whether there's free space to grow it with `lvextend --poolmetadatasize +1G {{ $labels.vg }}/{{ $labels.lv }}`. If there isn't, cutting guest data brings the metadata down too.";
                   check = "ssh {{ $labels.host }} sudo lvs -o lv_name,data_percent,metadata_percent {{ $labels.vg }}";
                 }
                 ++ missingPools
@@ -126,6 +130,7 @@ in
                     annotations = {
                       summary = "{{ $labels.host }} can't read its thin pool with lvs, so its metadata alerts are blind";
                       condition = "${collector}.service failed for 5m";
+                      description = "This job reads the thin pool's metadata with `lvs` every minute, because Incus doesn't report it. With it failing, nothing is watching that metadata, and a full one breaks the pool just as surely as running out of space. A reading bug is dull, but `lvs` itself erroring can mean the volume group is in trouble, so that's what the journal needs to rule out. `no thin pool in incus` means the pool has gone, and LVM or I/O errors mean look at the drive next.";
                       check = "ssh {{ $labels.host }} sudo journalctl -u ${collector} -n 20";
                     };
                   }
@@ -136,6 +141,7 @@ in
                     annotations = {
                       summary = "{{ $labels.host }}'s thin pool reading is {{ $value | humanizeDuration }} old";
                       condition = "Thin pool metrics older than 10m without the collector failing";
+                      description = "The job that reads the thin pool with `lvs` isn't failing, it just isn't finishing, so the metadata number the alerts read has frozen. Either its timer has stopped or `lvs` is hanging, and a hanging `lvs` points at a stuck disk underneath. The check shows when it last ran. If the timer looks fine, `systemctl status ${collector}` shows a run that's stuck, and `journalctl -k` on {{ $labels.host }} shows any disk errors.";
                       check = "ssh {{ $labels.host }} systemctl list-timers ${collector}";
                     };
                   }
@@ -147,6 +153,7 @@ in
                     annotations = {
                       summary = "{{ $labels.host }} has never published its thin pool reading";
                       condition = "Node exporter up but no thin pool metrics for 10m";
+                      description = "Node exporter is fine, but the job that reads the thin pool's metadata has written nothing, so the metadata alerts have nothing to read. The likely cause is a rule that reached monitoring on a merge while {{ $labels.host }} hasn't been switched, because PVE and Cube are switched by hand. If the check says the unit doesn't exist, switching the host fixes it. If the unit's there, its status says why it hasn't written.";
                       check = "ssh {{ $labels.host }} systemctl status ${collector}";
                     };
                   }
@@ -158,6 +165,7 @@ in
                     annotations = {
                       summary = "Incus on {{ $labels.host }} isn't serving metrics, so its pool alerts are blind";
                       condition = "Incus metrics scrape failing for 5m";
+                      description = "Prometheus can't scrape Incus on {{ $labels.host }}, so nothing is watching how full its pools are, and the guests' CPU graphs stop too. The daemon may be down, the metrics endpoint may have started asking for a certificate, or monitoring may just not be able to reach the host; the scrape looks the same from here for all three. The check prints `false` when the endpoint is set right, and anything else is why the scrape fails. If the command errors, SSH or the daemon is the problem, and `systemctl status incus` on the host says which. If the host answers but Prometheus can't, it's the path between them. The guests may still be running, but Terraform can't reach them until it's back.";
                       check = "ssh {{ $labels.host }} incus config get core.metrics_authentication";
                     };
                   }
