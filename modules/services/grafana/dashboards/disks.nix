@@ -33,7 +33,8 @@ dashboard {
   panels = [
     (row "Right now" 0)
     (firing (at 0 1 16 5) "{{alertname}} {{host}} {{device}}" [
-      ''alertname=~"Smartctl.*",host=~"$host"''
+      ''alertname="SmartctlExporterDown",host=~"$host"''
+      ''alertname=~"Smartctl.*",${selected}''
     ])
     (timeline {
       title = "Exporter answering";
