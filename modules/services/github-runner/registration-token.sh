@@ -1,19 +1,12 @@
 # shellcheck shell=bash
-# Fills the token file the runner's service reads before it starts. NixOS's
-# module wipes the runner's state and registers again whenever that file's
-# contents differ from the copy it kept in .current-token. So a registered
-# runner gets its old copy back, with no call to GitHub, and only a runner
-# with no credentials gets a new token.
+# Signs a JWT with the App's key, mints an installation token narrowed to this
+# repo and administration: write, and writes a new registration token to a file.
+# It reads nothing from the runner's state, and each platform's script decides
+# whether a token is needed.
 url=$1
-state=$2
-file=$3
+file=$2
 
 umask 077
-
-if [ -e "$state/.runner" ] && [ -e "$state/.current-token" ]; then
-  cp "$state/.current-token" "$file"
-  exit 0
-fi
 
 owner=$(basename "$(dirname "$url")")
 repo=$(basename "$url")

@@ -134,8 +134,14 @@ gh workflow disable darwin.yml --repo shaneplunkett/caboodle
 ```
 
 That needs no deploy, and the next merge builds nothing here. To stop a build
-that's running now, `sudo launchctl bootout system/org.nixos.github-runner-mini`,
-which lasts until the next deploy or reboot.
+that's running now, `sudo launchctl bootout system/org.nixos.github-runner-mini`.
+A deploy only reloads a plist that changed, so an ordinary one leaves the runner
+booted out. It comes back with a reboot, a deploy that changes the plist, or by
+hand:
+
+```sh
+sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.github-runner-mini.plist
+```
 
 If the trial ends, delete the workflow and the module's line in `hosts/mini.nix`,
 then deploy. Do it in that order: a job with no runner to take it sits queued for
@@ -162,10 +168,12 @@ things from agenix:
 - **The inputs token.** The `nix-inputs-token` daemon writes
   `/run/nix-inputs-token/access-tokens.conf` from the agenix copy, which stays
   root's. `nix.conf` includes that file. Nix reads it in the process that
-  evaluates, so the job's user owns it. The directory has to stay `0755`. Nix
-  skips an include it can't read, but a closed directory fails the `stat` first,
-  and then every Nix command for everyone else on the mini loses its whole
-  `nix.conf`.
+  evaluates, so the job's group can read it. Root owns it and it's `0640`, because
+  root's Nix and the daemon read it too, with no check on its owner: a job that
+  could write it could set `plugin-files` and run code as root. The directory has
+  to stay `0755`. Nix skips an include it can't read, which is what Shane's own Nix
+  does, but a closed directory fails the `stat` first, and then every Nix command
+  for everyone else on the mini loses its whole `nix.conf`.
 - **A key to the cache.** `/run/agenix/mini-cache-ssh-key` belongs to the job's
   user, and `/etc/ssh/ssh_config.d` names it for `cache.home.arpa`. Only
   `hosts/cache.nix` accepts its public half.
@@ -179,8 +187,10 @@ job at the mini's next deploy.
 launchd has no ordering between jobs, so nothing runs "before" the runner. The
 `github-runner-registration` daemon runs as root at load and every five minutes
 instead. Agenix links the App's two secrets into `/run/github-app`, and the daemon
-points `github-app-token` at that folder, as `LoadCredential` does on PVE. It uses
-the same `registration-token.sh`.
+points `github-app-token` at that folder, as `LoadCredential` does on PVE. It mints
+with the same `registration-token.sh`, but it has no copy-back like PVE's. Nothing
+stops a job writing anything into the state directory here, so the daemon only ever
+tests for `.runner` and never reads out of there.
 
 - With no `.runner` in `/var/lib/github-runners/mini`, it mints a registration
   token into `/run/github-runner-registration/token`. The runner's user owns that

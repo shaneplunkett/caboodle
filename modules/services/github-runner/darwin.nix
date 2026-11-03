@@ -8,6 +8,7 @@ let
   name = "mini";
   url = "https://github.com/shaneplunkett/caboodle";
   user = "_github-runner";
+  group = user;
   secrets = config.age.secrets;
   cache = import ../harmonia/cache.nix;
   state = "/var/lib/github-runners/${name}";
@@ -82,7 +83,7 @@ in
     };
 
     nix-inputs-token = {
-      command = "${lib.getExe inputsToken} ${secrets.github-inputs-token.path} ${inputsTokenFile} ${user}";
+      command = "${lib.getExe inputsToken} ${secrets.github-inputs-token.path} ${inputsTokenFile} ${group}";
       serviceConfig = {
         RunAtLoad = true;
         StartInterval = 60;
