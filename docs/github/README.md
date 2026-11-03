@@ -63,8 +63,11 @@ requests; the other mornings refresh one that's still open.
 - Its token only reaches caboodle and the private flake inputs, because lock
   file maintenance hands that same token to `nix flake update`. A new private
   input has to join `repositories` in the workflow too, or the lock file pull
-  request fails on the input's 404. A weekday run never gets that far, so
-  only Sunday would show it. A `"dryRun": "full"` run with
+  request fails on the input's 404. The run stays green when it does: the
+  signs are a `WARN: Error updating flake.lock` line in its log, an "Artifact
+  update problem" comment on the pull request, and a lock file that didn't
+  move. A weekday run never gets that far, so only Sunday would show it. A
+  `"dryRun": "full"` run with
   `"force": { "schedule": ["at any time"] }` tests it without writing anything.
 - Its token leaves out two things Renovate's docs list. Administration read
   only lets it see classic branch protection, it treats the 403 as none, and
@@ -115,10 +118,13 @@ Both are in Bitwarden and in caboodle's Actions secrets.
   write on contents, pull requests, issues, actions, workflows and commit
   statuses, and read on checks and Dependabot alerts. Write on administration
   is there for the [runner](../pve/runner.md#registration) alone, to register.
-  Jobs, Renovate, the mirror and the runners mint an hour-long installation
-  token from it, and every mint asks only for what it uses, because a token
-  minted without `permissions` inherits all of that and can change repo
-  settings or delete a repo. A new mint has to narrow too. Narrowing limits the
+  Renovate, the `ai-skills` bump, `workflows`' `flake-update.yml`,
+  `ai-skills`' `ring-caboodle.yml`, the mirror and the two runners mint an
+  hour-long installation token from it, and each asks only for what it uses,
+  because a token minted without `permissions` inherits all of that and can
+  change repo settings or delete a repo. Those are the mints of this App;
+  `vex-code`'s release workflows mint from another App's secrets. A new mint
+  has to narrow too. Narrowing limits the
   token and not the key: whoever holds the private key can still mint a token
   with everything, on every repo. Pull requests it opens run the check, which
   ones opened with `GITHUB_TOKEN` don't.
