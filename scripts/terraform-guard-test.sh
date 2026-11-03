@@ -18,6 +18,7 @@ not_ok() {
 
 runner='incus_instance.guest[\"runner\"]'
 other='unifi_client.guest[\"plex\"]'
+guest='incus_instance.guest[\"photos\"]'
 canary='canary-value'
 
 change() {
@@ -61,6 +62,15 @@ refuses 'a move of the runner that also changes it' \
   "$(plan '{"address":"incus_instance.moved","previous_address":"'"$runner"'","change":{"actions":["update"]}}')"
 refuses 'a no-op and a deposed delete on the runner' \
   "$(plan "$quiet_runner,$(change "$runner" '["delete"]')")"
+
+passes 'a new guest' "$(plan "$quiet_runner,$(change "$guest" '["create"]')")"
+passes 'an update to another guest' "$(plan "$quiet_runner,$(change "$guest" '["update"]')")"
+passes 'a delete outside the guests' "$(plan "$quiet_runner,$(change "$other" '["delete"]')")"
+for actions in '["delete"]' '["delete","create"]' '["create","delete"]'; do
+  refuses "$actions on another guest" "$(plan "$quiet_runner,$(change "$guest" "$actions")")"
+done
+refuses 'a move of another guest that deletes it' \
+  "$(plan "$quiet_runner,"'{"address":"incus_instance.moved","previous_address":"'"$guest"'","change":{"actions":["delete"]}}')"
 
 refuses 'empty input' ''
 refuses 'something that is not JSON' 'not json canary-value'

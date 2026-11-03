@@ -38,10 +38,10 @@ and the Mac mini. Read `README.md` for how it fits together.
   dependency in one, the lock file in the other) and the `ai-skills` bumps,
   which merge themselves once the check passes. Merging deploys, unless only
   `docs/` changed, so choosing when to merge is choosing when it lands. The
-  runner applies Terraform on a merge that changed anything a plan reads, so a
-  merge that drops a guest deletes it. The mini goes from the desktop when Shane
-  asks, and so does `scripts/terraform.sh apply` when the runner is down, when
-  an earlier apply needs recovering, or when a plan changes the runner's own
+  runner applies Terraform on a merge that changed anything a plan reads. The
+  mini goes from the desktop when Shane asks, and so does
+  `scripts/terraform.sh apply` when the runner is down, when an earlier apply
+  needs recovering, or when a plan changes the runner's own guest or deletes a
   guest, which the job refuses (`docs/pve/runner.md`). A failed deploy is a red
   cross on the merge commit, and rollback is a revert pull request.
 - **CI:** GitHub's runners run `scripts/check.sh` and nothing else.

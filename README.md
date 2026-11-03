@@ -182,7 +182,7 @@ every Linux host, pushes them to the cache and deploys the containers from the
 that changed anything a Terraform plan reads, the hive included, then applies
 Terraform from there too. The desktop is the fallback, through
 `scripts/deploy.sh` and `scripts/terraform.sh`, and it still applies the mini,
-the runner, and any plan that changes the runner's own guest.
+the runner, and any plan that changes the runner's own guest or deletes one.
 `AGENTS.md` has the routine and
 [ADR 0005](docs/adr/0005-merges-deploy-from-a-runner-at-home.md) the why,
 and where it is going.
