@@ -107,9 +107,10 @@ goes, since every host pulls from the cache instead, and
   cannot collide.
 - A Terraform-only merge still evaluates the hive, a few wasted minutes
   rather than a second code path.
-- The check caches the terraform derivation in GitHub's Actions cache from
-  the shared `check.yml`, which action to be confirmed on a private repo
-  before it is filed.
+- The check keeps its dev shell in GitHub's Actions cache from the shared
+  `check.yml`, through `nix-community/cache-nix-action`, which talks to
+  nothing but GitHub. A run with nothing changed takes about half a minute;
+  a lock bump that moves terraform still compiles it once.
 
 This supersedes 0004, which was deleted once this landed;
 `git log --diff-filter=D -- docs/adr` finds it.
