@@ -25,7 +25,8 @@ and the Mac mini. Read `README.md` for how it fits together.
   Deck and the MacBook are switched by hand, each per its
   doc under `docs/`. `scripts/terraform.sh` plans Terraform with the tokens
   agenix holds, and `scripts/terraform.sh apply` applies that plan. A merge that
-  changed `terraform/` runs that apply on the runner, after the hosts.
+  changed anything a plan reads, the hive included, runs that apply on the
+  runner, after the hosts. `scripts/terraform-changed.sh` has the list.
 - **Pull request:** land every change through a pull request on GitHub
   (`origin`, `shaneplunkett/caboodle`). Commit on a branch and file it with
   the `pr` skill and `gh`, assigned to Shane for review. Done is a green
@@ -37,11 +38,12 @@ and the Mac mini. Read `README.md` for how it fits together.
   dependency in one, the lock file in the other) and the `ai-skills` bumps,
   which merge themselves once the check passes. Merging deploys, unless only
   `docs/` changed, so choosing when to merge is choosing when it lands. The
-  runner applies Terraform on a merge that changed `terraform/`. The mini goes
-  from the desktop when Shane asks, and so does `scripts/terraform.sh apply`
-  when the runner is down or a merge changed only what Terraform reads from
-  the hive (`docs/pve/runner.md`). A failed deploy is a red cross on the merge
-  commit, and rollback is a revert pull request.
+  runner applies Terraform on a merge that changed anything a plan reads, so a
+  merge that drops a guest deletes it. The mini goes from the desktop when Shane
+  asks, and so does `scripts/terraform.sh apply` when the runner is down, when
+  an earlier apply needs recovering, or when a plan changes the runner's own
+  guest, which the job refuses (`docs/pve/runner.md`). A failed deploy is a red
+  cross on the merge commit, and rollback is a revert pull request.
 - **CI:** GitHub's runners run `scripts/check.sh` and nothing else.
   `.github/workflows/` calls the check workflow in `shaneplunkett/workflows`,
   pinned to a tag that Renovate moves, and `main` requires that check. Nothing

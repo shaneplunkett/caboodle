@@ -28,6 +28,7 @@ git ls-files --cached --others --exclude-standard -z '*.sh' | xargs -0 -r shfmt 
 git ls-files --cached --others --exclude-standard -z '*.sh' | xargs -0 -r shellcheck
 scripts/test-build-linux-hosts.sh
 scripts/terraform-guard-test.sh >/dev/null
+scripts/terraform-changed-test.sh >/dev/null
 
 unformatted="$(git ls-files --cached --others --exclude-standard -z '*.go' | xargs -0 -r gofmt -l)"
 if [ -n "$unformatted" ]; then

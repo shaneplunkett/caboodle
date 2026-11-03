@@ -21,8 +21,9 @@ A guest picks it with `pool` in `homelab.guest`. Three things about it:
 - `incus.service` is ordered after the mount but doesn't require it. If the
   drive dies, this pool's mount fails on "isn't btrfs", and every other guest
   still starts. `RequiresMountsFor` would keep them all down.
-- Switching PVE by hand is what creates the pool, so that comes before the
-  Terraform apply that first uses it.
+- Switching PVE by hand is what creates the pool, and merging a guest applies
+  Terraform. So land the pool, switch PVE, then merge the guest that first
+  uses it.
 
 ## Terraform's access
 
@@ -103,7 +104,9 @@ On the guest's Incus host:
   or SSH is down.
 
 To resize one, change `cores`, `memory` or `disk` in its `homelab.guest`
-and merge. Terraform applies it before any host deploys.
+and merge. Terraform applies it after the hosts deploy. The runner's own is
+the exception: the job refuses it, and the desktop applies it
+([runner](../../../docs/pve/runner.md#terraform)).
 
 Incus keeps no snapshots or backups of its own. What's worth keeping is in
 each service's `homelab.backup.paths`, which restic sends offsite, so a dead

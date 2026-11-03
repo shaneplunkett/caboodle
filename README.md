@@ -62,8 +62,7 @@ in `modules/devices.nix`, and modules read it as
 `config.homelab.devices.<name>.ip`. PVE and Cube are in there too, and their
 hosts take their address from it. Terraform reads both through
 `nix eval .#network` and reserves each address in UniFi, so adding a device
-is one entry there, then `scripts/terraform.sh apply` from the desktop, since a
-merge only runs Terraform when `terraform/` changed. Keep secrets out of it:
+is one entry there, and merging it applies Terraform. Keep secrets out of it:
 whatever Terraform reads this way lands in its state and in the deploy job's
 public log.
 
@@ -102,9 +101,10 @@ New hosts are Incus containers, on PVE or Cube.
 
    The host has no key until its container boots, so until step 3 lands,
    the last two lines keep it out of merge deploys and monitoring.
-2. Merge it, then run `scripts/terraform.sh apply` from the desktop. Terraform
-   reserves the host's address in UniFi and creates the
-   container from the base image. Leave `mac` out and Terraform makes one.
+2. Merge it. The deploy job's Terraform step reserves the host's address in
+   UniFi and creates the container from the base image. If that step went red
+   or the runner is down, `scripts/terraform.sh apply` from the desktop does the
+   same. Leave `mac` out and Terraform makes one.
    Never copy one from another host: a duplicated MAC once had two
    containers fighting over one DHCP lease. A rebuilt host can keep its own
    old MAC, and Terraform takes over its old UniFi client. A new MAC can
@@ -172,16 +172,17 @@ resolves the whole domain to the ingress host.
 
 A host asks the gateway for a WAN port forward the same way:
 `homelab.portForwards.<name> = <port>;` forwards that port to the same port on
-the host's `lanAddress`, and the next `scripts/terraform.sh apply` makes the
-UniFi rule.
+the host's `lanAddress`, and merging it makes the UniFi rule.
 
 ## Changes and deploys
 
 The check runs `scripts/check.sh` and nothing else. A merge to `main` builds
 every Linux host, pushes them to the cache and deploys the containers from the
 [runner](docs/pve/runner.md#the-deploy-job), unless only `docs/` changed. A merge
-that changed `terraform/` then applies Terraform from there too. The desktop is the fallback, through `scripts/deploy.sh`
-and `scripts/terraform.sh`, and it still applies the mini and the runner.
+that changed anything a Terraform plan reads, the hive included, then applies
+Terraform from there too. The desktop is the fallback, through
+`scripts/deploy.sh` and `scripts/terraform.sh`, and it still applies the mini,
+the runner, and any plan that changes the runner's own guest.
 `AGENTS.md` has the routine and
 [ADR 0005](docs/adr/0005-merges-deploy-from-a-runner-at-home.md) the why,
 and where it is going.
