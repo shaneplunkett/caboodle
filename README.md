@@ -123,9 +123,11 @@ New hosts are Incus containers, on PVE or Cube.
 
    A rebuilt host joins Tailscale as `<host>-1` while its old node exists,
    so delete the old node and rename the new one in the admin console.
-   Then drop step 1's guards. The runner doesn't know the new name or key
-   until it's deployed, so that merge's deploy goes red. Run
-   `scripts/deploy.sh runner` and re-run the failed job.
+   Then drop step 1's guards. That merge's deploy goes red: the runner
+   doesn't know the new name or key until it's deployed, and the guest
+   doesn't take the runner's key until its own deploy with the tag on. From
+   the desktop, `scripts/deploy.sh <host> runner`, then re-run the failed
+   job.
 
 ## Secrets
 
