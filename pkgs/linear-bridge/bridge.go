@@ -79,6 +79,18 @@ func (b *bridge) act(ctx context.Context, a alert) (verb, string, error) {
 		return verbLookup, "", err
 	}
 	d := decide(a.resolved(), issues)
+	if d.open == nil {
+		orphan, err := b.linear.issueByID(ctx, filedID(a, d.lastClosed))
+		if err != nil {
+			return verbLookup, "", err
+		}
+		if orphan != nil && !orphan.closed() {
+			d = decide(a.resolved(), append(issues, *orphan))
+			if _, err := b.linear.attach(ctx, orphan.ID, attachmentURL, a.cardTitle()); err != nil {
+				return d.verb, orphan.Identifier, err
+			}
+		}
+	}
 	switch d.verb {
 	case verbStillFiring:
 		return d.verb, d.open.Identifier, nil
@@ -97,7 +109,7 @@ func (b *bridge) act(ctx context.Context, a alert) (verb, string, error) {
 }
 
 func (b *bridge) file(ctx context.Context, a alert, lastClosed *issue, attachmentURL string) (string, error) {
-	id := clientChosenID(a.Fingerprint, stamp(a.StartsAt), identifierOf(lastClosed))
+	id := filedID(a, lastClosed)
 	identifier := ""
 	created, err := b.linear.createIssue(ctx, newIssue{
 		ID:          id,
@@ -120,6 +132,10 @@ func (b *bridge) file(ctx context.Context, a alert, lastClosed *issue, attachmen
 		return identifier, err
 	}
 	return attached.Identifier, nil
+}
+
+func filedID(a alert, lastClosed *issue) string {
+	return clientChosenID(a.Fingerprint, stamp(a.StartsAt), identifierOf(lastClosed))
 }
 
 func priority(a alert) int {

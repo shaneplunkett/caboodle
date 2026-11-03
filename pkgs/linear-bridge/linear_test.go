@@ -379,6 +379,37 @@ func TestFindStopsOnACursorThatDoesntMove(t *testing.T) {
 	}
 }
 
+func TestIssueByIDFindsItIncludingItsState(t *testing.T) {
+	stub, client := newAPIStub(t, respond(`{"data":{"issues":{"nodes":[
+		{"id":"chosen","identifier":"SHA-7","number":7,"completedAt":null,"canceledAt":null,"state":{"type":"triage"}}
+	]}}}`))
+	found, err := client.issueByID(context.Background(), "chosen")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if found == nil || found.Identifier != "SHA-7" || found.StateType != "triage" {
+		t.Errorf("found = %+v", found)
+	}
+	if got := stub.variables[0]["id"]; got != "chosen" {
+		t.Errorf("id = %v", got)
+	}
+}
+
+func TestIssueByIDAnswersNilWhenNothingHasThatID(t *testing.T) {
+	_, client := newAPIStub(t, respond(`{"data":{"issues":{"nodes":[]}}}`))
+	found, err := client.issueByID(context.Background(), "chosen")
+	if err != nil || found != nil {
+		t.Errorf("found = %+v, err = %v", found, err)
+	}
+}
+
+func TestIssueByIDWithNoAnswerIsAnErrorNotAbsence(t *testing.T) {
+	_, client := newAPIStub(t, respond(`{"data":{}}`))
+	if _, err := client.issueByID(context.Background(), "chosen"); err == nil || isRetryable(err) {
+		t.Errorf("err = %v", err)
+	}
+}
+
 func TestCreateIssueSendsTheChosenID(t *testing.T) {
 	stub, client := newAPIStub(t, respond(`{"data":{"issueCreate":{"success":true,"issue":{"id":"chosen","identifier":"SHA-7"}}}}`))
 	created, err := client.createIssue(context.Background(), newIssue{

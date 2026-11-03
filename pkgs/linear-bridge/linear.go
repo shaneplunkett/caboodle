@@ -150,6 +150,30 @@ func (l *linear) findPage(ctx context.Context, attachmentURL string, after *stri
 	return page, cursor, nil
 }
 
+func (l *linear) issueByID(ctx context.Context, id string) (*issue, error) {
+	const query = `query Orphan($id: ID!) {
+  issues(filter: { id: { eq: $id } }, includeArchived: true, first: 1) {
+    nodes { id identifier number completedAt canceledAt state { type } }
+  }
+}`
+	var out struct {
+		Issues *struct {
+			Nodes []issueNode `json:"nodes"`
+		} `json:"issues"`
+	}
+	if err := l.do(ctx, query, map[string]any{"id": id}, &out); err != nil {
+		return nil, err
+	}
+	if out.Issues == nil {
+		return nil, errors.New("linear's answer has no issues")
+	}
+	if len(out.Issues.Nodes) == 0 {
+		return nil, nil
+	}
+	found := out.Issues.Nodes[0].toIssue()
+	return &found, nil
+}
+
 func (l *linear) createIssue(ctx context.Context, input newIssue) (issue, error) {
 	const query = `mutation Fire($input: IssueCreateInput!) {
   issueCreate(input: $input) { success issue { id identifier } }

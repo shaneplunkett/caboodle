@@ -33,6 +33,16 @@ type fakeLinear struct {
 	refuseCreate string
 	failFind     map[string]bool
 	garbleFind   bool
+	failByID     bool
+	creates      int
+}
+
+func (i *fakeIssue) node() map[string]any {
+	return map[string]any{
+		"id": i.id, "identifier": i.identifier, "number": i.number,
+		"completedAt": i.completedAt, "canceledAt": nil,
+		"state": map[string]any{"type": i.stateType},
+	}
 }
 
 func (f *fakeLinear) find(url string) []map[string]any {
@@ -40,11 +50,7 @@ func (f *fakeLinear) find(url string) []map[string]any {
 	for _, i := range f.issues {
 		for _, attached := range i.attachments {
 			if attached == url {
-				nodes = append(nodes, map[string]any{"issue": map[string]any{
-					"id": i.id, "identifier": i.identifier, "number": i.number,
-					"completedAt": i.completedAt, "canceledAt": nil,
-					"state": map[string]any{"type": i.stateType},
-				}})
+				nodes = append(nodes, map[string]any{"issue": i.node()})
 			}
 		}
 	}
@@ -95,7 +101,18 @@ func (f *fakeLinear) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		data["attachmentsForURL"] = map[string]any{"nodes": f.find(url)}
+	case strings.Contains(body.Query, "issues("):
+		if f.failByID {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		nodes := []map[string]any{}
+		if found := f.byID(body.Variables["id"].(string)); found != nil {
+			nodes = append(nodes, found.node())
+		}
+		data["issues"] = map[string]any{"nodes": nodes}
 	case strings.Contains(body.Query, "issueCreate"):
+		f.creates++
 		if f.refuseCreate != "" {
 			graphQLRefusal(w, f.refuseCreate, "refused")
 			return
@@ -369,6 +386,9 @@ func TestAFailedAttachAsksForARetryThatFilesNoTwin(t *testing.T) {
 	if code := r.post(t, "first notification", diskAlert()); code < 500 {
 		t.Fatalf("status = %d, Alertmanager has to retry this", code)
 	}
+	if line := r.record(t, "verb=fire"); !hasAttr(line, "level=WARN") || !hasAttr(line, "issue=SHA-1") {
+		t.Errorf("record = %s", line)
+	}
 	if code := r.post(t, "first notification", diskAlert()); code != http.StatusOK {
 		t.Fatalf("retry status = %d", code)
 	}
@@ -378,8 +398,140 @@ func TestAFailedAttachAsksForARetryThatFilesNoTwin(t *testing.T) {
 	if got := r.fake.issues[0].attachments; len(got) != 1 {
 		t.Errorf("attachments = %v", got)
 	}
-	if !strings.Contains(r.logs.String(), "level=WARN") || strings.Count(r.logs.String(), "issue=SHA-1") < 2 {
-		t.Errorf("logs = %s", r.logs.String())
+	if r.fake.creates != 1 {
+		t.Errorf("made %d creates, a rejected one burns an issue number", r.fake.creates)
+	}
+	if line := r.record(t, "verb=still-firing"); !hasAttr(line, "level=INFO") || !hasAttr(line, "issue=SHA-1") {
+		t.Errorf("record = %s", line)
+	}
+}
+
+func TestAResolveBeforeRecoveryStillCommentsOnTheOrphan(t *testing.T) {
+	r := newRig(t)
+	r.fake.failAttach = 1
+	if code := r.post(t, "first notification", diskAlert()); code < 500 {
+		t.Fatalf("status = %d", code)
+	}
+	if code := r.post(t, "all alerts resolved", resolvedDiskAlert()); code != http.StatusOK {
+		t.Fatalf("status = %d", code)
+	}
+	if len(r.fake.issues) != 1 {
+		t.Fatalf("filed %d issues", len(r.fake.issues))
+	}
+	filed := r.fake.issues[0]
+	if len(filed.attachments) != 1 || filed.attachments[0] != "https://prometheus.example/alerts?search=HostDiskFilling&fingerprint=003b0a0f7d3fa569" {
+		t.Errorf("attachments = %v", filed.attachments)
+	}
+	if len(filed.comments) != 1 || !strings.HasPrefix(filed.comments[0], "Stopped firing at 21:14") {
+		t.Errorf("comments = %q", filed.comments)
+	}
+	if filed.stateType != "triage" {
+		t.Errorf("state = %s", filed.stateType)
+	}
+	if line := r.record(t, "verb=resolved"); !hasAttr(line, "issue=SHA-1") {
+		t.Errorf("record = %s", line)
+	}
+}
+
+func TestARefiredOrphanRecoversToo(t *testing.T) {
+	r := newRig(t)
+	r.post(t, "first notification", diskAlert())
+	r.fake.close("SHA-1", firedNow)
+	again := diskAlert()
+	again.StartsAt = firedNow.Add(time.Hour)
+	r.fake.failAttach = 1
+	if code := r.post(t, "first notification", again); code < 500 {
+		t.Fatalf("status = %d", code)
+	}
+	over := again
+	over.Status = "resolved"
+	over.EndsAt = again.StartsAt.Add(time.Hour)
+	if code := r.post(t, "all alerts resolved", over); code != http.StatusOK {
+		t.Fatalf("status = %d", code)
+	}
+	if len(r.fake.issues) != 2 {
+		t.Fatalf("filed %d issues", len(r.fake.issues))
+	}
+	if got := r.fake.issues[1].comments; len(got) != 1 {
+		t.Errorf("comments = %q", got)
+	}
+	if got := r.fake.issues[0].comments; len(got) != 0 {
+		t.Errorf("the closed issue got comments %q", got)
+	}
+}
+
+func TestAFailedRecoveryAttachAsksForARetry(t *testing.T) {
+	r := newRig(t)
+	r.fake.failAttach = 2
+	r.post(t, "first notification", diskAlert())
+	if code := r.post(t, "all alerts resolved", resolvedDiskAlert()); code < 500 {
+		t.Fatalf("status = %d", code)
+	}
+	if got := r.fake.issues[0].comments; len(got) != 0 {
+		t.Errorf("commented %q before the attach landed", got)
+	}
+	if line := r.record(t, "verb=resolved"); !hasAttr(line, "level=WARN") || !hasAttr(line, "issue=SHA-1") {
+		t.Errorf("record = %s", line)
+	}
+	if code := r.post(t, "all alerts resolved", resolvedDiskAlert()); code != http.StatusOK {
+		t.Fatalf("status = %d", code)
+	}
+	if got := r.fake.issues[0].comments; len(got) != 1 {
+		t.Errorf("comments = %q", got)
+	}
+}
+
+func TestAnOrphanClosedByHandGetsNoComment(t *testing.T) {
+	r := newRig(t)
+	r.fake.failAttach = 1
+	r.post(t, "first notification", diskAlert())
+	r.fake.close("SHA-1", firedNow)
+	if code := r.post(t, "all alerts resolved", resolvedDiskAlert()); code != http.StatusOK {
+		t.Fatalf("status = %d", code)
+	}
+	if got := r.fake.issues[0].comments; len(got) != 0 {
+		t.Errorf("comments = %q", got)
+	}
+	r.record(t, "verb=resolve-ignored")
+}
+
+func TestAnOrphanClosedByHandThatStillFiresFilesAgainNamingIt(t *testing.T) {
+	r := newRig(t)
+	r.fake.failAttach = 1
+	r.post(t, "first notification", diskAlert())
+	r.fake.close("SHA-1", firedNow)
+	if code := r.post(t, "first notification", diskAlert()); code != http.StatusOK {
+		t.Fatalf("status = %d", code)
+	}
+	if len(r.fake.issues) != 1 {
+		t.Fatalf("filed %d issues, the close should attach first", len(r.fake.issues))
+	}
+	if got := r.fake.issues[0].attachments; len(got) != 1 {
+		t.Errorf("attachments = %v", got)
+	}
+	if code := r.post(t, "repeat interval elapsed", diskAlert()); code != http.StatusOK {
+		t.Fatalf("status = %d", code)
+	}
+	if len(r.fake.issues) != 2 {
+		t.Fatalf("filed %d issues", len(r.fake.issues))
+	}
+	body := r.fake.issues[1].input["description"].(string)
+	if !strings.HasPrefix(body, "Still firing after SHA-1 was closed.") {
+		t.Errorf("body = %q", body)
+	}
+}
+
+func TestAFailedOrphanLookupAsksForARetry(t *testing.T) {
+	r := newRig(t)
+	r.fake.failByID = true
+	if code := r.post(t, "first notification", diskAlert()); code < 500 {
+		t.Fatalf("status = %d", code)
+	}
+	if r.fake.creates != 0 {
+		t.Errorf("made %d creates without knowing about an orphan", r.fake.creates)
+	}
+	if line := r.record(t, "verb=lookup"); !hasAttr(line, "level=WARN") {
+		t.Errorf("record = %s", line)
 	}
 }
 
