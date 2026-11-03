@@ -12,6 +12,6 @@ permissions:
 
 jobs:
   check:
-    uses: shaneplunkett/workflows/.github/workflows/check.yml@v3.0.0
+    uses: shaneplunkett/workflows/.github/workflows/check.yml@metrokitten/sha-285-the-check-caches-its-dev-shell-in-githubs-actions-cache
     secrets:
       INPUTS_TOKEN: ${{ secrets.INPUTS_TOKEN }}
