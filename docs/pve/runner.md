@@ -111,8 +111,9 @@ failed says what state things are in:
 - **Apply.** Colmena applies every host it can before it exits, and a failure in
   the first apply stops the script before dns2. The cache already has this commit,
   so a hand-switched host can switch to a closure whose guests didn't all land.
-- **Terraform.** The hosts landed, and the log shows how far the plan or apply
-  got. Terraform Cloud keeps whatever it finished, so re-running the job or
+- **Terraform.** The apply was attempted first, and may itself have failed, so
+  read its result before Terraform's. The log shows how far the plan or apply
+  got, and Terraform Cloud keeps whatever it finished, so re-running the job or
   `scripts/terraform.sh apply` from the desktop plans again from there.
 
 A job that hits its timeout or gets cancelled before the apply never applies. One
@@ -153,10 +154,13 @@ disk. It stays out of a failed build and a cancelled job.
   skips Terraform, and the next merge only runs it if that one changed `terraform/`
   too. Re-run the job if it's still the newest, or apply from the desktop.
 - **The log is public.** caboodle is public, so its Actions logs are, and the plan
-  and its refresh lines go there: hostnames, LAN addresses, MACs, DNS records and
-  Cloudflare IDs. Terraform prints a `sensitive` attribute as `(sensitive value)`.
-  A new variable or output holding a secret needs `sensitive = true`, or the next
-  merge publishes it.
+  and its refresh lines go there: hostnames, LAN addresses, MACs, DNS records,
+  Cloudflare IDs, and a few things that read as personal when a resource changes
+  or goes, like the email that created a Cloudflare token, a tunnel's connection
+  details and the storage box's username and server. Terraform prints a
+  `sensitive` attribute as `(sensitive value)`, and the tokens, tunnel secrets
+  and passwords are all marked. A new variable or output holding a secret needs
+  `sensitive = true`, or the next merge publishes it.
 - **The lock.** Terraform Cloud holds the state and its lock, so the desktop and
   the runner can't corrupt each other. Either one waits ten minutes for the other,
   then fails.
