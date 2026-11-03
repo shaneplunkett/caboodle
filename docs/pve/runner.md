@@ -54,8 +54,9 @@ write, then accept the new permission on the installation under Settings >
 Applications.
 
 That grant covers every repo the App is installed on, and any token minted
-without narrowing inherits it, so Renovate's token and the mirror's can now
-change repo settings or delete a repo. Anyone with the private key can too.
+without narrowing inherits it, so
+[every other mint narrows](../github/README.md#github-app-and-inputs-token).
+Anyone with the private key can still mint one that doesn't.
 
 ## The deploy job
 

@@ -60,6 +60,16 @@ requests; the other mornings refresh one that's still open.
 - Commits go through GitHub's API (`platformCommit`), so GitHub signs them
   and authors them as `caboodle-agent[bot]`. The App's token also covers
   github.com's tags and releases, so the inputs token isn't needed.
+- Its token only reaches caboodle and the private flake inputs, because lock
+  file maintenance hands that same token to `nix flake update`. A new private
+  input has to join `repositories` in the workflow too, or the lock file pull
+  request fails on the input's 404. A weekday run never gets that far, so
+  only Sunday would show it. A `"dryRun": "full"` run with
+  `"force": { "schedule": ["at any time"] }` tests it without writing anything.
+- Its token leaves out two things Renovate's docs list. Administration read
+  only lets it see classic branch protection, it treats the 403 as none, and
+  `main` uses a ruleset, which metadata can read. Checks write isn't held by
+  the App at all, and Renovate only reads check runs.
 - Renovate's container installs `nix`, `uv`, `pnpm`, Go and Node when a
   lock file needs them.
 - Renovate reads a branch's Actions results as check runs, which needs the
@@ -103,11 +113,15 @@ Both are in Bitwarden and in caboodle's Actions secrets.
   (`APP_CLIENT_ID` and `APP_PRIVATE_KEY` in Actions, and agenix for the
   mirror and the runners). It's installed on every repo on Shane's account, with read and
   write on contents, pull requests, issues, actions, workflows and commit
-  statuses, and read on checks and Dependabot alerts. The
-  [runner](../pve/runner.md#registration) also needs write on administration
-  to register. Jobs, Renovate, the mirror and the runners mint an hour-long
-  installation token from it. Pull requests it
-  opens run the check, which ones opened with `GITHUB_TOKEN` don't.
+  statuses, and read on checks and Dependabot alerts. Write on administration
+  is there for the [runner](../pve/runner.md#registration) alone, to register.
+  Jobs, Renovate, the mirror and the runners mint an hour-long installation
+  token from it, and every mint asks only for what it uses, because a token
+  minted without `permissions` inherits all of that and can change repo
+  settings or delete a repo. A new mint has to narrow too. Narrowing limits the
+  token and not the key: whoever holds the private key can still mint a token
+  with everything, on every repo. Pull requests it opens run the check, which
+  ones opened with `GITHUB_TOKEN` don't.
   Bitwarden holds the key base64'd, since `rbw` keeps one line:
   `rbw get github-app-private-key | base64 -d`.
 - **The inputs token** is `github-inputs-token` (`INPUTS_TOKEN` in Actions),

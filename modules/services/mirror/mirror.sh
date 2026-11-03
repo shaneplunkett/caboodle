@@ -8,7 +8,7 @@ api() {
     -H 'X-GitHub-Api-Version: 2022-11-28' "$@"
 }
 
-token=$(github-app-token "$owner")
+token=$(github-app-token "$owner" '{"permissions":{"contents":"read"}}')
 
 names=()
 page=1
