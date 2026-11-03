@@ -38,6 +38,16 @@ _Avoid_: binary cache server, Attic
 **Device**:
 Something on the LAN with a reserved address that isn't a host, like the gateway or a smart plug. Each one is listed in `modules/devices.nix`. PVE and Cube are listed there too, and their hosts read their address and MAC from it.
 
+## Monitoring
+
+**Alert**:
+A Prometheus rule firing on the monitoring host, for something that loses data quietly: a disk filling, a drive failing SMART, a backup going stale.
+_Avoid_: alarm, notification
+
+**Bridge**:
+The program beside Alertmanager that turns an alert into a Linear issue and comments on it when the alert resolves.
+_Avoid_: waggle, bot
+
 ## Pipeline
 
 **Mirror**:
