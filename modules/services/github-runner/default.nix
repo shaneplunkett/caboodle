@@ -72,7 +72,11 @@ in
   ) deployed;
 
   programs.ssh = {
-    extraConfig = "IdentityFile ${secrets.runner-ssh-key.path}";
+    extraConfig = ''
+      Match localuser ${user} host ${lib.concatStringsSep "," (builtins.attrNames deployed)}
+        IdentityFile ${secrets.runner-ssh-key.path}
+      Match all
+    '';
     knownHosts = lib.mapAttrs (name: node: {
       hostNames = [
         name

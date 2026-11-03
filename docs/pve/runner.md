@@ -70,9 +70,10 @@ stops the script before dns2. Rollback is a revert pull request. Re-run failed
 jobs on the newest run is fine, but re-running an older run applies that older
 commit over whatever came after it.
 
-`concurrency: deploy` never cancels a running deploy. GitHub keeps only one
-pending run per group, so a third merge during a deploy cancels the pending
-second, and the third's commit carries both.
+`concurrency: deploy` never cancels a running deploy, and `queue: max` keeps
+every later merge waiting in order instead of GitHub's default of one pending
+run, where a third merge would cancel the second. Each queued run applies its
+own commit, so a burst of merges lands one after another.
 
 ### What it holds
 
