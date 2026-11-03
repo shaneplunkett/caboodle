@@ -62,7 +62,7 @@ change repo settings or delete a repo. Anyone with the private key can too.
 `.github/workflows/deploy.yml` runs on every push to `main` that touches
 anything outside `docs/`. There's no approval step, so choosing when to merge is
 choosing when it lands. The workflow holds no secrets, and the Actions secret
-store gains none. It has three steps:
+store gains none. It has four steps:
 
 1. **Build.** `scripts/build-linux-hosts.sh` builds every Linux host in the hive,
    the hand-switched ones included, so a merge that breaks PVE fails before
@@ -76,6 +76,9 @@ store gains none. It has three steps:
 3. **Apply.** `scripts/deploy.sh` applies the `deploy` tag, then dns2 once dns1
    answers, the same as the desktop. Colmena evaluates the hive again but finds
    everything built, so a run costs two evaluations.
+4. **Terraform.** If the push changed `terraform/`, `scripts/terraform.sh apply`
+   plans, prints the plan to the log and applies it. See
+   [Terraform](#terraform).
 
 The build evaluates in a dry run of its own and then builds from Nix's eval
 cache. An evaluator keeps its heap until it exits, so a `nix build` that did both
@@ -108,6 +111,9 @@ failed says what state things are in:
 - **Apply.** Colmena applies every host it can before it exits, and a failure in
   the first apply stops the script before dns2. The cache already has this commit,
   so a hand-switched host can switch to a closure whose guests didn't all land.
+- **Terraform.** The hosts landed, and the log shows how far the plan or apply
+  got. Terraform Cloud keeps whatever it finished, so re-running the job or
+  `scripts/terraform.sh apply` from the desktop plans again from there.
 
 A job that hits its timeout or gets cancelled before the apply never applies. One
 cancelled during the apply stops wherever it was, which can leave some guests
@@ -116,11 +122,53 @@ finishes the job.
 Rollback is a revert pull request. Re-run failed jobs on the newest run is fine,
 but re-running an older run applies that older commit over whatever came after
 it, and moves every host's profile on the cache back to it until the next merge.
+If that run changed `terraform/`, it applies the older Terraform too.
 
 `concurrency: deploy` never cancels a running deploy, and `queue: max` keeps
 every later merge waiting in order instead of GitHub's default of one pending
 run, where a third merge would cancel the second. Each queued run applies its
 own commit, so a burst of merges lands one after another.
+
+### Terraform
+
+`scripts/terraform-changed.sh` compares the trees of the commits `main` went from
+and to, after a shallow fetch of the before commit, since a diff of two trees
+needs no history. A rebase merge's several commits and a force push count the same
+way, and a change that a later commit in the same push reverts counts as nothing.
+When it can't get the before commit, as with a new branch's all-zero SHA, it says
+yes. A plan that changes nothing is cheap, and a skipped apply is the mistake this
+step exists to stop.
+
+The step runs after a failed apply, for the same reason the apply runs after a
+failed push: the fix for a guest that won't switch can be Terraform's, like more
+disk. It stays out of a failed build and a cancelled job.
+
+- **The `Plan:` line isn't what it applies.** The line in the pull request comes
+  from the desktop before merging. The runner plans again at merge time and applies
+  what it finds, so anything that moved in between goes too.
+- **Only `terraform/` counts.** Terraform reads `.#network` from the hive, so a new
+  guest, device or port forward changes the plan without touching that folder, and
+  the merge runs no Terraform. Run `scripts/terraform.sh apply` from the desktop.
+- **A run that stops early leaves the change behind.** A build failure or a cancel
+  skips Terraform, and the next merge only runs it if that one changed `terraform/`
+  too. Re-run the job if it's still the newest, or apply from the desktop.
+- **The log is public.** caboodle is public, so its Actions logs are, and the plan
+  and its refresh lines go there: hostnames, LAN addresses, MACs, DNS records and
+  Cloudflare IDs. Terraform prints a `sensitive` attribute as `(sensitive value)`.
+  A new variable or output holding a secret needs `sensitive = true`, or the next
+  merge publishes it.
+- **The lock.** Terraform Cloud holds the state and its lock, so the desktop and
+  the runner can't corrupt each other. Either one waits ten minutes for the other,
+  then fails.
+- **The runner's own guest.** Terraform manages the container the job runs in, so
+  a change that restarts or replaces it kills the job mid-apply and can leave the
+  lock held. Apply that from the desktop before merging, so the runner's plan finds
+  nothing to do. A stuck lock clears from the workspace's page in Terraform Cloud.
+- **What a plan costs.** Each one evaluates `.#network`, about 2 GB for a few
+  seconds, and builds the Incus base image, which `linuxHosts` leaves out, for the
+  external data source in `terraform/incus.tf`. After a bump that means a build
+  even when no guest is new. All of it sits inside `runner.slice` with the job's
+  other steps finished, so it needs nothing from the fence.
 
 ### What it holds
 
@@ -141,6 +189,11 @@ own commit, so a burst of merges lands one after another.
   `homelab.deployedByRunner` from a host's tags, and `modules/guest.nix` only
   authorises the key where that's true, so PVE, Cube, the workstations and the
   Macs never see it.
+- **The Terraform secrets.** The six `terraform-*` files in `/run/agenix` belong
+  to the job's user, who only reads them. The job sets `TERRAFORM_SECRETS_DIR`, and
+  `scripts/terraform.sh` reads the files instead of calling agenix, which would need
+  Shane's key. A job can read them, like the SSH key, and the Cloudflare token can
+  mint other tokens.
 
 ### Reaching the guests
 
@@ -156,16 +209,18 @@ The cost is that these are the names and keys from the runner's last deploy. A
 new guest or a changed host key fails with a red cross until
 `scripts/deploy.sh runner` from the desktop, then re-run the failed job.
 
-Colmena, `dig` and `ssh` are on the service's `PATH` rather than coming from
-`nix develop .#full`, which would compile terraform and colmena on a cold store
-to reach two binaries. That means a colmena bump reaches the job at the runner's
-next deploy. If a Sunday bump makes the old command and the new flake disagree,
-it's a red cross with the same fix.
+Colmena, `dig`, `ssh` and `terraform` are on the service's `PATH` rather than
+coming from `nix develop .#full`, which would compile terraform and colmena on a
+cold store and fetch the rest of the shell to reach four binaries. That means a
+colmena or terraform bump reaches the job at the runner's next deploy. If a Sunday
+bump makes the old command and the new flake disagree, it's a red cross with the
+same fix.
 
 ### When the runner is down
 
-`scripts/deploy.sh` from the desktop applies what the job applies, plus the mini.
-There's no lock between the two, and
+`scripts/deploy.sh` from the desktop applies what the job applies, plus the mini,
+and `scripts/terraform.sh apply` does the job's Terraform.
+There's no lock between the two deploys, and
 [ADR 0005](../adr/0005-merges-deploy-from-a-runner-at-home.md) says why. The
 build and push steps run from the desktop too, from a clean checkout of `main`,
 if the workstations want their closures before the runner is back:
@@ -277,7 +332,8 @@ registration's name. In the Tailscale console, delete the old node and rename
 
 - **A workflow on any branch can reach the runner.** A file with
   `runs-on: [self-hosted, homelab]` on a pushed branch can run here, with the
-  deploy key, without merging. Only who can push to caboodle limits that.
+  deploy key and the Terraform secrets, without merging. Only who can push to
+  caboodle limits that.
 - **A registered runner keeps an old token on disk.** The module stores
   `.current-token` in its state directory, mode 600. A registration token
   lasts an hour, so it's dead long before it could matter, but the file only

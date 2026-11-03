@@ -32,6 +32,17 @@ jobs:
       - name: Apply the servers
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: scripts/deploy.sh
+      - name: See whether this push changed Terraform
+        id: terraform
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: echo "changed=$(scripts/terraform-changed.sh "$BEFORE" "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
+      - name: Apply Terraform
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.terraform.outputs.changed != 'false' }}
+        env:
+          TERRAFORM_SECRETS_DIR: /run/agenix
+        run: scripts/terraform.sh apply
       - name: Let the runner's garbage collection have the closures
         if: ${{ always() }}
         run: rm -rf "$RUNNER_TEMP/closures"

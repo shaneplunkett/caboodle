@@ -1,7 +1,9 @@
 #!/bin/sh
-# Terraform from the desktop. The tokens are the terraform-*.age secrets in
-# modules/agenix, which Shane's key decrypts, so nothing is copied into a
-# CI secret store and the plan is read in the terminal, not a comment.
+# Terraform, from the desktop or the deploy job. The tokens are the
+# terraform-*.age secrets in modules/agenix, so nothing is copied into a CI
+# secret store. The desktop decrypts them with Shane's key. The runner's agenix
+# has already put them in /run/agenix, and the job says so with
+# TERRAFORM_SECRETS_DIR, so it needs neither agenix nor the dev shell.
 #
 #   scripts/terraform.sh          # plan
 #   scripts/terraform.sh apply    # plan, then apply that plan
@@ -9,8 +11,10 @@
 # The Incus provider reads its client certificate from INCUS_CONF.
 set -eu
 
-if ! command -v terraform >/dev/null 2>&1 || ! command -v agenix >/dev/null 2>&1; then
-  exec "$(dirname "$0")/in-dev-shell.sh" "$0" "$@"
+if [ -z "${TERRAFORM_SECRETS_DIR:-}" ]; then
+  if ! command -v terraform >/dev/null 2>&1 || ! command -v agenix >/dev/null 2>&1; then
+    exec "$(dirname "$0")/in-dev-shell.sh" "$0" "$@"
+  fi
 fi
 
 mode="${1:-plan}"
@@ -19,7 +23,11 @@ root="$(git rev-parse --show-toplevel)"
 creds="$(mktemp -d)"
 trap 'rm -rf "$creds"' EXIT
 secret() {
-  (cd "$root/modules/agenix" && agenix -d "terraform-$1.age")
+  if [ -n "${TERRAFORM_SECRETS_DIR:-}" ]; then
+    cat "$TERRAFORM_SECRETS_DIR/terraform-$1"
+  else
+    (cd "$root/modules/agenix" && agenix -d "terraform-$1.age")
+  fi
 }
 
 TF_TOKEN_app_terraform_io="$(secret cloud-token)"
@@ -36,9 +44,8 @@ export INCUS_CONF
 
 cd "$root/terraform"
 terraform init -input=false -no-color >/dev/null
-terraform plan -input=false -no-color -lock-timeout=10m -out=tfplan
+terraform plan -input=false -no-color -lock-timeout=10m -out="$creds/tfplan"
 
 if [ "$mode" = apply ]; then
-  terraform apply -input=false -no-color -lock-timeout=10m tfplan
+  terraform apply -input=false -no-color -lock-timeout=10m "$creds/tfplan"
 fi
-rm -f tfplan
