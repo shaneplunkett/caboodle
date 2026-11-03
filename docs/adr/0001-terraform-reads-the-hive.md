@@ -8,9 +8,12 @@ and nothing is copied between them, so there's no third copy to drift.
 The cost is that Terraform's inputs live outside `terraform/`, so a path
 filter on that folder alone can't tell whether it needs to run. This record
 first chose a plan against state that skips the refresh as the gate, but
-that was never built. CI path-filters instead, on `terraform/`, `flake.nix`,
-`modules/devices.nix` and `scripts/terraform.sh`. That runs Terraform for
-some hive edits it never reads, but misses none it does.
+that was never built. The old CI path-filtered on `terraform/`, `flake.nix`,
+`modules/devices.nix` and `scripts/terraform.sh`, which ran Terraform for
+some hive edits it never reads but missed none it does. Since ADR 0005 the
+deploy job on the runner applies Terraform when a merge touched
+`terraform/`, and a hive-only change that moves the plan is applied from
+the desktop by hand (`docs/pve/runner.md`).
 
 ## Considered options
 
