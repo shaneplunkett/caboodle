@@ -16,10 +16,12 @@ scripts/push-to-cache.sh plex rss
 
 [The deploy job](runner.md#the-deploy-job) does this for every Linux host on every
 merge, and this is the same thing by hand. For each host, that builds through
-`scripts/quietly.sh`, runs `nix copy --to ssh-ng://root@cache.home.arpa`, and sets
-`/nix/var/nix/profiles/per-host/<host>` on the cache. Root is a trusted user
-over `ssh-ng`, so a push needs no signature. Harmonia signs each path as it
-serves it, with the agenix key `nix-store-key-cache`. Root takes Shane's key, the
+`scripts/quietly.sh`, runs `nix copy --no-check-sigs --to
+ssh-ng://root@cache.home.arpa`, and sets `/nix/var/nix/profiles/per-host/<host>`
+on the cache. Nothing that pushes signs its paths, and the cache's daemon
+refuses an unsigned path unless the client asks it not to check, which root may
+as a trusted user; that's what `--no-check-sigs` is. Harmonia signs each path
+as it serves it, with the agenix key `nix-store-key-cache`. Root takes Shane's key, the
 runner's, and the [mini's](../mini/README.md#the-runner), which `hosts/cache.nix`
 adds so that no other guest accepts it.
 
