@@ -68,12 +68,22 @@ resource "incus_instance" "guest" {
   image    = incus_image.nixos[each.value.host].fingerprint
   running  = each.value.running
 
-  config = {
-    "boot.autostart"   = "true"
-    "limits.cpu"       = tostring(each.value.cores)
-    "limits.memory"    = "${each.value.memory}MiB"
-    "security.nesting" = "true"
-  }
+  config = merge(
+    {
+      "boot.autostart"   = "true"
+      "limits.cpu"       = tostring(each.value.cores)
+      "limits.memory"    = "${each.value.memory}MiB"
+      "security.nesting" = "true"
+    },
+    # Incus takes the CPU weight as the allowance less 10 minus the priority,
+    # so these come to 1, cgroups' lowest. The default is 100, and priority
+    # alone would only reach 90. The allowance is soft: it binds under load.
+    each.value.background ? {
+      "limits.cpu.allowance" = "11%"
+      "limits.cpu.priority"  = "0"
+      "limits.disk.priority" = "0"
+    } : {},
+  )
 
   device {
     name = "eth0"

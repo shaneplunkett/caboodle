@@ -15,6 +15,7 @@ Per-service docs:
 - [mirror.md](mirror.md)
 - [recipes.md](recipes.md)
 - [rss.md](rss.md)
+- [runner.md](runner.md)
 
 ## Deploying
 

@@ -17,7 +17,9 @@
 #   scripts/quietly.sh nix build .#hydraJobs.desktop
 #
 # On a Mac there's no systemd and no chrt, so it degrades to nice and the
-# lock, which is all the mini needs.
+# lock, which is all the mini needs. The runner degrades the same way, since
+# its service has no user manager to ask for a scope, and the service itself
+# holds the cap and weights (docs/pve/runner.md).
 set -eu
 
 root="$(git rev-parse --show-toplevel)"

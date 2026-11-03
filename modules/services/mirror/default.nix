@@ -12,10 +12,10 @@ let
   mirror = pkgs.writeShellApplication {
     name = "mirror";
     runtimeInputs = [
+      (pkgs.callPackage ../../../pkgs/github-app-token { })
       pkgs.curl
       pkgs.git
       pkgs.jq
-      pkgs.openssl
     ];
     text = builtins.readFile ./mirror.sh;
   };
