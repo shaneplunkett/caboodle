@@ -28,6 +28,7 @@ Thumbs.db
 .terraform/
 *.tfstate
 *.tfstate.backup
+tfplan
 generated.tf
 
 # Nix / direnv
