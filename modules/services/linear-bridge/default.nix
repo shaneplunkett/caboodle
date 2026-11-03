@@ -20,7 +20,19 @@ in
     port = lib.mkOption {
       type = lib.types.port;
       default = 9096;
-      description = "Loopback port the bridge listens on for Alertmanager's webhook.";
+      description = "Port the bridge listens on for alerts, on every address in listenAddresses.";
+    };
+
+    listenAddresses = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ "127.0.0.1" ];
+      description = "IP addresses the bridge listens on. Alertmanager posts to 127.0.0.1, so that one stays.";
+    };
+
+    allowedSources = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "LAN addresses the firewall lets post to the bridge. Only these and loopback can reach it. The bridge has no login, so anything that reaches it can file an urgent issue, and the gateway forwards nothing here.";
     };
 
     teamId = idOption "Linear team that alert issues are filed in." "8077af69-b056-42f3-b094-9fdc1d2fa76d";
@@ -47,6 +59,10 @@ in
   config = {
     homelab.secrets = [ "linear-bridge" ];
 
+    networking.firewall.extraCommands = lib.concatMapStrings (source: ''
+      iptables -A nixos-fw -p tcp -s ${source} --dport ${toString cfg.port} -j nixos-fw-accept
+    '') cfg.allowedSources;
+
     systemd.services.linear-bridge = {
       description = "Files Alertmanager's alerts as Linear issues";
       after = [ "network-online.target" ];
@@ -56,6 +72,7 @@ in
 
       environment = {
         BRIDGE_PORT = toString cfg.port;
+        BRIDGE_LISTEN_ADDRESSES = lib.concatStringsSep "," cfg.listenAddresses;
         BRIDGE_ALERTS_PAGE = "${config.services.prometheus.webExternalUrl}/alerts";
         BRIDGE_IGNORED_ALERTS = lib.concatStringsSep "," cfg.ignoredAlerts;
         LINEAR_TEAM_ID = cfg.teamId;
