@@ -22,6 +22,8 @@ let
     cube
     desktop
     mini
+    cache
+    runner
     ;
 in
 {
@@ -110,6 +112,8 @@ in
     mirror
     pve
     cube
+    cache
+    runner
   ];
   "backup-brain.age".publicKeys = [
     shane
@@ -191,15 +195,22 @@ in
   "github-app-client-id.age".publicKeys = [
     shane
     mirror
+    runner
   ];
   "github-app-private-key.age".publicKeys = [
     shane
     mirror
+    runner
   ];
   "github-inputs-token.age".publicKeys = [
     shane
+    runner
   ];
   "runner-ssh-key.age".publicKeys = [
+    shane
+    runner
+  ];
+  "runner-ssh-host-key.age".publicKeys = [
     shane
   ];
   "terraform-cloud-token.age".publicKeys = [
@@ -312,5 +323,6 @@ in
   ];
   "nix-store-key-cache.age".publicKeys = [
     shane
+    cache
   ];
 }
