@@ -152,11 +152,14 @@ printf 'KEY=%s\n' "$(rbw get <entry>)" | agenix -e <name>.age
 Prometheus, Alertmanager, Loki and Grafana run on the monitoring host. Every
 NixOS host ships its journal to Loki, and every host is scraped unless it
 turns `homelab.monitoring` off, as the desktop does. Alert rules
-live next to the service they watch, and everything routes through
-Alertmanager to Discord. They only cover what loses data quietly: disks
-filling, SMART, and backups failing or going stale. Anything else, look in
-Grafana. Alertmanager's always-firing Watchdog pings healthchecks.io every
-minute, so a dead Alertmanager still gets noticed.
+live next to the service they watch, and they only cover what loses data
+quietly: disks filling, SMART, and backups failing or going stale. Anything
+else, look in Grafana. Everything routes through Alertmanager to a small bridge
+on the monitoring host, which files each alert as its own Linear issue in
+Engineering's Triage, assigned to Shane. When an alert resolves, the bridge
+comments on the issue and leaves it open, and Shane closes it when the job is
+done. Alertmanager's always-firing Watchdog pings healthchecks.io on a schedule,
+so a dead Alertmanager still gets noticed.
 
 When the internet itself is broken, see
 [docs/internet-down.md](docs/internet-down.md).

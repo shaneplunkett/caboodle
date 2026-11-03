@@ -7,11 +7,23 @@ by Prometheus on another host.
 
 ## Alertmanager
 
-- The config goes through envsubst so the Discord webhook can come from an
-  env file. That means templates can't contain a `$`, and `checkConfig` is
-  off because the placeholder URL isn't valid at build time.
-- Alerts go to Discord's Slack-compatible endpoint (`<webhook>/slack`), which
-  allows colours, fields and links that the plain Discord format doesn't.
+- The config goes through envsubst so the healthchecks.io ping URL can come
+  from an env file. That means the config can't contain a stray `$`, and
+  `checkConfig` is off because the placeholder URL isn't valid at build time.
+- Alerts go to the Linear bridge's webhook on loopback, and `docs/adr/0006`
+  says why the bridge files and comments but never closes. Alertmanager only
+  retries a 5xx and retries the whole post, so the bridge answers 5xx only for
+  network failures and Linear's own 5xx. A retry storm against a refusing Linear
+  burned 60+ issue numbers in the prototype.
+- Everything else answers 200: Linear's refusals, such as its usage limit, and
+  anything it answers that the bridge can't read. That alert is lost until
+  Alertmanager next sends it, and the only sign is an error line in the bridge's
+  journal. `journalctl -u linear-bridge` has one line per alert, with its verb,
+  fingerprint and issue, so a missing issue can be traced from there.
+- The Watchdog repeats every 2 minutes on its 0s/1m/1m route, not every minute,
+  and SHA-304 sizes the healthchecks.io check from that. The prototype measured
+  it on a desktop Alertmanager with the same timings, since Prometheus doesn't
+  scrape the real one.
 
 ## Prometheus
 

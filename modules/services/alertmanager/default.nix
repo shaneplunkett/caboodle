@@ -1,22 +1,19 @@
 { config, pkgs, ... }:
 let
   secrets = config.age.secrets;
+  bridge = config.homelab.linearBridge;
 in
 {
-  homelab.secrets = [
-    "discord-webhook"
-    "healthchecks-ping"
-  ];
+  homelab.secrets = [ "healthchecks-ping" ];
 
   services.prometheus.alertmanager = {
     enable = true;
     openFirewall = true;
-    environmentFile = secrets.discord-webhook.path;
+    environmentFile = secrets.healthchecks-ping.path;
     checkConfig = false;
     configuration = {
-      templates = [ ./view.tmpl ];
       route = {
-        receiver = "discord";
+        receiver = "linear";
         group_by = [
           "alertname"
           "name"
@@ -34,15 +31,12 @@ in
       };
       receivers = [
         {
-          name = "discord";
-          slack_configs = [
-            (
-              {
-                api_url = "\${DISCORD_WEBHOOK_URL}/slack";
-                send_resolved = true;
-              }
-              // import ./template.nix
-            )
+          name = "linear";
+          webhook_configs = [
+            {
+              url = "http://127.0.0.1:${toString bridge.port}/alerts";
+              send_resolved = true;
+            }
           ];
         }
         {
@@ -57,8 +51,6 @@ in
       ];
     };
   };
-
-  systemd.services.alertmanager.serviceConfig.EnvironmentFile = [ secrets.healthchecks-ping.path ];
 
   services.prometheus.ruleFiles = [
     (pkgs.writeText "watchdog.rules.json" (

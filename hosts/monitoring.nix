@@ -4,6 +4,7 @@
     ../modules/services/smartctl/alerts.nix
     ../modules/services/nas/alerts.nix
     ../modules/services/alertmanager
+    ../modules/services/linear-bridge
     ../modules/services/grafana
     ../modules/services/loki
     ../modules/services/blocky/monitoring.nix
