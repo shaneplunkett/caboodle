@@ -203,11 +203,17 @@ disk. It stays out of a failed build and a cancelled job.
   no timeout clears that. Every plan after it waits its ten minutes and fails,
   printing the lock ID. On Terraform Cloud that ID is the same whoever holds the
   lock, so first check that nothing is really applying. Then, from the repo on the
-  desktop in `nix develop .#full`, with the ID from the error:
+  desktop in `nix develop .#full`, with the ID from the error. `force-unlock`
+  wants an initialised backend, which the dev shell doesn't give a fresh
+  checkout, so run `init` first with the same token. Terraform Cloud only lets a
+  workspace admin force the lock off, so a token that can apply may still be
+  refused here; if it is, the workspace's page in Terraform Cloud has the same
+  button.
 
   ```sh
-  TF_TOKEN_app_terraform_io="$(cd modules/agenix && agenix -d terraform-cloud-token.age)" \
-    terraform -chdir=terraform force-unlock '<lock ID>'
+  export TF_TOKEN_app_terraform_io="$(cd modules/agenix && agenix -d terraform-cloud-token.age)"
+  terraform -chdir=terraform init -input=false
+  terraform -chdir=terraform force-unlock '<lock ID>'
   ```
 
 - **What a plan costs.** Each one evaluates `.#network`, about 2 GB for a few
