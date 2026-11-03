@@ -97,8 +97,9 @@ Never give this guest a `disk` without first moving the pool off the shared
 drive.
 
 What bounds the store instead is [garbage collection](#garbage-collection) and the
-drive's room. Every Linux closure together is under about 70 GB, and only a
-lock-file bump replaces most of it, so the store holds two or three of those. Watch it with
+drive's room. The store holds the last generations of every host's closure, and
+only a lock-file bump replaces most of a generation. `nix path-info -S` on a
+`per-host` profile says what one host costs; watch the drive with
 `btrfs filesystem df /mnt/cache` on PVE:
 
 - **Nothing inside the guest can see its own share.** `df` there shows the
