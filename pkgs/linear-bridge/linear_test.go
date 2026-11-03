@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
 
 const testSecret = "client-secret-value"
@@ -99,6 +100,57 @@ func TestTokenIsFetchedOnFirstNeedWithTheAgreedScopes(t *testing.T) {
 		if stub.tokenForm[key] != value {
 			t.Errorf("form %s = %q, want %q", key, stub.tokenForm[key], value)
 		}
+	}
+}
+
+func TestTokenIsRefetchedWithinADayOfExpiring(t *testing.T) {
+	stub, client := newAPIStub(t, respond(emptyFind))
+	stub.token = func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprintf(w, `{"access_token":"token-%d","expires_in":172800}`, stub.tokens)
+	}
+	clock := time.Date(2026, 11, 3, 0, 0, 0, 0, time.UTC)
+	client.now = func() time.Time { return clock }
+	use := func() {
+		t.Helper()
+		if _, err := client.find(context.Background(), "https://alert"); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	use()
+	clock = clock.Add(24*time.Hour - time.Second)
+	use()
+	if stub.tokens != 1 {
+		t.Fatalf("fetched %d tokens with more than a day left", stub.tokens)
+	}
+	clock = clock.Add(time.Second)
+	use()
+	if stub.tokens != 2 {
+		t.Fatalf("fetched %d tokens with a day left", stub.tokens)
+	}
+	if got := stub.authSeen[2]; got != "Bearer token-2" {
+		t.Errorf("Authorization = %q", got)
+	}
+	clock = clock.Add(24*time.Hour - time.Second)
+	use()
+	if stub.tokens != 2 {
+		t.Errorf("fetched %d tokens, the new token's expiry should count from when it was fetched", stub.tokens)
+	}
+}
+
+func TestATokenWithNoStatedExpiryWaitsForThe401(t *testing.T) {
+	stub, client := newAPIStub(t, respond(emptyFind))
+	stub.token = func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, `{"access_token":"token"}`) }
+	clock := time.Date(2026, 11, 3, 0, 0, 0, 0, time.UTC)
+	client.now = func() time.Time { return clock }
+	for range 2 {
+		if _, err := client.find(context.Background(), "https://alert"); err != nil {
+			t.Fatal(err)
+		}
+		clock = clock.Add(365 * 24 * time.Hour)
+	}
+	if stub.tokens != 1 {
+		t.Errorf("fetched %d tokens", stub.tokens)
 	}
 }
 

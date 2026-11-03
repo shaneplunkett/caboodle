@@ -19,6 +19,7 @@ const (
 	linearGraphQLURL = "https://api.linear.app/graphql"
 	linearTokenURL   = "https://api.linear.app/oauth/token"
 	authErrorCode    = "AUTHENTICATION_ERROR"
+	tokenExpiryLead  = 24 * time.Hour
 )
 
 var errAlreadyExists = errors.New("an entity with this id already exists")
@@ -59,9 +60,11 @@ type linear struct {
 	clientID     string
 	clientSecret string
 	http         *http.Client
+	now          func() time.Time
 
-	mu    sync.Mutex
-	token string
+	mu           sync.Mutex
+	token        string
+	tokenExpires time.Time
 }
 
 func newLinear(graphqlURL, tokenURL, clientID, clientSecret string) *linear {
@@ -71,6 +74,7 @@ func newLinear(graphqlURL, tokenURL, clientID, clientSecret string) *linear {
 		clientID:     clientID,
 		clientSecret: clientSecret,
 		http:         &http.Client{Timeout: 30 * time.Second},
+		now:          time.Now,
 	}
 }
 
@@ -291,15 +295,23 @@ func (e graphQLError) classify() error {
 func (l *linear) currentToken(ctx context.Context) (string, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	if l.token != "" {
+	if l.token != "" && !l.tokenExpiring() {
 		return l.token, nil
 	}
-	token, err := l.fetchToken(ctx)
+	token, lifetime, err := l.fetchToken(ctx)
 	if err != nil {
 		return "", err
 	}
 	l.token = token
+	l.tokenExpires = time.Time{}
+	if lifetime > 0 {
+		l.tokenExpires = l.now().Add(lifetime)
+	}
 	return token, nil
+}
+
+func (l *linear) tokenExpiring() bool {
+	return !l.tokenExpires.IsZero() && !l.now().Before(l.tokenExpires.Add(-tokenExpiryLead))
 }
 
 func (l *linear) dropToken(rejected string) {
@@ -310,7 +322,7 @@ func (l *linear) dropToken(rejected string) {
 	}
 }
 
-func (l *linear) fetchToken(ctx context.Context) (string, error) {
+func (l *linear) fetchToken(ctx context.Context) (string, time.Duration, error) {
 	form := url.Values{
 		"grant_type":    {"client_credentials"},
 		"client_id":     {l.clientID},
@@ -319,32 +331,33 @@ func (l *linear) fetchToken(ctx context.Context) (string, error) {
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, l.tokenURL, strings.NewReader(form.Encode()))
 	if err != nil {
-		return "", fmt.Errorf("building token request: %w", err)
+		return "", 0, fmt.Errorf("building token request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := l.http.Do(req)
 	if err != nil {
-		return "", retryable("fetching token: %w", err)
+		return "", 0, retryable("fetching token: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= http.StatusInternalServerError {
-		return "", retryable("token endpoint answered http %d", resp.StatusCode)
+		return "", 0, retryable("token endpoint answered http %d", resp.StatusCode)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", &refusal{Code: fmt.Sprintf("TOKEN_HTTP_%d", resp.StatusCode), Message: "the token endpoint refused the client credentials"}
+		return "", 0, &refusal{Code: fmt.Sprintf("TOKEN_HTTP_%d", resp.StatusCode), Message: "the token endpoint refused the client credentials"}
 	}
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", retryable("reading the token endpoint's answer: %w", err)
+		return "", 0, retryable("reading the token endpoint's answer: %w", err)
 	}
 	var answer struct {
 		AccessToken string `json:"access_token"`
+		ExpiresIn   int64  `json:"expires_in"`
 	}
 	if err := json.Unmarshal(raw, &answer); err != nil {
-		return "", errors.New("the token endpoint's answer did not decode")
+		return "", 0, errors.New("the token endpoint's answer did not decode")
 	}
 	if answer.AccessToken == "" {
-		return "", errors.New("the token endpoint's answer had no access token")
+		return "", 0, errors.New("the token endpoint's answer had no access token")
 	}
-	return answer.AccessToken, nil
+	return answer.AccessToken, time.Duration(answer.ExpiresIn) * time.Second, nil
 }
