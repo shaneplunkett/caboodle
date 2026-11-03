@@ -61,6 +61,7 @@ type linear struct {
 	clientSecret string
 	http         *http.Client
 	now          func() time.Time
+	health       linearHealth
 
 	mu           sync.Mutex
 	token        string
@@ -91,7 +92,8 @@ func (n issueNode) toIssue() issue {
 	return found
 }
 
-func (l *linear) find(ctx context.Context, attachmentURL string) ([]issue, error) {
+func (l *linear) find(ctx context.Context, attachmentURL string) (found []issue, err error) {
+	defer func() { l.health.read(err) }()
 	issues := []issue{}
 	var after *string
 	for {
@@ -150,7 +152,8 @@ func (l *linear) findPage(ctx context.Context, attachmentURL string, after *stri
 	return page, cursor, nil
 }
 
-func (l *linear) issueByID(ctx context.Context, id string) (*issue, error) {
+func (l *linear) issueByID(ctx context.Context, id string) (orphan *issue, err error) {
+	defer func() { l.health.read(err) }()
 	const query = `query Orphan($id: ID!) {
   issues(filter: { id: { eq: $id } }, includeArchived: true, first: 1) {
     nodes { id identifier number completedAt canceledAt state { type } }
@@ -170,11 +173,12 @@ func (l *linear) issueByID(ctx context.Context, id string) (*issue, error) {
 	if len(out.Issues.Nodes) == 0 {
 		return nil, nil
 	}
-	found := out.Issues.Nodes[0].toIssue()
-	return &found, nil
+	match := out.Issues.Nodes[0].toIssue()
+	return &match, nil
 }
 
-func (l *linear) createIssue(ctx context.Context, input newIssue) (issue, error) {
+func (l *linear) createIssue(ctx context.Context, input newIssue) (created issue, err error) {
+	defer func() { l.health.wrote(err) }()
 	const query = `mutation Fire($input: IssueCreateInput!) {
   issueCreate(input: $input) { success issue { id identifier } }
 }`
@@ -193,7 +197,8 @@ func (l *linear) createIssue(ctx context.Context, input newIssue) (issue, error)
 	return out.IssueCreate.Issue, nil
 }
 
-func (l *linear) attach(ctx context.Context, issueID, attachmentURL, title string) (issue, error) {
+func (l *linear) attach(ctx context.Context, issueID, attachmentURL, title string) (attached issue, err error) {
+	defer func() { l.health.wrote(err) }()
 	const query = `mutation Attach($input: AttachmentCreateInput!) {
   attachmentCreate(input: $input) { success attachment { issue { id identifier } } }
 }`
@@ -215,7 +220,8 @@ func (l *linear) attach(ctx context.Context, issueID, attachmentURL, title strin
 	return out.AttachmentCreate.Attachment.Issue, nil
 }
 
-func (l *linear) comment(ctx context.Context, id, issueID, body string) error {
+func (l *linear) comment(ctx context.Context, id, issueID, body string) (err error) {
+	defer func() { l.health.wrote(err) }()
 	const query = `mutation Resolve($input: CommentCreateInput!) {
   commentCreate(input: $input) { success }
 }`

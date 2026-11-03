@@ -12,12 +12,13 @@ import (
 )
 
 type config struct {
-	listen       []string
-	clientID     string
-	clientSecret string
-	defaults     issueDefaults
-	alertsPage   string
-	ignored      []string
+	listen        []string
+	clientID      string
+	clientSecret  string
+	defaults      issueDefaults
+	alertsPage    string
+	watchdogAlert string
+	pingURL       string
 }
 
 func loadConfig(getenv func(string) string) (config, error) {
@@ -38,12 +39,11 @@ func loadConfig(getenv func(string) string) (config, error) {
 			StateID:    require("LINEAR_STATE_ID"),
 			LabelIDs:   strings.Split(require("LINEAR_LABEL_IDS"), ","),
 		},
-		alertsPage: require("BRIDGE_ALERTS_PAGE"),
+		alertsPage:    require("BRIDGE_ALERTS_PAGE"),
+		watchdogAlert: require("BRIDGE_WATCHDOG_ALERT"),
+		pingURL:       require("HEALTHCHECKS_PING_URL"),
 	}
 	addresses, port := require("BRIDGE_LISTEN_ADDRESSES"), require("BRIDGE_PORT")
-	if ignored := getenv("BRIDGE_IGNORED_ALERTS"); ignored != "" {
-		cfg.ignored = strings.Split(ignored, ",")
-	}
 	if len(missing) > 0 {
 		return config{}, errors.New("missing environment: " + strings.Join(missing, ", "))
 	}
@@ -106,12 +106,13 @@ func run(log *slog.Logger) error {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("POST /alerts", &bridge{
-		linear:     newLinear(linearGraphQLURL, linearTokenURL, cfg.clientID, cfg.clientSecret),
-		defaults:   cfg.defaults,
-		alertsPage: cfg.alertsPage,
-		ignored:    cfg.ignored,
-		now:        time.Now,
-		log:        log,
+		linear:        newLinear(linearGraphQLURL, linearTokenURL, cfg.clientID, cfg.clientSecret),
+		defaults:      cfg.defaults,
+		alertsPage:    cfg.alertsPage,
+		watchdogAlert: cfg.watchdogAlert,
+		heartbeat:     newHeartbeat(cfg.pingURL),
+		now:           time.Now,
+		log:           log,
 	})
 	listeners, err := listenAll(cfg.listen)
 	if err != nil {

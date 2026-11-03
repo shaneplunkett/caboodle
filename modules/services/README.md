@@ -7,9 +7,8 @@ by Prometheus on another host.
 
 ## Alertmanager
 
-- The config goes through envsubst so the healthchecks.io ping URL can come
-  from an env file. That means the config can't contain a stray `$`, and
-  `checkConfig` is off because the placeholder URL isn't valid at build time.
+- The nixpkgs module runs the config through envsubst whether anything needs it
+  or not, so the config can't contain a stray `$`.
 - Alerts go to the Linear bridge's webhook on loopback, and `docs/adr/0006`
   says why the bridge files and comments but never closes. Alertmanager only
   retries a 5xx and retries the whole post, so the bridge answers 5xx only for
@@ -17,13 +16,29 @@ by Prometheus on another host.
   burned 60+ issue numbers in the prototype.
 - Everything else answers 200: Linear's refusals, such as its usage limit, and
   anything it answers that the bridge can't read. That alert is lost until
-  Alertmanager next sends it, and the only sign is an error line in the bridge's
-  journal. `journalctl -u linear-bridge` has one line per alert, with its verb,
-  fingerprint and issue, so a missing issue can be traced from there.
+  Alertmanager next sends it. The signs are an error line in the bridge's journal
+  and the Watchdog's ping stopping, so healthchecks.io messages Shane.
+  `journalctl -u linear-bridge` has one line per alert, with its verb, fingerprint
+  and issue, so a missing issue can be traced from there.
 - The Watchdog repeats every 2 minutes on its 0s/1m/1m route, not every minute,
-  and SHA-304 sizes the healthchecks.io check from that. The prototype measured
-  it on a desktop Alertmanager with the same timings, since Prometheus doesn't
-  scrape the real one.
+  so the healthchecks.io check wants a period of 2 minutes and a grace of at
+  least 2. The prototype measured it on a desktop Alertmanager with the same
+  timings, since Prometheus doesn't scrape the real one. The route uses the same
+  bridge URL as every other alert, and the bridge knows the Watchdog by name, so
+  a route mistake can't file it as an issue.
+- The bridge withholds the Watchdog's ping after it sees a call to Linear fail,
+  so a check that goes down can mean Linear and not the host.
+  `journalctl -u linear-bridge` says which: each Watchdog logs `verb=ping` or
+  `verb=withheld` with the reason. A failed call clears on the next call that
+  lands. A write Linear refused only clears on the next write that lands, and a
+  quiet host may not have one for days, so once Linear is taking writes again,
+  restarting the bridge clears it.
+- A ping doesn't prove Linear is up. The bridge only calls Linear for an alert, so
+  a fresh bridge, or one whose last call landed, keeps pinging through an outage
+  until an alert has to go through it.
+- The bridge logs a ping failure as a fixed reason (timeout, connection refused,
+  dns lookup failed, bad status, request failed) and never Go's error text, which
+  can quote the ping URL, and that URL is the secret.
 - The bridge listens on 9096 because Loki's gRPC server takes 9095 by default,
   and no module says so. A local build can't catch a port clash; the first sign
   was `bind: address already in use` in the bridge's journal after a deploy.

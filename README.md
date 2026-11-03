@@ -158,8 +158,15 @@ else, look in Grafana. Everything routes through Alertmanager to a small bridge
 on the monitoring host, which files each alert as its own Linear issue in
 Engineering's Triage, assigned to Shane. When an alert resolves, the bridge
 comments on the issue and leaves it open, and Shane closes it when the job is
-done. Alertmanager's always-firing Watchdog pings healthchecks.io on a schedule,
-so a dead Alertmanager still gets noticed.
+done. Alertmanager's always-firing Watchdog reaches the bridge about every two
+minutes, and the bridge pings healthchecks.io unless it has seen Linear fail. So
+the ping stops, and healthchecks.io messages Shane, when Alertmanager or the
+bridge dies or after the bridge's last call to Linear failed. The bridge only
+knows about calls it made, so with no alerts to file it keeps pinging even if
+Linear is down. A failed call clears on the next call that lands, and a refused
+write clears on the next write that lands or a bridge restart, even if Linear
+recovered long before. The check on healthchecks.io's side lives outside this
+repo and needs a period of 2 minutes and a grace of at least 2.
 
 When the internet itself is broken, see
 [docs/internet-down.md](docs/internet-down.md).

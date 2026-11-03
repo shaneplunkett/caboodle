@@ -15,7 +15,6 @@ const (
 	verbStillFiring    verb = "still-firing"
 	verbResolved       verb = "resolved"
 	verbResolveIgnored verb = "resolve-ignored"
-	verbIgnored        verb = "ignored"
 	verbLookup         verb = "lookup"
 )
 
