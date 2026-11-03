@@ -520,6 +520,17 @@
           };
         };
 
+        cache = incus "cache" {
+          homelab.lanAddress = "192.168.1.160";
+          homelab.guest = {
+            host = "pve";
+            pool = "nas-cache";
+            disk = 300;
+          };
+          homelab.monitoring.enable = false;
+          deployment.tags = [ ];
+        };
+
         pve = {
           imports = [ ./hosts/pve ];
           deployment.tags = [ ];

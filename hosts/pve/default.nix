@@ -8,6 +8,7 @@
     ../../modules/services/incus
     ../../modules/services/nas
     ../../modules/services/mirror/pool.nix
+    ../../modules/services/harmonia/pool.nix
   ];
 
   boot.loader = {

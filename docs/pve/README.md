@@ -10,6 +10,7 @@ Per-service docs:
 
 - [auth.md](auth.md)
 - [brain.md](brain.md)
+- [cache.md](cache.md)
 - [home.md](home.md)
 - [mirror.md](mirror.md)
 - [recipes.md](recipes.md)

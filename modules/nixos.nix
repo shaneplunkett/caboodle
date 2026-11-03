@@ -3,6 +3,8 @@ let
   inherit (config.homelab.monitoring) units;
 in
 {
+  imports = [ ./services/harmonia/client.nix ];
+
   nixpkgs.config.allowUnfree = true;
   nix.optimise.automatic = true;
 

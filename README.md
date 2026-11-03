@@ -68,6 +68,7 @@ A service backs up its data by listing it in `homelab.backup.paths`. See
 scripts/quietly.sh colmena build --on <host>   # build here, one at a time, out of the way
 scripts/deploy.sh <host>                        # build and apply over SSH
 scripts/deploy.sh                               # every server, dns2 after dns1
+scripts/push-to-cache.sh <host>                 # build and push to the cache
 scripts/terraform.sh                            # plan; `apply` applies
 ```
 

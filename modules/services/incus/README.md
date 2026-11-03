@@ -12,6 +12,18 @@ pool, Incus records its source as the group's name, so a preseed naming the
 partition fails on every run after the first ("Pool source cannot be
 changed"), and never reaches the profile.
 
+PVE also has `nas-cache`, for the [cache](../../../docs/pve/cache.md), a btrfs
+subvolume on the NAS's NVMe declared in `modules/services/harmonia/pool.nix`.
+A guest picks it with `pool` in `homelab.guest`. Three things about it:
+
+- Incus creates `/mnt/cache/incus` itself, and fails if a directory is already
+  there.
+- `incus.service` is ordered after the mount but doesn't require it. If the
+  drive dies, this pool's mount fails on "isn't btrfs", and every other guest
+  still starts. `RequiresMountsFor` would keep them all down.
+- Switching PVE by hand is what creates the pool, so that comes before the
+  Terraform apply that first uses it.
+
 ## Terraform's access
 
 Terraform talks to Incus over HTTPS on port 8443 with a client certificate.
