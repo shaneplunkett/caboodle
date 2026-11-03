@@ -126,6 +126,7 @@ in
     extraPackages = [
       pkgs.colmena
       pkgs.dnsutils
+      pkgs.jq
       pkgs.openssh
       pkgs.terraform
       pkgs.util-linux

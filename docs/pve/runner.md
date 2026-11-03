@@ -135,7 +135,9 @@ failed says what state things are in:
 - **Terraform.** The apply was attempted first, and may itself have failed, so
   read its result before Terraform's. The log shows how far the plan or apply
   got, and Terraform Cloud keeps whatever it finished, so re-running the job or
-  `scripts/terraform.sh apply` from the desktop plans again from there.
+  `scripts/terraform.sh apply` from the desktop plans again from there. A
+  `terraform-guard` line means the job stopped before applying anything, and
+  [Terraform](#terraform) has the way out.
 
 A job that hits its timeout or gets cancelled before the apply never applies. One
 cancelled during the apply stops wherever it was, which can leave some guests
@@ -183,12 +185,31 @@ disk. It stays out of a failed build and a cancelled job.
   and passwords are all marked. A new variable or output holding a secret needs
   `sensitive = true`, or the next merge publishes it.
 - **The lock.** Terraform Cloud holds the state and its lock, so the desktop and
-  the runner can't corrupt each other. Either one waits ten minutes for the other,
-  then fails.
+  the runner can't corrupt each other. `-lock-timeout=10m` is how long a command
+  waits to get the lock, so either one waits ten minutes for the other, then fails.
+  It doesn't clear anything.
 - **The runner's own guest.** Terraform manages the container the job runs in, so
-  a change that restarts or replaces it kills the job mid-apply and can leave the
-  lock held. Apply that from the desktop before merging, so the runner's plan finds
-  nothing to do. A stuck lock clears from the workspace's page in Terraform Cloud.
+  an apply that changes it can kill the job halfway and leave the lock held. Before
+  the job applies, `scripts/terraform.sh` passes the saved plan through
+  `scripts/terraform-guard.sh`, which stops the job on anything but a no-op on
+  `incus_instance.guest["runner"]`. It also stops on a plan it can't read or one
+  that doesn't list the container, since a real plan always does. Nothing in that
+  plan applies, other resources included, and the run goes red. The desktop leaves
+  `TERRAFORM_SECRETS_DIR` unset, so it skips the guard. Run
+  `scripts/terraform.sh apply` from a checkout of `main` while the runner is idle,
+  then re-run the job, whose plan now finds nothing to do. Applying from the desktop
+  before merging saves the red cross.
+- **A lock left behind.** A job killed during an apply can leave the lock held, and
+  no timeout clears that. Every plan after it waits its ten minutes and fails,
+  printing the lock ID. On Terraform Cloud that ID is the same whoever holds the
+  lock, so first check that nothing is really applying. Then, from the repo on the
+  desktop in `nix develop .#full`, with the ID from the error:
+
+  ```sh
+  TF_TOKEN_app_terraform_io="$(cd modules/agenix && agenix -d terraform-cloud-token.age)" \
+    terraform -chdir=terraform force-unlock '<lock ID>'
+  ```
+
 - **What a plan costs.** Each one evaluates `.#network`, about 2 GB for a few
   seconds, and builds the Incus base image, which `linuxHosts` leaves out, for the
   external data source in `terraform/incus.tf`. After a bump that means a build
@@ -234,9 +255,9 @@ The cost is that these are the names and keys from the runner's last deploy. A
 new guest or a changed host key fails with a red cross until
 `scripts/deploy.sh runner` from the desktop, then re-run the failed job.
 
-Colmena, `dig`, `ssh` and `terraform` are on the service's `PATH` rather than
+Colmena, `dig`, `jq`, `ssh` and `terraform` are on the service's `PATH` rather than
 coming from `nix develop .#full`, which would compile terraform and colmena on a
-cold store and fetch the rest of the shell to reach four binaries. That means a
+cold store and fetch the rest of the shell to reach five binaries. That means a
 colmena or terraform bump reaches the job at the runner's next deploy. If a Sunday
 bump makes the old command and the new flake disagree, it's a red cross with the
 same fix.
