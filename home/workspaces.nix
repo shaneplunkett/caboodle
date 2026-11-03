@@ -34,6 +34,7 @@
   }
   {
     key = "S";
+    scrolling = true;
     classes = [
       "^signal$"
       "(?i)^slack$"
@@ -44,6 +45,9 @@
     macApps = [
       "org.whispersystems.signal-desktop"
       "org.ferdium.ferdium-app"
+      "com.tinyspeck.slackmacgap"
+      "dev.vencord.vesktop"
+      "com.apple.MobileSMS"
     ];
   }
   {
@@ -68,6 +72,10 @@
     classes = [
       "(?i)^steam$"
       "^steam_app_.*$"
+    ];
+    macApps = [
+      "com.valvesoftware.steam"
+      "com.moonlight-stream.Moonlight"
     ];
   }
   {

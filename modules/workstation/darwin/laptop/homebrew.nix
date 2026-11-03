@@ -9,6 +9,9 @@ _: {
       "claude"
       "linear"
       "yt-music"
+      "moonlight"
+      "steam"
+      "vesktop"
     ];
 
     brews = [
