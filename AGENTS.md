@@ -31,9 +31,12 @@ and the Mac mini. Read `README.md` for how it fits together.
   (`origin`, `shaneplunkett/caboodle`). Commit on a branch and file it with
   the `pr` skill and `gh`, assigned to Shane for review. Done is a green
   check, plus the `Plan:` line from `scripts/terraform.sh` in the body when
-  `terraform/` changed. That line comes from the desktop before merging, and
-  the runner applies a fresh plan at merge time. Rebase onto `origin/main`
-  before filing.
+  the change will make the runner plan: `terraform/`, or anything else on
+  `scripts/terraform-changed.sh`'s list, a guest, a device or a port forward
+  included. That line comes from the desktop before merging, and the runner
+  applies a fresh plan at merge time. Renovate's and the `ai-skills` bumps
+  merge themselves without one, and their plans are expected to find nothing.
+  Rebase onto `origin/main` before filing.
 - **Merge:** Shane merges, except Renovate's Sunday pull requests (every
   dependency in one, the lock file in the other) and the `ai-skills` bumps,
   which merge themselves once the check passes. Merging deploys, unless only
