@@ -12,6 +12,8 @@ export TF_DATA_DIR
 
 scripts/check-suppressions.sh
 
+modules/services/github-runner/job-started-test.sh
+
 git ls-files --cached --others --exclude-standard -z '*.nix' | xargs -0 -r nixfmt --check
 statix check .
 deadnix --fail .

@@ -61,6 +61,9 @@ in
     inherit url tokenFile;
     replace = true;
     extraLabels = [ "darwin" ];
+    extraEnvironment.ACTIONS_RUNNER_HOOK_JOB_STARTED = lib.getExe (
+      pkgs.callPackage ./job-started.nix { }
+    );
     extraPackages = [
       pkgs.flock
       pkgs.openssh
@@ -72,6 +75,8 @@ in
   };
 
   launchd.daemons = {
+    "github-runner-${name}".script = lib.mkBefore ''rm -f "$RUNNER_ROOT/.env"'';
+
     github-runner-registration = {
       command = "${lib.getExe registration} ${url} ${state} ${tokenFile} ${user}";
       environment.CREDENTIALS_DIRECTORY = credentials;
