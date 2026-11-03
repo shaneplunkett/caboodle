@@ -287,8 +287,8 @@ carries the failed step's last lines and a link to the run. Each step tees its o
 to `$RUNNER_TEMP/<step id>.log` for that, which is why the job runs `bash` with
 `pipefail`: without it the pipe would hide a failure behind `tee`'s success. A step that
 names no host, like a push, says `runner`. A re-run of the same run files no twin
-while the issue is open, and nothing closes it but Shane, even when the re-run goes
-green.
+while the issue is open, because the alert's `startsAt` is the commit's time and not
+the clock's. Nothing closes the issue but Shane, even when the re-run goes green.
 
 The red cross and the email are all you get in these cases:
 
@@ -296,8 +296,10 @@ The red cross and the email are all you get in these cases:
   runner that died. `if: failure()` doesn't fire on a timeout or a cancel, and a
   failed checkout leaves no script to run.
 - **The post doesn't land.** The bridge is on the monitoring guest, so a deploy
-  that breaks monitoring or the bridge can't report itself. curl retries for about
-  a minute to ride out a restart, then the step goes red too.
+  that breaks monitoring or the bridge can't report itself. curl tries six times to
+  ride out a restart, 10 seconds apart with 60 seconds for each try, then the step
+  goes red too. A bridge that refuses straight away takes about 50 seconds to give up,
+  and one that hangs takes about 410.
 - **Linear refuses it.** The bridge answers 200 and logs it, as it does for
   Alertmanager, so it only shows in `journalctl -u linear-bridge`.
 
