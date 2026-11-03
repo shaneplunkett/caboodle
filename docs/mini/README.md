@@ -10,8 +10,8 @@ desktop and the MacBook.
 vex-brain's vex-sync runs as daemons rather than home-manager agents, so
 sync runs from boot with nobody logged in.
 
-What the mini builds, it signs and serves to the MacBook; see
-[the store as the cache](../workstation/README.md#the-store-as-the-cache).
+It also builds itself and the MacBook on every merge and pushes both to the
+[cache](../pve/cache.md); see [the runner](#the-runner).
 
 ## BlueBubbles
 
@@ -109,11 +109,111 @@ UI or an MDM profile can change, and it's keyed to a path or a signature that
 moves into a new store path with each vex-code bump. So it isn't declared
 here.
 
+## The runner
+
+This is a trial. The [runner on PVE](../pve/runner.md) can't build darwin, so a
+second one lives here and only builds. On a push to `main` that touches anything
+outside `docs/`, `.github/workflows/darwin.yml` runs
+`scripts/push-to-cache.sh mini macbook`, which builds each Mac through
+`scripts/quietly.sh`, copies the closure to the cache and sets its profile. A
+build that fails turns the run red, and a red run pushes nothing after the host
+that broke. It never switches anything. The module is
+`modules/services/github-runner/darwin.nix`, and
+[ADR 0005](../adr/0005-merges-deploy-from-a-runner-at-home.md) has the why.
+
+The trial's risk is that nothing fences it. `quietly.sh` on a Mac is a lock and
+`nice`, there's no Incus layer, and nothing caps memory. The job runs as
+`ProcessType = Background`, where nix-darwin's module would give it
+`Interactive`, so an evaluation loses to the agents. Builds run in the
+nix-daemon, which stays `Standard`.
+
+### Turning it off
+
+```sh
+gh workflow disable darwin.yml --repo shaneplunkett/caboodle
+```
+
+That needs no deploy, and the next merge builds nothing here. To stop a build
+that's running now, `sudo launchctl bootout system/org.nixos.github-runner-mini`,
+which lasts until the next deploy or reboot.
+
+If the trial ends, delete the workflow and the module's line in `hosts/mini.nix`,
+then deploy. Do it in that order: a job with no runner to take it sits queued for
+GitHub's 24 hours, then fails. The MacBook goes back to building what the cache
+lacks. `_github-runner`, its state in `/var/lib/github-runners` and its entry on
+GitHub's runners page stay behind until someone removes them.
+
+### What to watch
+
+BlueBubbles is the one that hurts, so a message arriving late during a run is the
+signal to turn this off. Its log is `~/Library/Logs/bluebubbles-server.log`. T3
+Code and vex-sync share the machine too, and the host dashboard has the memory
+and CPU. The first run and the Sunday lock bump are the real test, since they
+compile the most, and the first run also has everything only the MacBook carries
+to fetch or build.
+
+### What it holds
+
+It runs as `_github-runner`, the user nix-darwin's module creates. That user isn't
+an admin or a Nix trusted user, and it can't enter `/Users/shane`, so Shane's SSH
+keys, her `access-tokens.conf` and her keychain are out of reach. It gets two
+things from agenix:
+
+- **The inputs token.** The `nix-inputs-token` daemon writes
+  `/run/nix-inputs-token/access-tokens.conf` from the agenix copy, which stays
+  root's. `nix.conf` includes that file. Nix reads it in the process that
+  evaluates, so the job's user owns it. The directory has to stay `0755`. Nix
+  skips an include it can't read, but a closed directory fails the `stat` first,
+  and then every Nix command for everyone else on the mini loses its whole
+  `nix.conf`.
+- **A key to the cache.** `/run/agenix/mini-cache-ssh-key` belongs to the job's
+  user, and `/etc/ssh/ssh_config.d` names it for `cache.home.arpa`. Only
+  `hosts/cache.nix` accepts its public half.
+
+`flock` and `ssh` are on the job's `PATH` through `extraPackages`, since macOS has
+no `flock` and the job's `PATH` has nothing from `/usr/bin`. A new tool reaches the
+job at the mini's next deploy.
+
+### Registration
+
+launchd has no ordering between jobs, so nothing runs "before" the runner. The
+`github-runner-registration` daemon runs as root at load and every five minutes
+instead. Agenix links the App's two secrets into `/run/github-app`, and the daemon
+points `github-app-token` at that folder, as `LoadCredential` does on PVE. It uses
+the same `registration-token.sh`.
+
+- With no `.runner` in `/var/lib/github-runners/mini`, it mints a registration
+  token into `/run/github-runner-registration/token`. The runner's user owns that
+  file, because the module's script reads it as that user.
+- With `.runner` there, it removes the file and calls nothing. `/run` is on disk on
+  a Mac, so a dead token sits there for up to five minutes after registering.
+
+The runner's job is set to `KeepAlive`. Before it has a token it fails and starts
+again 30 seconds later, and launchd also starts it when the token file appears. The
+module only registers when `.runner` is missing, so unlike PVE, changing a label or
+the name does nothing by itself. To register again, or after GitHub drops it for 14
+days offline:
+
+```sh
+sudo rm -f /var/lib/github-runners/mini/.runner /var/lib/github-runners/mini/.credentials*
+sudo launchctl kickstart -k system/org.nixos.github-runner-registration
+sudo launchctl kickstart -k system/org.nixos.github-runner-mini
+```
+
+The logs are in `/var/log/github-runners`.
+
+A workflow on any pushed branch with `runs-on: [self-hosted, darwin]` can run here
+without merging, with the cache key and the inputs token. Only who can push to
+caboodle limits that, as on PVE.
+
 ## Deploying
 
-A merge doesn't reach the mini. Its tag is `deploy-mini`, so the
-[runner](../pve/runner.md#the-deploy-job) skips it, and `scripts/deploy.sh` with
-no arguments applies it from the desktop along with the guests.
+A merge builds the mini but doesn't switch it. Its tag is `deploy-mini`, so the
+[deploy job](../pve/runner.md#the-deploy-job) skips it, and `scripts/deploy.sh` with
+no arguments applies it from the desktop along with the guests. With a green
+`darwin` run on that commit, the closure is already in the store and the switch
+takes seconds. Later the ADR has the switch become a by-hand pull from the cache,
+but today it's still this.
 
 `scripts/deploy.sh mini` deploys it from the desktop: colmena reaches it as
 `shane` with Shane's key, builds on the mini, and runs `sudo` without a

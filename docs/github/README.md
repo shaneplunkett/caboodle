@@ -101,11 +101,11 @@ Both are in Bitwarden and in caboodle's Actions secrets.
 
 - **The App** is `github-app-client-id` and `github-app-private-key`
   (`APP_CLIENT_ID` and `APP_PRIVATE_KEY` in Actions, and agenix for the
-  mirror). It's installed on every repo on Shane's account, with read and
+  mirror and the runners). It's installed on every repo on Shane's account, with read and
   write on contents, pull requests, issues, actions, workflows and commit
   statuses, and read on checks and Dependabot alerts. The
   [runner](../pve/runner.md#registration) also needs write on administration
-  to register. Jobs, Renovate, the mirror and the runner mint an hour-long
+  to register. Jobs, Renovate, the mirror and the runners mint an hour-long
   installation token from it. Pull requests it
   opens run the check, which ones opened with `GITHUB_TOKEN` don't.
   Bitwarden holds the key base64'd, since `rbw` keeps one line:
@@ -128,4 +128,5 @@ printf '%s' "$(rbw get github-inputs-token)" | gh secret set INPUTS_TOKEN --repo
 The workstations read it from `~/.config/nix/access-tokens.conf`
 ([workstation](../workstation/README.md#the-inputs-token)), so rewrite that
 too. The runner takes the new token from agenix at its next
-`scripts/deploy.sh runner`.
+`scripts/deploy.sh runner`, and the mini's within a minute of its next
+`scripts/deploy.sh mini`.

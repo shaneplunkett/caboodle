@@ -82,7 +82,8 @@ The runner trusts the same upstream caches as the workstations, from
 everything Noctalia's and Numtide's caches already hold.
 
 The mini is outside it. Its tag is `deploy-mini`, the runner has no key to it,
-and the job can't build darwin, so only the desktop applies it.
+and the job can't build darwin, so only the desktop applies it. The Macs build on
+the mini's own [build-only runner](../mini/README.md#the-runner).
 
 ### When it fails
 

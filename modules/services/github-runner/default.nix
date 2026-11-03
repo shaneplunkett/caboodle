@@ -17,6 +17,7 @@ let
   inputsTokenDir = "nix-inputs-token";
   inputsTokenFile = "/run/${inputsTokenDir}/access-tokens.conf";
   hostKeys = import ../../agenix/host-keys.nix;
+  cache = import ../harmonia/cache.nix;
   deployed = lib.filterAttrs (_: node: node.config.homelab.deployedByRunner) nodes;
   gib = n: n * 1024 * 1024 * 1024;
 
@@ -26,18 +27,13 @@ let
     OOMPolicy = "continue";
   };
 
-  registrationToken = pkgs.writeShellApplication {
-    name = "github-runner-registration-token";
-    runtimeInputs = [
-      (pkgs.callPackage ../../../pkgs/github-app-token { })
-      pkgs.curl
-      pkgs.jq
-    ];
-    text = builtins.readFile ./registration-token.sh;
-  };
+  registrationToken = pkgs.callPackage ./registration-token.nix { };
 in
 {
-  imports = [ ../../workstation/upstream-caches.nix ];
+  imports = [
+    ../../workstation/upstream-caches.nix
+    ../harmonia/pusher.nix
+  ];
 
   homelab.secrets = [
     "github-app-client-id"
@@ -75,7 +71,9 @@ in
 
   programs.ssh = {
     extraConfig = ''
-      Match localuser ${user} host ${lib.concatStringsSep "," (builtins.attrNames deployed)}
+      Match localuser ${user} host ${
+        lib.concatStringsSep "," (builtins.attrNames deployed ++ [ cache.name ])
+      }
         IdentityFile ${secrets.runner-ssh-key.path}
       Match all
     '';
