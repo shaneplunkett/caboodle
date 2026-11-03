@@ -21,7 +21,8 @@ func fullEnv() map[string]string {
 		"BRIDGE_PORT":             "9095",
 		"BRIDGE_LISTEN_ADDRESSES": "127.0.0.1",
 		"BRIDGE_ALERTS_PAGE":      "https://prometheus.example/alerts",
-		"BRIDGE_IGNORED_ALERTS":   "Heartbeat,Other",
+		"BRIDGE_WATCHDOG_ALERT":   "Heartbeat",
+		"HEALTHCHECKS_PING_URL":   "https://ping.example/check",
 	}
 }
 
@@ -37,8 +38,11 @@ func TestConfigReadsTheEnvironment(t *testing.T) {
 	if !reflect.DeepEqual(got.defaults.LabelIDs, []string{"bug", "needs-triage", "repo"}) {
 		t.Errorf("labels = %v", got.defaults.LabelIDs)
 	}
-	if !reflect.DeepEqual(got.ignored, []string{"Heartbeat", "Other"}) {
-		t.Errorf("ignored = %v", got.ignored)
+	if got.watchdogAlert != "Heartbeat" {
+		t.Errorf("watchdogAlert = %q", got.watchdogAlert)
+	}
+	if got.pingURL != "https://ping.example/check" {
+		t.Errorf("pingURL = %q", got.pingURL)
 	}
 }
 
@@ -99,15 +103,19 @@ func TestConfigNamesWhatIsMissing(t *testing.T) {
 	}
 }
 
-func TestConfigAllowsNothingIgnored(t *testing.T) {
+func TestConfigWillNotStartWithoutAHeartbeat(t *testing.T) {
 	env := fullEnv()
-	delete(env, "BRIDGE_IGNORED_ALERTS")
-	got, err := loadConfig(func(key string) string { return env[key] })
-	if err != nil {
-		t.Fatal(err)
+	delete(env, "BRIDGE_WATCHDOG_ALERT")
+	delete(env, "HEALTHCHECKS_PING_URL")
+	_, err := loadConfig(func(key string) string { return env[key] })
+	if err == nil {
+		t.Fatal("wanted an error")
 	}
-	if len(got.ignored) != 0 {
-		t.Errorf("ignored = %v", got.ignored)
+	if !strings.Contains(err.Error(), "BRIDGE_WATCHDOG_ALERT") || !strings.Contains(err.Error(), "HEALTHCHECKS_PING_URL") {
+		t.Errorf("err = %v", err)
+	}
+	if strings.Contains(err.Error(), "ping.example") {
+		t.Errorf("err = %v", err)
 	}
 }
 

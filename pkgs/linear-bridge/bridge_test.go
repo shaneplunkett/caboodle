@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -24,17 +25,21 @@ type fakeIssue struct {
 }
 
 type fakeLinear struct {
-	mu           sync.Mutex
-	issues       []*fakeIssue
-	commentIDs   map[string]bool
-	nextNumber   int
-	calls        int
-	failAttach   int
-	refuseCreate string
-	failFind     map[string]bool
-	garbleFind   bool
-	failByID     bool
-	creates      int
+	mu            sync.Mutex
+	issues        []*fakeIssue
+	commentIDs    map[string]bool
+	nextNumber    int
+	calls         int
+	failAttach    int
+	refuseCreate  string
+	refuseAttach  string
+	refuseComment string
+	failFind      map[string]bool
+	garbleFind    bool
+	failByID      bool
+	creates       int
+	rejectTokens  bool
+	failCreate    bool
 }
 
 func (i *fakeIssue) node() map[string]any {
@@ -80,6 +85,10 @@ func (f *fakeLinear) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	f.calls++
+	if f.rejectTokens {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	var body struct {
 		Query     string
 		Variables map[string]any
@@ -113,6 +122,10 @@ func (f *fakeLinear) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		data["issues"] = map[string]any{"nodes": nodes}
 	case strings.Contains(body.Query, "issueCreate"):
 		f.creates++
+		if f.failCreate {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
 		if f.refuseCreate != "" {
 			graphQLRefusal(w, f.refuseCreate, "refused")
 			return
@@ -127,6 +140,10 @@ func (f *fakeLinear) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		f.issues = append(f.issues, created)
 		data["issueCreate"] = map[string]any{"success": true, "issue": map[string]any{"id": id, "identifier": created.identifier}}
 	case strings.Contains(body.Query, "attachmentCreate"):
+		if f.refuseAttach != "" {
+			graphQLRefusal(w, f.refuseAttach, "refused")
+			return
+		}
 		if f.failAttach > 0 {
 			f.failAttach--
 			w.WriteHeader(http.StatusBadGateway)
@@ -138,6 +155,10 @@ func (f *fakeLinear) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			"issue": map[string]any{"id": target.id, "identifier": target.identifier},
 		}}
 	case strings.Contains(body.Query, "commentCreate"):
+		if f.refuseComment != "" {
+			graphQLRefusal(w, f.refuseComment, "refused")
+			return
+		}
 		id := input["id"].(string)
 		if f.commentIDs[id] {
 			graphQLRefusal(w, "INPUT_ERROR", "Entity Comment with id "+id+" already exists.")
@@ -166,9 +187,11 @@ func (f *fakeLinear) close(identifier string, at time.Time) {
 }
 
 type rig struct {
-	fake   *fakeLinear
-	bridge *bridge
-	logs   *bytes.Buffer
+	fake       *fakeLinear
+	bridge     *bridge
+	logs       *bytes.Buffer
+	pings      *atomic.Int32
+	pingStatus *atomic.Int32
 }
 
 func newRig(t *testing.T) *rig {
@@ -177,9 +200,19 @@ func newRig(t *testing.T) *rig {
 	server := httptest.NewServer(fake)
 	t.Cleanup(server.Close)
 	logs := &bytes.Buffer{}
+	pings := &atomic.Int32{}
+	pingStatus := &atomic.Int32{}
+	pingStatus.Store(http.StatusOK)
+	standIn := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		pings.Add(1)
+		w.WriteHeader(int(pingStatus.Load()))
+	}))
+	t.Cleanup(standIn.Close)
 	return &rig{
-		fake: fake,
-		logs: logs,
+		fake:       fake,
+		logs:       logs,
+		pings:      pings,
+		pingStatus: pingStatus,
 		bridge: &bridge{
 			linear: newLinear(server.URL+"/graphql", server.URL+"/oauth/token", "id", "secret"),
 			defaults: issueDefaults{
@@ -188,10 +221,11 @@ func newRig(t *testing.T) *rig {
 				StateID:    "triage",
 				LabelIDs:   []string{"bug", "needs-triage", "repo"},
 			},
-			alertsPage: "https://prometheus.example/alerts",
-			ignored:    []string{"Heartbeat"},
-			now:        func() time.Time { return firedNow },
-			log:        slog.New(slog.NewTextHandler(logs, nil)),
+			alertsPage:    "https://prometheus.example/alerts",
+			watchdogAlert: "Watchdog",
+			heartbeat:     newHeartbeat(standIn.URL + "/ping/check-uuid"),
+			now:           func() time.Time { return firedNow },
+			log:           slog.New(slog.NewTextHandler(logs, nil)),
 		},
 	}
 }
@@ -595,21 +629,6 @@ func TestAMixedPostGoesAlertByAlert(t *testing.T) {
 	}
 	if got := r.fake.issues[0].comments; len(got) != 1 {
 		t.Errorf("comments = %q", got)
-	}
-}
-
-func TestIgnoredAlertsNeverTouchLinear(t *testing.T) {
-	r := newRig(t)
-	a := diskAlert()
-	a.Labels["alertname"] = "Heartbeat"
-	if code := r.post(t, "first notification", a); code != http.StatusOK {
-		t.Fatalf("status = %d", code)
-	}
-	if r.fake.calls != 0 {
-		t.Errorf("made %d calls", r.fake.calls)
-	}
-	if !strings.Contains(r.logs.String(), "verb=ignored") || !strings.Contains(r.logs.String(), "alertname=Heartbeat") {
-		t.Errorf("logs = %s", r.logs.String())
 	}
 }
 

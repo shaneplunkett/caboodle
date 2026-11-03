@@ -1,16 +1,11 @@
 { config, pkgs, ... }:
 let
-  secrets = config.age.secrets;
   bridge = config.homelab.linearBridge;
 in
 {
-  homelab.secrets = [ "healthchecks-ping" ];
-
   services.prometheus.alertmanager = {
     enable = true;
     openFirewall = true;
-    environmentFile = secrets.healthchecks-ping.path;
-    checkConfig = false;
     configuration = {
       route = {
         receiver = "linear";
@@ -21,8 +16,7 @@ in
         repeat_interval = "24h";
         routes = [
           {
-            matchers = [ ''alertname="Watchdog"'' ];
-            receiver = "healthchecks";
+            matchers = [ ''alertname="${bridge.watchdogAlert}"'' ];
             group_wait = "0s";
             group_interval = "1m";
             repeat_interval = "1m";
@@ -39,15 +33,6 @@ in
             }
           ];
         }
-        {
-          name = "healthchecks";
-          webhook_configs = [
-            {
-              url = "\${HEALTHCHECKS_PING_URL}";
-              send_resolved = false;
-            }
-          ];
-        }
       ];
     };
   };
@@ -60,9 +45,9 @@ in
             name = "watchdog";
             rules = [
               {
-                alert = "Watchdog";
+                alert = bridge.watchdogAlert;
                 expr = "vector(1)";
-                annotations.summary = "Always firing, so healthchecks.io hears from Alertmanager every minute and messages Shane when it stops";
+                annotations.summary = "Always firing, so healthchecks.io hears through the bridge every two minutes and messages Shane when it stops";
               }
             ];
           }

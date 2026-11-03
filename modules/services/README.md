@@ -7,9 +7,8 @@ by Prometheus on another host.
 
 ## Alertmanager
 
-- The config goes through envsubst so the healthchecks.io ping URL can come
-  from an env file. That means the config can't contain a stray `$`, and
-  `checkConfig` is off because the placeholder URL isn't valid at build time.
+- The nixpkgs module runs the config through envsubst whether anything needs it
+  or not, so the config can't contain a stray `$`.
 - Alerts go to the Linear bridge's webhook on loopback, and `docs/adr/0006`
   says why the bridge files and comments but never closes. Alertmanager only
   retries a 5xx and retries the whole post, so the bridge answers 5xx only for
@@ -21,9 +20,18 @@ by Prometheus on another host.
   journal. `journalctl -u linear-bridge` has one line per alert, with its verb,
   fingerprint and issue, so a missing issue can be traced from there.
 - The Watchdog repeats every 2 minutes on its 0s/1m/1m route, not every minute,
-  and SHA-304 sizes the healthchecks.io check from that. The prototype measured
-  it on a desktop Alertmanager with the same timings, since Prometheus doesn't
-  scrape the real one.
+  so the healthchecks.io check wants a period of 2 minutes and a grace of at
+  least 2. The prototype measured it on a desktop Alertmanager with the same
+  timings, since Prometheus doesn't scrape the real one. The route uses the same
+  bridge URL as every other alert, and the bridge knows the Watchdog by name, so
+  a route mistake can't file it as an issue.
+- The bridge withholds the Watchdog's ping while Linear is failing, so a check
+  that goes down can mean Linear and not the host. `journalctl -u linear-bridge`
+  says which: each Watchdog logs `verb=ping` or `verb=withheld` with the reason.
+  A failed call clears on the next call that lands. A write Linear refused only
+  clears on the next write that lands, and a quiet host may not have one for
+  days, so once Linear is taking writes again, restarting the bridge clears it.
+  A bridge that has never written counts as healthy.
 - The bridge listens on 9096 because Loki's gRPC server takes 9095 by default,
   and no module says so. A local build can't catch a port clash; the first sign
   was `bind: address already in use` in the bridge's journal after a deploy.

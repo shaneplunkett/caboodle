@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"slices"
 	"time"
 )
 
@@ -24,12 +23,13 @@ type issueDefaults struct {
 }
 
 type bridge struct {
-	linear     *linear
-	defaults   issueDefaults
-	alertsPage string
-	ignored    []string
-	now        func() time.Time
-	log        *slog.Logger
+	linear        *linear
+	defaults      issueDefaults
+	alertsPage    string
+	watchdogAlert string
+	heartbeat     *heartbeat
+	now           func() time.Time
+	log           *slog.Logger
 }
 
 func (b *bridge) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -57,8 +57,8 @@ func (b *bridge) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (b *bridge) handle(ctx context.Context, a alert, reason string) (retry bool) {
 	log := b.log.With("alertname", a.name(), "fingerprint", a.Fingerprint, "notification_reason", reason)
-	if slices.Contains(b.ignored, a.name()) {
-		log.Info("alert ignored", "verb", verbIgnored, "status", a.Status)
+	if a.name() == b.watchdogAlert {
+		b.watchdog(ctx, a, log)
 		return false
 	}
 	did, identifier, err := b.act(ctx, a)

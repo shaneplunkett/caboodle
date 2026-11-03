@@ -8,6 +8,7 @@ let
   cfg = config.homelab.linearBridge;
   package = pkgs.callPackage ../../../pkgs/linear-bridge { };
   secret = config.age.secrets.linear-bridge;
+  pingSecret = config.age.secrets.healthchecks-ping;
   idOption =
     description: default:
     lib.mkOption {
@@ -49,15 +50,18 @@ in
       description = "Linear labels on every alert issue: bug, needs-triage and repo:caboodle.";
     };
 
-    ignoredAlerts = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ "Watchdog" ];
-      description = "Alert names the bridge logs and otherwise leaves alone.";
+    watchdogAlert = lib.mkOption {
+      type = lib.types.str;
+      default = "Watchdog";
+      description = "Alert that pings healthchecks.io instead of becoming an issue.";
     };
   };
 
   config = {
-    homelab.secrets = [ "linear-bridge" ];
+    homelab.secrets = [
+      "linear-bridge"
+      "healthchecks-ping"
+    ];
 
     networking.firewall.extraCommands = lib.concatMapStrings (source: ''
       iptables -A nixos-fw -p tcp -s ${source} --dport ${toString cfg.port} -j nixos-fw-accept
@@ -68,13 +72,16 @@ in
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
-      restartTriggers = [ (builtins.hashFile "sha256" secret.file) ];
+      restartTriggers = map (s: builtins.hashFile "sha256" s.file) [
+        secret
+        pingSecret
+      ];
 
       environment = {
         BRIDGE_PORT = toString cfg.port;
         BRIDGE_LISTEN_ADDRESSES = lib.concatStringsSep "," cfg.listenAddresses;
         BRIDGE_ALERTS_PAGE = "${config.services.prometheus.webExternalUrl}/alerts";
-        BRIDGE_IGNORED_ALERTS = lib.concatStringsSep "," cfg.ignoredAlerts;
+        BRIDGE_WATCHDOG_ALERT = cfg.watchdogAlert;
         LINEAR_TEAM_ID = cfg.teamId;
         LINEAR_ASSIGNEE_ID = cfg.assigneeId;
         LINEAR_STATE_ID = cfg.stateId;
@@ -83,7 +90,10 @@ in
 
       serviceConfig = {
         DynamicUser = true;
-        EnvironmentFile = secret.path;
+        EnvironmentFile = [
+          secret.path
+          pingSecret.path
+        ];
         ExecStart = lib.getExe package;
         Restart = "on-failure";
         RestartSec = "10s";
