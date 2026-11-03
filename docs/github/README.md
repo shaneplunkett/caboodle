@@ -16,12 +16,14 @@ The required check is what makes auto-merge wait. GitHub merges an
 auto-merge pull request as soon as nothing required is pending, so without
 it Renovate's pull requests would merge before the check had run.
 
-The check pulls the dev shell from cache.nixos.org alone. The colmena fork,
-terraform (unfree) and agenix aren't there, so every run compiles them, a
-few minutes on a hosted runner. The shared workflow only adds the extra
-caches when it's given an Attic endpoint, and Attic is gone; moving the
-extra caches out of that step would fetch terraform and agenix from
-numtide's cache and leave only colmena to compile.
+The check pulls the dev shell from cache.nixos.org and keeps what it had to
+compile (the colmena fork, unfree terraform, agenix) in GitHub's Actions
+cache through `nix-community/cache-nix-action`, keyed on the lock file and
+the Nix files. A run with nothing changed takes about half a minute; a lock
+bump restores the previous cache and compiles only what moved, so a nixpkgs
+that moves terraform still costs a few minutes once. The purge that keeps
+the cache inside GitHub's 10 GB needs `actions: write`, which is why the
+caller grants it. The shared workflow's README has the rest.
 
 ## Updates
 
