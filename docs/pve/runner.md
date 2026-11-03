@@ -185,7 +185,7 @@ under `Set up runner`.
 `.github/workflows/deploy.yml` runs on every push to `main` that touches
 anything outside `docs/`. There's no approval step, so choosing when to merge is
 choosing when it lands. The workflow holds no secrets, and the Actions secret
-store gains none. It has four steps:
+store gains none. It has four steps, and a fifth if one of them fails:
 
 1. **Build.** `scripts/build-linux-hosts.sh` builds every Linux host in the hive,
    the hand-switched ones included, so a merge that breaks PVE fails before
@@ -203,6 +203,8 @@ store gains none. It has four steps:
 4. **Terraform.** If the push changed anything a plan reads,
    `scripts/terraform.sh apply` plans, prints the plan to the log and applies it.
    See [Terraform](#terraform).
+5. **Report.** If a step failed, `scripts/report-deploy-failure.sh` posts the
+   failure to the Linear bridge. See [When it fails](#when-it-fails).
 
 The build evaluates in a dry run of its own and then builds from Nix's eval
 cache. An evaluator keeps its heap until it exits, so a `nix build` that did both
@@ -246,8 +248,10 @@ the mini's own [build-only runner](../mini/README.md#the-runner).
 
 ### When it fails
 
-A failure is a red cross on the merge commit and an email from GitHub. Which step
-failed says what state things are in:
+A failure is a red cross on the merge commit, an email from GitHub and an urgent
+issue in Linear's Triage, assigned to Shane, called `Deploy of <short sha> failed`.
+[ADR 0006](../adr/0006-alerts-become-linear-issues.md) says why a failure becomes an
+issue. Which step failed says what state things are in:
 
 - **Build.** A host that doesn't evaluate fails in the dry run, before anything
   builds. One that doesn't compile fails its own call, every other host still gets
@@ -278,10 +282,37 @@ but re-running an older run applies that older commit over whatever came after
 it, and moves every host's profile on the cache back to it until the next merge.
 If that run changed anything a plan reads, it applies the older Terraform too.
 
+The issue names the commit and the step, the hosts when the log names them, and
+carries the failed step's last lines and a link to the run. Each step tees its output
+to `$RUNNER_TEMP/<step id>.log` for that, which is why the job runs `bash` with
+`pipefail`: without it the pipe would hide a failure behind `tee`'s success. A step that
+names no host, like a push, says `runner`. A re-run of the same run files no twin
+while the issue is open, and nothing closes it but Shane, even when the re-run goes
+green.
+
+The red cross and the email are all you get in these cases:
+
+- **The job never reaches the step.** A timeout, a cancel, a failed checkout, or a
+  runner that died. `if: failure()` doesn't fire on a timeout or a cancel, and a
+  failed checkout leaves no script to run.
+- **The post doesn't land.** The bridge is on the monitoring guest, so a deploy
+  that breaks monitoring or the bridge can't report itself. curl retries for about
+  a minute to ride out a restart, then the step goes red too.
+- **Linear refuses it.** The bridge answers 200 and logs it, as it does for
+  Alertmanager, so it only shows in `journalctl -u linear-bridge`.
+
 `concurrency: deploy` never cancels a running deploy, and `queue: max` keeps
 every later merge waiting in order instead of GitHub's default of one pending
 run, where a third merge would cancel the second. Each queued run applies its
 own commit, so a burst of merges lands one after another.
+
+### Proving the report
+
+A failed deploy is the only thing that exercises this for real, so the smoke test can
+stand in for one. On the smoke test's Actions page, Run workflow from `main` with
+`report_failure` ticked. The job should go red at `Fail on purpose`, `File the failure
+in Linear` should go green, and an issue called `Deploy of <short sha> failed`
+should land in Triage, on a card called `DeployFailed on runner`. Close it by hand.
 
 ### Terraform
 
@@ -423,12 +454,17 @@ The cost is that these are the names and keys from the runner's last deploy. A
 new guest or a changed host key fails with a red cross until
 `scripts/deploy.sh runner` from the desktop, then re-run the failed job.
 
-Colmena, `dig`, `jq`, `ssh` and `terraform` are on the service's `PATH` rather than
-coming from `nix develop .#full`, which would compile terraform and colmena on a
-cold store and fetch the rest of the shell to reach five binaries. That means a
+Colmena, `curl`, `dig`, `jq`, `ssh` and `terraform` are on the service's `PATH` rather
+than coming from `nix develop .#full`, which would compile terraform and colmena on a
+cold store and fetch the rest of the shell to reach six binaries. That means a
 colmena or terraform bump reaches the job at the runner's next deploy. If a Sunday
 bump makes the old command and the new flake disagree, it's a red cross with the
 same fix.
+
+`LINEAR_BRIDGE_URL` on the service is where a failed deploy gets posted, read from
+the monitoring host's address and the bridge's port in the hive, so neither is written
+twice. It moves the same way: a new port or address reaches the job at the runner's
+next deploy, and until then the report step fails and the red cross stands alone.
 
 ### Nyx
 
