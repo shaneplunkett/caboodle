@@ -12,6 +12,8 @@ import (
 const (
 	priorityUrgent = 1
 	priorityMedium = 3
+
+	maxPostBytes = 1 << 20
 )
 
 type issueDefaults struct {
@@ -31,10 +33,15 @@ type bridge struct {
 }
 
 func (b *bridge) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	p, err := parsePayload(r.Body)
+	p, err := parsePayload(http.MaxBytesReader(w, r.Body, maxPostBytes))
 	if err != nil {
 		b.log.Error("unreadable post from Alertmanager", "error", err)
-		http.Error(w, "unreadable payload", http.StatusBadRequest)
+		status := http.StatusBadRequest
+		var tooBig *http.MaxBytesError
+		if errors.As(err, &tooBig) {
+			status = http.StatusRequestEntityTooLarge
+		}
+		http.Error(w, "unreadable payload", status)
 		return
 	}
 	retry := false

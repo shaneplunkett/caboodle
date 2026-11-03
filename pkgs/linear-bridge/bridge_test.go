@@ -613,6 +613,31 @@ func TestIgnoredAlertsNeverTouchLinear(t *testing.T) {
 	}
 }
 
+func postOfSize(size int) *bytes.Buffer {
+	return bytes.NewBufferString(`{"padding":"` + strings.Repeat("x", size) + `","alerts":[]}`)
+}
+
+func TestAnOversizedPostIsRefusedAndLogged(t *testing.T) {
+	r := newRig(t)
+	recorder := httptest.NewRecorder()
+	r.bridge.ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, "/alerts", postOfSize(1<<20)))
+	if recorder.Code != http.StatusRequestEntityTooLarge {
+		t.Errorf("status = %d", recorder.Code)
+	}
+	if !strings.Contains(r.logs.String(), "level=ERROR") {
+		t.Errorf("logs = %s", r.logs.String())
+	}
+}
+
+func TestAPostUnderTheLimitIsRead(t *testing.T) {
+	r := newRig(t)
+	recorder := httptest.NewRecorder()
+	r.bridge.ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, "/alerts", postOfSize(1<<20-100)))
+	if recorder.Code != http.StatusOK {
+		t.Errorf("status = %d", recorder.Code)
+	}
+}
+
 func TestAnUnreadablePostIsABadRequest(t *testing.T) {
 	r := newRig(t)
 	recorder := httptest.NewRecorder()

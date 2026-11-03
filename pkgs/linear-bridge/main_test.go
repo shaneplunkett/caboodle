@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"reflect"
 	"strings"
 	"testing"
@@ -59,5 +60,15 @@ func TestConfigAllowsNothingIgnored(t *testing.T) {
 	}
 	if len(got.ignored) != 0 {
 		t.Errorf("ignored = %v", got.ignored)
+	}
+}
+
+func TestServerBoundsHowLongAPostCanTake(t *testing.T) {
+	server := newServer("127.0.0.1:0", http.NewServeMux())
+	if server.ReadHeaderTimeout <= 0 {
+		t.Errorf("ReadHeaderTimeout = %v", server.ReadHeaderTimeout)
+	}
+	if server.ReadTimeout <= 0 {
+		t.Errorf("ReadTimeout = %v", server.ReadTimeout)
 	}
 }

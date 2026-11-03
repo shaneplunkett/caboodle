@@ -20,6 +20,10 @@ by Prometheus on another host.
   Alertmanager next sends it, and the only sign is an error line in the bridge's
   journal. `journalctl -u linear-bridge` has one line per alert, with its verb,
   fingerprint and issue, so a missing issue can be traced from there.
+- The Watchdog repeats every 2 minutes on its 0s/1m/1m route, not every minute,
+  and SHA-304 sizes the healthchecks.io check from that. The prototype measured
+  it on a desktop Alertmanager with the same timings, since Prometheus doesn't
+  scrape the real one.
 
 ## Prometheus
 

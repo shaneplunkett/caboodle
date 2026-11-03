@@ -58,6 +58,15 @@ func main() {
 	}
 }
 
+func newServer(addr string, handler http.Handler) *http.Server {
+	return &http.Server{
+		Addr:              addr,
+		Handler:           handler,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+	}
+}
+
 func run(log *slog.Logger) error {
 	cfg, err := loadConfig(os.Getenv)
 	if err != nil {
@@ -72,7 +81,6 @@ func run(log *slog.Logger) error {
 		now:        time.Now,
 		log:        log,
 	})
-	server := &http.Server{Addr: cfg.listen, Handler: mux, ReadHeaderTimeout: 10 * time.Second}
 	log.Info("listening", "address", cfg.listen)
-	return fmt.Errorf("serving: %w", server.ListenAndServe())
+	return fmt.Errorf("serving: %w", newServer(cfg.listen, mux).ListenAndServe())
 }
