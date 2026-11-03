@@ -69,6 +69,34 @@ func TestAFailedDeployFilesAnUrgentIssue(t *testing.T) {
 	}
 }
 
+func TestARerunAfterEveryAttachFailedFindsTheOrphanAndFilesNoTwin(t *testing.T) {
+	const curlAttempts = 6
+	r := newRig(t)
+	r.fake.failAttach = curlAttempts
+	post := func() int {
+		recorder := httptest.NewRecorder()
+		r.bridge.ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, "/alerts", bytes.NewReader(deployFailedPost(t))))
+		return recorder.Code
+	}
+	for attempt := range curlAttempts {
+		if code := post(); code < 500 {
+			t.Fatalf("attempt %d: status = %d, curl has to retry this", attempt, code)
+		}
+	}
+	if code := post(); code != http.StatusOK {
+		t.Fatalf("the re-run's status = %d, logs %s", code, r.logs)
+	}
+	if len(r.fake.issues) != 1 {
+		t.Fatalf("filed %d issues for one run", len(r.fake.issues))
+	}
+	if got := r.fake.issues[0].attachments; len(got) != 1 {
+		t.Errorf("attachments = %v", got)
+	}
+	if r.fake.creates != 1 {
+		t.Errorf("made %d creates, a rejected one burns an issue number", r.fake.creates)
+	}
+}
+
 func TestAFailedDeployNeverResolvesAndItsCardNamesTheHost(t *testing.T) {
 	p, err := parsePayload(bytes.NewReader(deployFailedPost(t)))
 	if err != nil {

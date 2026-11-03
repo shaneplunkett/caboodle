@@ -12,6 +12,11 @@
 # the issue is open. There's no endsAt and nothing ever posts a resolve, so the
 # issue stays open until Shane closes it.
 #
+# startsAt is the commit's time, because the bridge folds it into the id it uses to
+# recover an issue whose attach failed. A clock time would change on a re-run, the
+# bridge wouldn't find that issue, and it would file a twin. A re-run checks out the
+# same commit, so this holds, and git works when GitHub's API might not.
+#
 #   STEPS='{"apply":{"outcome":"failure"}}' scripts/report-deploy-failure.sh
 set -eu
 
@@ -51,6 +56,7 @@ if [ $# -gt 0 ]; then
 fi
 
 repo_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+started="$(TZ=UTC git log -1 --date=format-local:%Y-%m-%dT%H:%M:%SZ --format=%cd)"
 
 payload="$(
   jq -n \
@@ -63,7 +69,7 @@ payload="$(
     --arg host "${hosts:-runner}" \
     --arg read_step "$read_step" \
     --arg tail "$tail_of_log" \
-    --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --arg started "$started" \
     '{
       version: "4",
       status: "firing",
@@ -78,7 +84,7 @@ payload="$(
           description: (if $tail == "" then "" else "Last lines of the \($read_step) step:\n\n```\n\($tail)\n```" end),
           check: "gh run view \($run_id) --repo \($repo) --log-failed"
         },
-        startsAt: $now,
+        startsAt: $started,
         fingerprint: "deploy-\($run_id)"
       }]
     }'

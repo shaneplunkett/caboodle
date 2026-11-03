@@ -10,9 +10,26 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 script="$root/scripts/report-deploy-failure.sh"
 fixture="$root/pkgs/linear-bridge/testdata/deploy-failed.json"
 
+# A pre-commit hook runs with git's variables pointing at the real repo, and a
+# commit here would write to its index. Config from outside could sign or hook.
+for name in $(git rev-parse --local-env-vars); do
+  unset "$name"
+done
+GIT_CONFIG_GLOBAL=/dev/null
+GIT_CONFIG_NOSYSTEM=1
+GIT_AUTHOR_NAME=tester
+GIT_AUTHOR_EMAIL=test@example.com
+GIT_COMMITTER_NAME=tester
+GIT_COMMITTER_EMAIL=test@example.com
+export GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 failures=0
+
+git init --quiet "$work/checkout"
+GIT_COMMITTER_DATE=2026-11-03T23:44:09+11:00 \
+  git -C "$work/checkout" commit --quiet --allow-empty --message "what the job checked out"
 
 ok() { echo "ok - $1"; }
 not_ok() {
@@ -27,19 +44,27 @@ printf '%s\n' "\$@" >"$work/curl-args"
 cat >"$work/curl-body"
 exit "\${FAKE_CURL_EXIT:-0}"
 SHIM
-chmod +x "$work/bin/curl"
+cat >"$work/bin/date" <<SHIM
+#!/bin/sh
+echo tick >>"$work/date-calls"
+printf '2030-01-01T00:00:%02dZ\n' "\$(wc -l <"$work/date-calls")"
+SHIM
+chmod +x "$work/bin/curl" "$work/bin/date"
 
 report() {
   rm -f "$work/curl-args" "$work/curl-body"
-  PATH="$work/bin:$PATH" \
-    LINEAR_BRIDGE_URL=http://bridge.test/alerts \
-    RUNNER_TEMP="$work/temp" \
-    GITHUB_SERVER_URL=https://github.com \
-    GITHUB_REPOSITORY=shaneplunkett/caboodle \
-    GITHUB_SHA=cd0a11f3aaaabbbbccccddddeeeeffff00001111 \
-    GITHUB_RUN_ID=41635043424 \
-    STEPS="$1" \
-    "$script"
+  (
+    cd "$work/checkout"
+    PATH="$work/bin:$PATH" \
+      LINEAR_BRIDGE_URL=http://bridge.test/alerts \
+      RUNNER_TEMP="$work/temp" \
+      GITHUB_SERVER_URL=https://github.com \
+      GITHUB_REPOSITORY=shaneplunkett/caboodle \
+      GITHUB_SHA=cd0a11f3aaaabbbbccccddddeeeeffff00001111 \
+      GITHUB_RUN_ID=41635043424 \
+      STEPS="$1" \
+      "$script"
+  )
 }
 
 fresh_logs() {
@@ -69,15 +94,14 @@ ERROR  failure) Activation unit colmena-activate-e5ba on host monitoring failed 
 ERROR Failed to complete requested operation - Last 1 lines of logs:
 LOG
 report "$failed_steps"
-got="$(jq -S 'del(.alerts[0].startsAt)' "$work/curl-body")"
-want="$(jq -S 'del(.alerts[0].startsAt)' "$fixture")"
+got="$(jq -S . "$work/curl-body")"
+want="$(jq -S . "$fixture")"
 check "a failed apply posts the payload the bridge's tests read" "$got" "$want"
 check "it posts to the bridge's URL" "$(tail -n 1 "$work/curl-args")" http://bridge.test/alerts
-if field startsAt | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'; then
-  ok "startsAt is an RFC 3339 time"
-else
-  not_ok "startsAt is $(field startsAt)"
-fi
+check "startsAt is the commit's time, in UTC" "$(field startsAt)" 2026-11-03T12:44:09Z
+first_attempt="$(cat "$work/curl-body")"
+report "$failed_steps"
+check "a re-run posts the same bytes, so the bridge can find its orphan" "$(cat "$work/curl-body")" "$first_attempt"
 check "it never ends, so only Shane closes it" "$(field endsAt)" null
 if grep -qx -- --retry-connrefused "$work/curl-args"; then
   ok "it retries while the bridge restarts"
