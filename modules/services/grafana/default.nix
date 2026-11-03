@@ -28,6 +28,9 @@ let
     dns = import ./dashboards/dns.nix { inherit lib nodes; };
     logs = import ./dashboards/logs.nix { inherit lib; };
     internet = import ./dashboards/internet.nix { inherit lib; };
+    disks = import ./dashboards/disks.nix { inherit lib; };
+    storage = import ./dashboards/storage.nix { inherit lib; };
+    backups = import ./dashboards/backups.nix { inherit lib nodes; };
   };
 in
 {

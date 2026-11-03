@@ -5,6 +5,8 @@
   ...
 }:
 let
+  links = import ../grafana/links.nix;
+  dashboard = links.storage "{{ $labels.host }}";
   incusHosts = lib.filterAttrs (
     _: node: node.config.homelab.monitoring.enable && node.config.virtualisation.incus.enable or false
   ) nodes;
@@ -29,7 +31,7 @@ let
       for = "10m";
       labels.severity = severity;
       annotations = {
-        inherit summary check;
+        inherit summary check dashboard;
         condition = "Over ${toString (builtins.floor (value * 100))}% full for 10m";
         description = "${description} ${urgency}";
       };
@@ -74,6 +76,7 @@ let
             condition = "Scrape up but the pool's size or used bytes missing for 10m";
             description = "Incus leaves a pool out of its metrics when it can't read it, while the scrape still looks healthy, so nothing is watching how full {{ $labels.pool }} is. That failed read can be the real problem: a dead drive or a lost mount under the pool. Look for storage errors in the journal, and `incus storage list` on {{ $labels.host }} shows the pool's state. For `nas-cache`, start with whether `/mnt/cache` is mounted.";
             check = "ssh {{ $labels.host }} sudo journalctl -u incus -n 50";
+            inherit dashboard;
           };
         }
       ) node.config.virtualisation.incus.preseed.storage_pools
@@ -132,6 +135,7 @@ in
                       condition = "${collector}.service failed for 5m";
                       description = "This job reads the thin pool's metadata with `lvs` every minute, because Incus doesn't report it. With it failing, nothing is watching that metadata, and a full one breaks the pool just as surely as running out of space. A reading bug is dull, but `lvs` itself erroring can mean the volume group is in trouble, so that's what the journal needs to rule out. `no thin pool in incus` means the pool has gone, and LVM or I/O errors mean look at the drive next.";
                       check = "ssh {{ $labels.host }} sudo journalctl -u ${collector} -n 20";
+                      inherit dashboard;
                     };
                   }
                   {
@@ -143,6 +147,7 @@ in
                       condition = "Thin pool metrics older than 10m without the collector failing";
                       description = "The job that reads the thin pool with `lvs` isn't failing, it just isn't finishing, so the metadata number the alerts read has frozen. Either its timer has stopped or `lvs` is hanging, and a hanging `lvs` points at a stuck disk underneath. The check shows when it last ran. If the timer looks fine, `systemctl status ${collector}` shows a run that's stuck, and `journalctl -k` on {{ $labels.host }} shows any disk errors.";
                       check = "ssh {{ $labels.host }} systemctl list-timers ${collector}";
+                      inherit dashboard;
                     };
                   }
                   {
@@ -155,6 +160,7 @@ in
                       condition = "Node exporter up but no thin pool metrics for 10m";
                       description = "Node exporter is fine, but the job that reads the thin pool's metadata has written nothing, so the metadata alerts have nothing to read. The likely cause is a rule that reached monitoring on a merge while {{ $labels.host }} hasn't been switched, because PVE and Cube are switched by hand. If the check says the unit doesn't exist, switching the host fixes it. If the unit's there, its status says why it hasn't written.";
                       check = "ssh {{ $labels.host }} systemctl status ${collector}";
+                      inherit dashboard;
                     };
                   }
                   {
@@ -167,6 +173,7 @@ in
                       condition = "Incus metrics scrape failing for 5m";
                       description = "Prometheus can't scrape Incus on {{ $labels.host }}, so nothing is watching how full its pools are, and the guests' CPU graphs stop too. The daemon may be down, the metrics endpoint may have started asking for a certificate, or monitoring may just not be able to reach the host; the scrape looks the same from here for all three. The check prints `false` when the endpoint is set right, and anything else is why the scrape fails. If the command errors, SSH or the daemon is the problem, and `systemctl status incus` on the host says which. If the host answers but Prometheus can't, it's the path between them. The guests may still be running, but Terraform can't reach them until it's back.";
                       check = "ssh {{ $labels.host }} incus config get core.metrics_authentication";
+                      inherit dashboard;
                     };
                   }
                 ];

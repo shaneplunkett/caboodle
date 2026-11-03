@@ -57,7 +57,7 @@ let
           condition = "No successful ${task} in ${humanize seconds}";
           description = "${stakes.${task}} The check shows how the last run ended. A stale lock clears with `restic-homelab unlock` or `restic-r2 unlock`, and a network or auth error points at the far end. If nothing has logged lately, a stuck run may be holding the host's restic lock with everything queued behind it, which `systemctl list-units 'restic-backups-*'` shows. `systemctl start restic-backups-${jobs.${task}}` tries again once it's sorted.";
           check = "ssh root@{{ $labels.host }} journalctl -u restic-backups-${jobs.${task}} -n 50";
-          dashboard = links.logs "{{ $labels.host }}" [ "restic-backups-${jobs.${task}}.service" ];
+          dashboard = links.hostBackups "{{ $labels.host }}" task;
         };
       }
       {
@@ -73,7 +73,7 @@ let
           condition = "No ${task} on record for ${humanize seconds}";
           description = "${stakes.${task}} {{ $labels.host }} has data to back up and has been up long enough to run this, yet there's no record of it ever finishing. The record is a stamp in `${config.homelab.metricsDir}`, so a rebuilt host loses it even when the repo is fine. The check shows whether the job has run at all, and `systemctl start restic-backups-${jobs.${task}}` runs it now and shows what stops it.";
           check = "ssh root@{{ $labels.host }} journalctl -u restic-backups-${jobs.${task}} -n 50";
-          dashboard = links.logs "{{ $labels.host }}" [ "restic-backups-${jobs.${task}}.service" ];
+          dashboard = links.hostBackups "{{ $labels.host }}" task;
         };
       }
     ]) maxAge
@@ -146,6 +146,7 @@ in
                   condition = "SSH banner probe failing for 15m";
                   description = "Every host's backup to the box fails while this lasts, and so do their weekly prunes and checks. The R2 job runs on its own and still gets its copy while the internet is up, so check `r2-backup` is fresh before deciding a night or two costs little. Find out whether it's home or Hetzner: if the internet is out, `docs/internet-down.md` is the place to start, and otherwise it's Hetzner's status page. Run the check from monitoring, since the probe goes over IPv4 from there and a machine with IPv6 can get a different answer.";
                   check = "nc -vz {{ reReplaceAll \":.*\" \"\" $labels.instance }} 23";
+                  dashboard = links.backups;
                 };
               }
               {
@@ -158,6 +159,7 @@ in
                   condition = "Over 80% used for 1h";
                   description = "A full box stops every host's backups at once, and restic needs free space even to prune, so this is easier to sort out while there's room. The check shows monitoring's own Sunday prune, which only speaks for that host. A `BackupStale` for a prune on any other host is probably the cause. If there's none, it's real growth, so work out which host's backups grew. Retired services' `<service>-final-archives/` folders are on the box too, and `storage_box_type` in `terraform/hetzner.tf` is the bigger box if it comes to that.";
                   check = "ssh root@monitoring journalctl -u restic-backups-homelab-prune -n 50";
+                  dashboard = links.backups;
                 };
               }
               {
@@ -169,6 +171,7 @@ in
                   condition = "Usage file older than 3h";
                   description = "The hourly job on monitoring that asks Hetzner how full the box is has stopped working, so `StorageBoxFilling` is reading an old number and can't warn you. Backups aren't affected. Look for curl's error in the check's output: a 401 or 403 means the `hetzner-api-token` secret needs replacing, and a 5xx or a timeout is Hetzner's end and usually passes.";
                   check = "ssh root@monitoring journalctl -u storagebox-usage -n 20";
+                  dashboard = links.backups;
                 };
               }
             ];
