@@ -17,6 +17,10 @@ appimageTools.wrapType2 (finalAttrs: {
     hash = "sha256-4ARSQjMw/PDRvDfEo/4Gbp50z9NqY5Pv/FrPG+oQrMQ=";
   };
 
+  # The AppImage bundles libgcrypt but not the libgpg-error it links against,
+  # so the sandbox has to supply it or OpenDeck dies on launch.
+  extraPkgs = pkgs: [ pkgs.libgpg-error ];
+
   extraInstallCommands = ''
     install -m 444 -D ${finalAttrs.contents}/opendeck.desktop \
       $out/share/applications/opendeck.desktop
