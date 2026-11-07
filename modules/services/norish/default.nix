@@ -79,7 +79,7 @@ in
 
   virtualisation.oci-containers.containers = {
     norish = {
-      image = "docker.io/norishapp/norish:v0.25.1-beta";
+      image = "docker.io/norishapp/norish:v0.26.1-beta";
       dependsOn = [ "obscura" ];
       volumes = [
         "${dataDir}:/app/uploads"
