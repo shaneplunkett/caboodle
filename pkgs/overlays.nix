@@ -28,31 +28,7 @@ in
     }
   )
   (final: prev: mkProjectPackages prev.stdenv.hostPlatform.system final)
-  (
-    final: prev:
-    let
-      electron = inputs.electron-nixpkgs.legacyPackages.${final.stdenv.hostPlatform.system}.electron_43;
-    in
-    {
-      bitwarden-desktop =
-        (prev.bitwarden-desktop.override {
-          electron_43 = electron;
-        }).overrideAttrs
-          (old: {
-            nativeBuildInputs =
-              old.nativeBuildInputs ++ final.lib.optionals final.stdenv.hostPlatform.isDarwin [ final.lld ];
-            env =
-              old.env
-              // final.lib.optionalAttrs final.stdenv.hostPlatform.isDarwin {
-                RUSTFLAGS = "-C link-arg=-fuse-ld=lld";
-              };
-            preBuild = ''
-              substituteInPlace package.json \
-                --replace-fail '"electron": "43.2.0"' '"electron": "${electron.version}"'
-            ''
-            + old.preBuild;
-          });
-      sesh = prev.sesh.override { buildGo127Module = final.buildGo126Module; };
-    }
-  )
+  (final: prev: {
+    sesh = prev.sesh.override { buildGo127Module = final.buildGo126Module; };
+  })
 ]

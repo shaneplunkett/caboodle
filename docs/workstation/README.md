@@ -200,11 +200,6 @@ instead, and the rest stays settable in the emulator's menus.
   ChatGPT and Claude desktop apps on Linux, so they match Numtide's cache.
 - The project-packages overlay reads the system from `prev`, since going
   through `final.stdenv` recurses.
-- Bitwarden desktop runs on Electron from `electron-nixpkgs`, a separate
-  nixpkgs input so that security-sensitive runtime stays current. Upstream's
-  `package.json` pins an exact Electron version, so the overlay rewrites it
-  to the one it's given. On darwin it links its Rust outputs with lld, because
-  Apple's ld from cctools 1010.6 traps on the stubs for `desktop_napi`.
 - `sesh` builds with Go 1.26. Its build runs mockery, and mockery 3.8.0
   can't read Go 1.27's export data.
 - The download tuning in `nix-settings.nix` keeps a full flake update from

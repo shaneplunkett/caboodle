@@ -12,7 +12,6 @@
     ./cosmic.nix
     ./packages.nix
     ./linear.nix
-    ./bloodborne.nix
     ../vesktop.nix
     ./waydroid.nix
     ./hyprland.nix

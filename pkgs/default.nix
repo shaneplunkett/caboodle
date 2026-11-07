@@ -10,11 +10,8 @@ let
 in
 {
   browserbase-cli = pkgs.callPackage ./browserbase-cli { };
-  langsmith-cli = pkgs.callPackage ./langsmith-cli { };
   roundhog = pkgs.callPackage ./roundhog { };
   tavily-cli = pkgs.callPackage ./tavily-cli { };
-  todoist-cli = pkgs.callPackage ./todoist-cli { };
-  unifi-cli = pkgs.callPackage ./unifi-cli { };
   vex-code = pkgs.callPackage ./vex-code { src = vexCodeSrc; };
   xcodebuild-nvim = pkgs.callPackage ./xcodebuild-nvim { };
 }
@@ -37,8 +34,5 @@ in
   };
   opendeck = pkgs.callPackage ./opendeck { };
   bambu-studio-bin = pkgs.callPackage ./bambu-studio-bin { };
-  orca-studio = pkgs.callPackage ./orca-studio { };
-  shadps4-cache-fixed = pkgs.callPackage ./shadps4-cache-fixed { };
   waydroid-houdini = pkgs.callPackage ./waydroid-houdini { };
-  ytmdesktop-bin = pkgs.callPackage ./ytmdesktop-bin { };
 }
