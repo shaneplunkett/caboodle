@@ -103,10 +103,8 @@ these, then run `nix flake lock`:
 release dates and the wait would hold every input forever.
 
 Only the fast movers are pinned: `llm-agents` and the Homebrew taps.
-Everything else moves with the lock file, and these can't be pinned anyway:
-
-- nixpkgs, because another input locks its own `nixpkgs` node.
-- electron-nixpkgs, which a pin would turn into a clone of nixpkgs.
+Everything else moves with the lock file, and nixpkgs can't be pinned
+anyway, because another input locks its own `nixpkgs` node.
 
 Moving an input between the two without moving its lock means editing its
 `original` in `flake.lock` to match the new URL, adding or dropping the

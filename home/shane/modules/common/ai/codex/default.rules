@@ -47,7 +47,6 @@ prefix_rule(pattern = ["gh", "issue", "list"])
 
 # ─── vex CLIs ──────────────────────────────────────────────────────────────
 prefix_rule(pattern = ["vex"])
-prefix_rule(pattern = ["td"])
 prefix_rule(pattern = ["tvly"])
 prefix_rule(pattern = ["bb"])
 prefix_rule(pattern = ["rbw", "get"])

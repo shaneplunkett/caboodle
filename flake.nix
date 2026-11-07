@@ -47,7 +47,6 @@
       flake = false;
     };
     llm-agents.url = "github:numtide/llm-agents.nix/70f935080caa586fd7d0ae6703b155d487b93af4";
-    electron-nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     homebrew-core = {
       url = "github:homebrew/homebrew-core/4bc19ca701c7a948e945a43212a45d05dc7d1d13";

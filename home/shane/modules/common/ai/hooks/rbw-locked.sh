@@ -20,6 +20,6 @@ rbw unlocked >/dev/null 2>&1 && exit 0
 jq -n '{
   hookSpecificOutput: {
     hookEventName: "SessionStart",
-    additionalContext: "rbw (Bitwarden) is locked. MCP servers and CLIs that pull API keys from it (context7, tvly, bb, langsmith, td, unifi) will fail until it is unlocked. Mention this to Shane early, and suggest she runs `rbw unlock` in a terminal."
+    additionalContext: "rbw (Bitwarden) is locked. MCP servers and CLIs that pull API keys from it (context7, tvly, bb) will fail until it is unlocked. Mention this to Shane early, and suggest she runs `rbw unlock` in a terminal."
   }
 }'

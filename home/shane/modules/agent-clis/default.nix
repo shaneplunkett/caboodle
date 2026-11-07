@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  osConfig,
   ...
 }:
 let
@@ -20,17 +19,6 @@ in
     })
 
     (mkRbwWrapper {
-      package = pkgs.langsmith-cli;
-      secrets = [
-        {
-          var = "LANGSMITH_API_KEY";
-          entry = "langsmith-api-key";
-        }
-      ];
-      extraEnv.LANGSMITH_ENDPOINT = "https://api.smith.langchain.com";
-    })
-
-    (mkRbwWrapper {
       package = pkgs.tavily-cli;
       secrets = [
         {
@@ -38,27 +26,6 @@ in
           entry = "tavily-api-key";
         }
       ];
-    })
-
-    (mkRbwWrapper {
-      package = pkgs.todoist-cli;
-      secrets = [
-        {
-          var = "TODOIST_API_TOKEN";
-          entry = "todoist-api-token";
-        }
-      ];
-    })
-
-    (mkRbwWrapper {
-      package = pkgs.unifi-cli;
-      secrets = [
-        {
-          var = "UNIFI_API_KEY";
-          entry = "Unifi API Key";
-        }
-      ];
-      extraEnv.UNIFI_CONTROLLER_URL = "https://${osConfig.homelab.gateway}";
     })
   ];
 }

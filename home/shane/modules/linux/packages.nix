@@ -27,11 +27,6 @@ let
     package = pkgs.bambu-studio-bin;
   };
 
-  orcaStudioX11 = wrapGtkAppForX11 {
-    executable = "orca-studio";
-    package = pkgs.orca-studio;
-  };
-
   electronFlags = ''
     --ozone-platform-hint=auto
     --enable-features=WaylandWindowDecorations
@@ -96,15 +91,12 @@ in
     ferdium
     mangohud
     protonup-qt
-    shadps4-cache-fixed
-    ytmdesktop-bin
     libnotify
     imagemagick
     tesseract
     wl-clipboard
     xdg-utils
     bambuStudioX11
-    orcaStudioX11
     mpv
     vlc
     samrewritten
