@@ -179,16 +179,9 @@ instead, and the rest stays settable in the emulator's menus.
   shows when it resets.
 - The saves on the NAS and on the Deck are separate copies, so copy them
   across by hand until something syncs them.
-- `fusee-nano` is patched to wait 250 ms between sending the exploit's
-  oversized control transfer and cancelling it. Upstream cancels at once,
-  and on the 20 Gbps USB-C controller the cancel often beats the request
-  onto the wire, so the Switch stays in RCM with a black screen while the
-  tool still prints `Smashed the stack: 0`. Unpatched, it failed six times
-  in a row there, and the patched build worked first time.
-- The rules in `emulation.nix` give the logged-in user the Switch in RCM
-  (`0955:7321`) and nxdumptool's USB mode (`057e:3000`), so `fusee-nano`
-  and nxdumptool's `nxdt_host.py` run without sudo.
-- They ship as a udev package named `70-…` instead of `extraRules`, which
+- The rule in `emulation.nix` gives the logged-in user the Switch in
+  nxdumptool's USB mode (`057e:3000`), so `nxdt_host.py` runs without sudo.
+- It ships as a udev package named `70-…` instead of `extraRules`, which
   lands in `99-local.rules`. systemd's `73-seat-late.rules` applies
   `uaccess` before that, so a tag added there does nothing.
 
