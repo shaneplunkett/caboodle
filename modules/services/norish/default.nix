@@ -26,7 +26,7 @@ in
 
     oidcClients.norish = {
       name = "Norish";
-      callbackURLs = [ "https://${domain}/api/auth/oauth2/callback/oidc" ];
+      callbackURLs = [ "https://${domain}/api/auth/callback/oidc" ];
       launchURL = "https://${domain}/";
       groups = [ "norish_admins" ];
       secret = "norish-oidc-client-secret";
