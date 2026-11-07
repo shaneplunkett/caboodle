@@ -140,9 +140,6 @@ in
         settings.joypad_autoconfig_dir = "${retroarchAutoconfig}";
       })
       ppsspp
-      (fusee-nano.overrideAttrs (old: {
-        patches = (old.patches or [ ]) ++ [ ./fusee-nano-discard-delay.patch ];
-      }))
     ];
 
     services.udev.packages = [
@@ -150,7 +147,6 @@ in
         name = "nintendo-switch-udev-rules";
         destination = "/lib/udev/rules.d/70-nintendo-switch.rules";
         text = ''
-          SUBSYSTEM=="usb", ATTRS{idVendor}=="0955", ATTRS{idProduct}=="7321", TAG+="uaccess"
           SUBSYSTEM=="usb", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="3000", TAG+="uaccess"
         '';
       })
