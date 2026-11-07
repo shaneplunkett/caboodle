@@ -154,7 +154,7 @@ GitHub's runners page stay behind until someone removes them.
 BlueBubbles is the one that hurts, so a message arriving late during a run is the
 signal to turn this off. Its log is `~/Library/Logs/bluebubbles-server.log`. T3
 Code and vex-sync share the machine too, and the host dashboard has the memory
-and CPU. The first run and the Sunday lock bump are the real test, since they
+and CPU. The first run and the weekly lock bump are the real test, since they
 compile the most, and the first run also has everything only the MacBook carries
 to fetch or build.
 

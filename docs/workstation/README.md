@@ -102,7 +102,7 @@ Three things make `nrs` compile anyway, and only the first costs real time:
 
 - **The run hasn't pushed yet.** Wait for the push step before `nrs`. Nix
   remembers a miss for an hour, so one that runs too early keeps compiling for
-  that hour even after the push lands. A Sunday bump is the expensive case.
+  that hour even after the push lands. The weekly bump is the expensive case.
 - **`main` moved on a docs-only merge.** That has no run, and the revision is
   part of every closure, so `nrs` builds the handful of small derivations that
   hold it. Everything else comes from the cache.
@@ -125,7 +125,7 @@ The wallpapers are the `shaneplunkett/wallpapers` repo on GitHub, a flake input 
 from the store. The desktop's Noctalia rotates through it, and the MacBook
 links it to `~/Pictures/Wallpapers` for System Settings. The Deck and the
 mini don't get it, since neither imports a desktop shell. Adding one is a push to that repo, then
-`nix flake update wallpapers` here, or the Sunday lock file update. The input is
+`nix flake update wallpapers` here, or Saturday night's lock file update. The input is
 shallow, so the history of culled images never lands in the store. Anything
 under 3840 wide is stretched on the desktop's 4K screen, so look at those
 at full size before adding them.
