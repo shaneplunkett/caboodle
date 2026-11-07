@@ -37,7 +37,7 @@ and the Mac mini. Read `README.md` for how it fits together.
   applies a fresh plan at merge time. Renovate's and the `ai-skills` bumps
   merge themselves without one, and their plans are expected to find nothing.
   Rebase onto `origin/main` before filing.
-- **Merge:** Shane merges, except Renovate's Sunday pull requests (every
+- **Merge:** Shane merges, except Renovate's Saturday-night pull requests (every
   dependency in one, the lock file in the other) and the `ai-skills` bumps,
   which merge themselves once the check passes. Merging deploys, unless only
   `docs/` changed, so choosing when to merge is choosing when it lands. The

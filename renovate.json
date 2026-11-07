@@ -12,6 +12,7 @@
     "enabled": true,
     "automerge": true,
     "schedule": [
+      "after 8pm on saturday",
       "before 9am on sunday"
     ]
   },
@@ -62,6 +63,7 @@
       "groupName": "all dependencies",
       "groupSlug": "all",
       "schedule": [
+        "after 8pm on saturday",
         "before 9am on sunday"
       ],
       "automerge": true

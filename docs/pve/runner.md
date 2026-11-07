@@ -459,7 +459,7 @@ new guest or a changed host key fails with a red cross until
 Colmena, `curl`, `dig`, `jq`, `ssh` and `terraform` are on the service's `PATH` rather
 than coming from `nix develop .#full`, which would compile terraform and colmena on a
 cold store and fetch the rest of the shell to reach six binaries. That means a
-colmena or terraform bump reaches the job at the runner's next deploy. If a Sunday
+colmena or terraform bump reaches the job at the runner's next deploy. If a weekly
 bump makes the old command and the new flake disagree, it's a red cross with the
 same fix.
 
@@ -506,7 +506,7 @@ in `upstream-caches.nix`, which the workstations share.
   `modules/services/harmonia/client.nix` bench it [the same way as the
   cache](cache.md#when-its-down).
 - **Matches aren't guaranteed.** Nyx pins its own nixpkgs and Jovian, and ours move
-  on the Sunday bump. The kernel only matches while everything its derivation
+  on the weekly bump. The kernel only matches while everything its derivation
   depends on matches, even though other parts of nixpkgs can differ. Nyx's docs
   say to follow Jovian through its flake to avoid exactly this, and caboodle
   doesn't, because that means taking Nyx as an input. So the job's timeout still

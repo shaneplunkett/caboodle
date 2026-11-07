@@ -27,17 +27,17 @@ caller grants it. The shared workflow's README has the rest.
 
 ## Updates
 
-Renovate opens two pull requests early on Sunday, nobody is asked to review
-them, and both merge themselves once the check passes. One holds every
+Renovate opens two pull requests on Saturday night, nobody is asked to
+review them, and both merge themselves once the check passes. One holds every
 dependency update. The other is lock file maintenance, which runs
 `nix flake update` and so moves every input that isn't pinned in
 `flake.nix`; Renovate never groups it with anything else. The check builds
 nothing, so a bump that breaks a host merges anyway and turns
 [the deploy job](../pve/runner.md#the-deploy-job) red on the merge commit.
 Revert it then. The `flake-update` skill still triages a lock file change
-when asked.
+when asked, usually after it has landed.
 
-`ai-skills` doesn't wait for Sunday. Each push to its `main` dispatches
+`ai-skills` doesn't wait for Saturday. Each push to its `main` dispatches
 `.github/workflows/ai-skills.yml` here as the App, which bumps only that
 input on `update/ai-skills`, opens the pull request as the App and turns on
 auto-merge. The review happened in `ai-skills`, so a bad skill is fixed by
@@ -48,11 +48,16 @@ dispatching workflow lives in the `ai-skills` repo and needs the App's
 ## Renovate
 
 `.github/workflows/renovate.yml` runs Renovate as the App from a hosted
-runner, every day at 19:30 UTC: 06:30 in Melbourne's summer, 05:30 in
-winter, so inside the Sunday batch either way. Run workflow on its Actions
-page runs it now. The repo's rules are in `renovate.json`; the global ones
-are the `RENOVATE_CONFIG` in the workflow. Only the Sunday run opens pull
-requests; the other mornings refresh one that's still open.
+runner, every day from 10:47 UTC: 21:47 in Melbourne's summer, 20:47 in
+winter. GitHub starts a scheduled run well after its cron, four to six hours
+late through the first week, so the window Renovate opens pull requests in
+is Saturday from 8pm through to Sunday 9am, Melbourne time: wide enough that
+a late Saturday run still lands inside it, and Sunday's run doesn't. Only
+that run opens pull requests; the other days refresh one that's still open.
+Run workflow on its Actions page runs it now, and ticking `now` there opens
+the pull requests whatever the time, which is how to prove the whole chain
+by hand. The repo's rules are in `renovate.json`; the global ones are the
+`RENOVATE_CONFIG` in the workflow, and the two schedules have to agree.
 
 - It only runs on caboodle (`autodiscoverFilter`), and onboards nothing.
 - `renovate.json` extends `github>shaneplunkett/workflows` for the shared
@@ -66,8 +71,8 @@ requests; the other mornings refresh one that's still open.
   request fails on the input's 404. The run stays green when it does: the
   signs are a `WARN: Error updating flake.lock` line in its log, an "Artifact
   update problem" comment on the pull request, and a lock file that didn't
-  move. A weekday run never gets that far, so only Sunday would show it. A
-  `"dryRun": "full"` run with
+  move. A weekday run never gets that far, so only Saturday's run, or one
+  dispatched with `now`, would show it. A `"dryRun": "full"` run with
   `"force": { "schedule": ["at any time"] }` tests it without writing anything.
 - Its token leaves out two things Renovate's docs list. Administration read
   only lets it see classic branch protection, it treats the 403 as none, and
