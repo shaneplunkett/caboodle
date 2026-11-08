@@ -81,6 +81,15 @@ compressed. `modules/services/prometheus/memory.nix` holds both versions.
 Free memory alone means nothing on a Mac, because macOS fills spare memory
 with file cache on purpose. The disk alert works as on the other servers.
 
+## Screen Sharing
+
+The mini usually has no screen or keyboard of its own, so Screen Sharing is on.
+From the MacBook, open `vnc://mini-server` in Finder's Connect to Server and log
+in as `shane`, the only account on its access list. nix-darwin has no option for
+it, so the activation script in `hosts/mini.nix` starts the service and adds
+`shane` to the list. Like every other port on the mini, 5900 is open to the LAN
+as well as the tailnet.
+
 ## Tuned for agents
 
 The mini is the only T3 Code backend, so it's tuned for agents spawning lots
