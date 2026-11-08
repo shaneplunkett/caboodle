@@ -95,8 +95,8 @@ built. `nrs` on the desktop still evaluates locally, and the result is the same
 derivation the runner built, whether it's evaluated from GitHub or a checkout,
 as long as the commit matches. The Deck doesn't evaluate at all:
 [its recipe](../deck/README.md#switching) reads the closure's name off the
-cache. The Macs pull from the same cache: the mini builds both darwin closures
-on a merge and pushes them, so the MacBook fetches instead of building.
+cache. The Macs pull from the same cache: the mini builds every darwin closure
+on a merge and pushes them, so the laptops fetch instead of building.
 
 Three things make `nrs` compile anyway, and only the first costs real time:
 

@@ -273,6 +273,7 @@
           nodeNixpkgs = {
             mini = workstationPkgs "aarch64-darwin";
             macbook = workstationPkgs "aarch64-darwin";
+            macbook-air = workstationPkgs "aarch64-darwin";
             desktop = workstationPkgs "x86_64-linux";
             deck = workstationPkgs "x86_64-linux";
           };
@@ -323,6 +324,10 @@
 
         macbook = {
           imports = [ ./hosts/macbook.nix ];
+        };
+
+        macbook-air = {
+          imports = [ ./hosts/macbook-air.nix ];
         };
 
         desktop = {
