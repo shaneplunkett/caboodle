@@ -21,4 +21,4 @@ jobs:
         with:
           persist-credentials: false
       - name: Build the Macs and push them to the cache
-        run: scripts/push-to-cache.sh mini macbook
+        run: scripts/push-to-cache.sh mini macbook macbook-air

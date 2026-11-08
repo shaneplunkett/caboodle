@@ -30,7 +30,7 @@ trap 'rm -rf "$tmp"' EXIT
 
 ssh_target() {
   case "$1" in
-    macbook) echo "shane@$1" ;;
+    macbook | macbook-air) echo "shane@$1" ;;
     *) echo "root@$1" ;;
   esac
 }

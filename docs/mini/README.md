@@ -123,7 +123,7 @@ here.
 This is a trial. The [runner on PVE](../pve/runner.md) can't build darwin, so a
 second one lives here and only builds. On a push to `main` that touches anything
 outside `docs/`, `.github/workflows/darwin.yml` runs
-`scripts/push-to-cache.sh mini macbook`, which builds each Mac through
+`scripts/push-to-cache.sh mini macbook macbook-air`, which builds each Mac through
 `scripts/quietly.sh`, copies the closure to the cache and sets its profile. A
 build that fails turns the run red, and a red run pushes nothing after the host
 that broke. It never switches anything. The module is

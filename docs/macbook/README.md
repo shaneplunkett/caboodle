@@ -23,6 +23,13 @@ Use the recipe in
 `-H macbook`, or `nrs`. The hostname stays
 `Shanes-MacBook-Pro` so the tailnet name doesn't change.
 
+## The MacBook Air
+
+`macbook-air` is Shane's work laptop, and it runs the same setup as the
+MacBook, because work doesn't manage its Macs. Everything here applies to it,
+with `-H macbook-air`. Its hostname is `Shanes-MacBook-Air`, and no secret is
+encrypted to it, so its first switch doesn't need a host key.
+
 ## Gotchas
 
 - Spotlight's Command+Space (symbolic hotkey 64) is off so vicinae can have
