@@ -5,7 +5,7 @@
   ...
 }:
 let
-  inherit (config.homelab.emulation) root;
+  inherit (config.homelab.emulation) root edenInstalls;
 
   retroarchCores = {
     Gambatte = [
@@ -122,6 +122,12 @@ in
   options.homelab.emulation.root = lib.mkOption {
     type = lib.types.str;
     description = "The folder holding roms, saves and bios, each with a folder per system. ~/Emulation links to it.";
+  };
+
+  options.homelab.emulation.edenInstalls = lib.mkOption {
+    type = lib.types.nullOr lib.types.str;
+    default = null;
+    description = "A folder for Eden's installed games, updates and DLC, linked in as its nand/user/Contents. Null keeps them in Eden's own data folder.";
   };
 
   config = {
@@ -255,6 +261,9 @@ in
           ".config/Ryujinx/system/prod.keys" = link "bios/switch/prod.keys";
           ".config/Ryujinx/system/title.keys" = link "bios/switch/title.keys";
           ".local/share/azahar-emu/sysdata/boot9.bin" = link "bios/n3ds/boot9.bin";
+        }
+        // lib.optionalAttrs (edenInstalls != null) {
+          ".local/share/eden/nand/user/Contents".source = config.lib.file.mkOutOfStoreSymlink edenInstalls;
         }
         // retroarchOverrides;
 
