@@ -43,6 +43,7 @@ in
           ''
             local
             localhost
+            app.pendo.io
           ''
         ];
         clientGroupsBlock.default = [ "ads" ];
