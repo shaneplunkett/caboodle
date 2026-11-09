@@ -318,11 +318,11 @@
     },
     "nix-config-private": {
       "locked": {
-        "lastModified": 1794198207,
-        "narHash": "sha256-h7CYh8b7JIhwtzxhoCCGAqyoTfw7NNfFlIQzpAUJaEw=",
+        "lastModified": 1794201522,
+        "narHash": "sha256-vjoWVQq1p6lKdgXUixW+IfXpPbOOw3s+9xjmTTLB1B0=",
         "owner": "shaneplunkett",
         "repo": "nix-config-private",
-        "rev": "c5eaee77c79fbe13bb18dae8f39ffe3fa3019241",
+        "rev": "e714d98081d8b07dccefe7770f3036ac0e450785",
         "type": "github"
       },
       "original": {
