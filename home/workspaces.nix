@@ -3,6 +3,7 @@
   { key = "2"; }
   {
     key = "A";
+    scrolling = true;
     classes = [
       "^t3code$"
       "^chatgpt$"
