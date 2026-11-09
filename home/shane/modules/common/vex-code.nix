@@ -192,6 +192,17 @@ in
             homePath = "";
           };
         };
+
+        claudeWork = {
+          driver = "claudeAgent";
+          displayName = "Work";
+          enabled = true;
+          config = {
+            enabled = true;
+            binaryPath = lib.getExe config.programs.claude-code.finalPackage;
+            homePath = "${homeDirectory}/${config.vex.ai.claude.workConfigDir}";
+          };
+        };
       };
     };
   };
