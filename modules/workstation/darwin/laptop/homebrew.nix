@@ -7,6 +7,7 @@ _: {
       "codex-app"
       "chatgpt"
       "claude"
+      "elgato-camera-hub"
       "linear"
       "yt-music"
       "moonlight"
