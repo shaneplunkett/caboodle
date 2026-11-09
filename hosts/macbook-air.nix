@@ -1,3 +1,4 @@
+{ inputs, ... }:
 {
   imports = [
     ../modules/workstation
@@ -21,7 +22,10 @@
     hostName = "Shanes-MacBook-Air";
   };
 
-  home-manager.users.shane = import ../home/shane/homemac.nix;
+  home-manager.users.shane.imports = [
+    ../home/shane/homemac.nix
+    inputs.nix-config-private.homeManagerModules.work
+  ];
 
   system.stateVersion = 6;
 }
