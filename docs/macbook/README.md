@@ -30,6 +30,13 @@ MacBook, because work doesn't manage its Macs. Everything here applies to it,
 with `-H macbook-air`. Its hostname is `Shanes-MacBook-Air`, and no secret is
 encrypted to it, so its first switch doesn't need a host key.
 
+Git is the one difference. vex-code can't juggle two GitHub accounts, so the
+Air only uses the work one, and personal repos get worked on from the other
+machines through vex-code. The `work` module in `nix-config-private` sets its
+identity, signing key and GitHub SSH key, and globally ignores the Nix files
+work repos can't carry. Only this host imports it. The inputs token is separate
+from any of that, so `nrs` keeps working.
+
 ## Gotchas
 
 - Spotlight's Command+Space (symbolic hotkey 64) is off so vicinae can have
