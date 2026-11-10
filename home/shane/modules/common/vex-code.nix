@@ -96,7 +96,9 @@ in
       timestampFormat = "12-hour";
       notificationMode = "notifications";
       followUpBehavior = "steer";
-      contextWindowMeterEnabled = true;
+      threadDetailsItems = {
+        context = true;
+      };
       proactivePanelsEnabled = false;
       diffFilesCollapsed = false;
       browserAutoShowFloatingPreview = false;
