@@ -8,6 +8,9 @@
 let
   workConfigDir = ".claude-work";
   workConfigPath = "${config.home.homeDirectory}/${workConfigDir}";
+  workSettings = lib.escapeShellArg "${workConfigPath}/settings.json";
+  personalInstructions = lib.escapeShellArg "${config.home.homeDirectory}/.claude/**";
+  jq = lib.getExe pkgs.jq;
 in
 {
   options.vex.ai.claude.workConfigDir = lib.mkOption {
@@ -22,6 +25,18 @@ in
       run mkdir -p ${lib.escapeShellArg workConfigPath}
       if [ ! -e ${lib.escapeShellArg "${workConfigPath}/CLAUDE.md"} ]; then
         run touch ${lib.escapeShellArg "${workConfigPath}/CLAUDE.md"}
+      fi
+      if [ -z "''${DRY_RUN:-}" ]; then
+        [ -s ${workSettings} ] || echo '{}' > ${workSettings}
+        if ! ${jq} -e --arg p ${personalInstructions} '(.claudeMdExcludes // []) | index($p)' ${workSettings} > /dev/null; then
+          tmp="$(mktemp)"
+          if ${jq} --arg p ${personalInstructions} '.claudeMdExcludes = ((.claudeMdExcludes // []) + [$p])' ${workSettings} > "$tmp"; then
+            mv "$tmp" ${workSettings}
+          else
+            rm -f "$tmp"
+            echo "Couldn't add claudeMdExcludes to "${workSettings} >&2
+          fi
+        fi
       fi
     '';
 
