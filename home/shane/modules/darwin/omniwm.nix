@@ -10,6 +10,8 @@ let
 
   builtInDisplayUUID = "37D8832A-2D66-02CA-B9F7-8F30A301B230";
 
+  mauve = omniwmLib.colors.fromHex palette.hex.mauve;
+
   noBarOnBuiltInDisplay = omniwmLib.monitor.bar "Built-in Retina Display" {
     monitorDisplayUUID = builtInDisplayUUID;
     enabled = false;
@@ -71,6 +73,8 @@ in
         workspaceBar = {
           fullWidth = false;
           height = 24;
+          yOffset = -28;
+          reserveLayoutSpace = false;
         };
         monitorBarOverrides = [ noBarOnBuiltInDisplay ];
       };
@@ -88,7 +92,10 @@ in
 
       focus.followsWindowToMonitor = true;
 
-      niri.defaultContainerPrimarySpan = 1.0;
+      niri = {
+        defaultContainerPrimarySpan = 1.0;
+        edgeGaps = false;
+      };
 
       gaps = {
         size = 20.0;
@@ -103,7 +110,15 @@ in
         };
       };
 
-      borders.color = omniwmLib.colors.fromHex palette.hex.mauve;
+      borders = {
+        width = 3.0;
+        color = mauve;
+        gradient = {
+          enabled = true;
+          start = mauve;
+          end = mauve;
+        };
+      };
 
       monitorBarOverrides = [ noBarOnBuiltInDisplay ];
 
