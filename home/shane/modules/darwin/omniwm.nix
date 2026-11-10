@@ -1,6 +1,7 @@
 {
   inputs,
   lib,
+  pkgs,
   palette,
   ...
 }:
@@ -8,6 +9,11 @@ let
   omniwmLib = inputs.omniwm.lib;
 
   builtInDisplayUUID = "37D8832A-2D66-02CA-B9F7-8F30A301B230";
+
+  noBarOnBuiltInDisplay = omniwmLib.monitor.bar "Built-in Retina Display" {
+    monitorDisplayUUID = builtInDisplayUUID;
+    enabled = false;
+  };
 
   workspaces = import ../../../workspaces.nix;
 
@@ -54,6 +60,23 @@ in
 {
   imports = [ inputs.omniwm.homeManagerModules.default ];
 
+  xdg.configFile."omniwm/shell/shell.toml" = {
+    force = true;
+    source = (pkgs.formats.toml { }).generate "omniwm-shell.toml" {
+      profile = "default";
+      profiles.default = {
+        leading = [ "workspaces" ];
+        center = [ ];
+        trailing = [ ];
+        workspaceBar = {
+          fullWidth = false;
+          height = 24;
+        };
+        monitorBarOverrides = [ noBarOnBuiltInDisplay ];
+      };
+    };
+  };
+
   programs.omniwm = {
     enable = true;
     settings = {
@@ -82,12 +105,7 @@ in
 
       borders.color = omniwmLib.colors.fromHex palette.hex.mauve;
 
-      monitorBarOverrides = [
-        (omniwmLib.monitor.bar "Built-in Retina Display" {
-          monitorDisplayUUID = builtInDisplayUUID;
-          enabled = false;
-        })
-      ];
+      monitorBarOverrides = [ noBarOnBuiltInDisplay ];
 
       statusBar.showWorkspaceName = true;
 
