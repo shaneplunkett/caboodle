@@ -137,8 +137,8 @@ in
           "balanceSizes" = "Unassigned";
           "toggleOverview" = "Unassigned";
           "toggleWorkspaceLayout" = "Unassigned";
-          "setContainerPrimarySpan.decrease10Percent" = "Unassigned";
-          "setContainerPrimarySpan.increase10Percent" = "Unassigned";
+          "resizeContainerPrimarySpan.shrink" = "Unassigned";
+          "resizeContainerPrimarySpan.grow" = "Unassigned";
         }
       );
     };
