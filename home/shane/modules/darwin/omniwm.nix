@@ -17,6 +17,20 @@ let
     enabled = false;
   };
 
+  ultrawideName = "DELL S3425DW";
+  ultrawideUUID = "6810159C-B292-4224-B820-BD4832A79164";
+
+  ultrawideFrame = omniwmLib.monitor.gap ultrawideName {
+    monitorDisplayUUID = ultrawideUUID;
+    outerGapLeft = 520.0;
+    outerGapRight = 520.0;
+  };
+
+  barInUltrawideMenuBar = omniwmLib.monitor.bar ultrawideName {
+    monitorDisplayUUID = ultrawideUUID;
+    yOffset = 3.0;
+  };
+
   workspaces = import ../../../workspaces.nix;
 
   matcher = lib.filterAttrs (
@@ -76,7 +90,10 @@ in
           yOffset = -28;
           reserveLayoutSpace = false;
         };
-        monitorBarOverrides = [ noBarOnBuiltInDisplay ];
+        monitorBarOverrides = [
+          noBarOnBuiltInDisplay
+          barInUltrawideMenuBar
+        ];
       };
     };
   };
@@ -115,12 +132,15 @@ in
         color = mauve;
         gradient = {
           enabled = true;
+          direction = "topLeftToBottomRight";
           start = mauve;
           end = mauve;
         };
       };
 
       monitorBarOverrides = [ noBarOnBuiltInDisplay ];
+
+      monitorGapOverrides = [ ultrawideFrame ];
 
       statusBar.showWorkspaceName = true;
 
