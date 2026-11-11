@@ -47,6 +47,7 @@ let
 
   workspaceWildcards = [
     "~/Projects/personal/*"
+    "~/Projects/work/*"
   ];
 
   workspaceFor = pattern: {

@@ -71,7 +71,7 @@ find_projects() {
     printf '%s\n' "$HOME/ai-skills"
     fd -H -t d -d 1 \
       -E .git -E node_modules -E .direnv -E .next -E dist \
-      . "$HOME/Projects/personal" 2>/dev/null
+      . "$HOME/Projects/personal" "$HOME/Projects/work" 2>/dev/null
   } | awk '!seen[$0]++'
 }
 
