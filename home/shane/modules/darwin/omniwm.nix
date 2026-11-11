@@ -26,11 +26,6 @@ let
     outerGapRight = 520.0;
   };
 
-  barInUltrawideMenuBar = omniwmLib.monitor.bar ultrawideName {
-    monitorDisplayUUID = ultrawideUUID;
-    yOffset = 3.0;
-  };
-
   workspaces = import ../../../workspaces.nix;
 
   matcher = lib.filterAttrs (
@@ -87,13 +82,10 @@ in
         workspaceBar = {
           fullWidth = false;
           height = 24;
-          yOffset = -28;
+          yOffset = 3;
           reserveLayoutSpace = false;
         };
-        monitorBarOverrides = [
-          noBarOnBuiltInDisplay
-          barInUltrawideMenuBar
-        ];
+        monitorBarOverrides = [ noBarOnBuiltInDisplay ];
       };
     };
   };
