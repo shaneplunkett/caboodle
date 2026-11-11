@@ -1,4 +1,5 @@
 {
+  config,
   inputs,
   lib,
   pkgs,
@@ -70,6 +71,8 @@ let
 in
 {
   imports = [ inputs.omniwm.homeManagerModules.default ];
+
+  programs.fish.shellAliases.omnirestart = "launchctl kickstart -k gui/(id -u)/${config.launchd.agents.omniwm.config.Label}";
 
   xdg.configFile."omniwm/shell/shell.toml" = {
     force = true;
