@@ -31,11 +31,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793687378,
-        "narHash": "sha256-Usa9HQyFY0euwxACva0JMDe/AUyu8llmfAHdVSrHXvM=",
+        "lastModified": 1794465472,
+        "narHash": "sha256-1XpRRjvrKkgHQBksWq0jaR/XxeqyzEl/utErcjhxdUc=",
         "owner": "shaneplunkett",
         "repo": "ai-skills",
-        "rev": "59ffcde697a8974d0fb2527b5c6d239529094fef",
+        "rev": "15491dd4ec9054196313f910bc18d639ee3a06b0",
         "type": "github"
       },
       "original": {
