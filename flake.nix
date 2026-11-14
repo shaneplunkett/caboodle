@@ -46,14 +46,14 @@
       url = "github:shaneplunkett/vex-code";
       flake = false;
     };
-    llm-agents.url = "github:numtide/llm-agents.nix/70f935080caa586fd7d0ae6703b155d487b93af4";
+    llm-agents.url = "github:numtide/llm-agents.nix/1b7ee581dc08b305b31313a5de609c7c50b0cdcc";
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     homebrew-core = {
-      url = "github:homebrew/homebrew-core/4bc19ca701c7a948e945a43212a45d05dc7d1d13";
+      url = "github:homebrew/homebrew-core/2466ad74395158a190f438a6940acb867a8bf8e4";
       flake = false;
     };
     homebrew-cask = {
-      url = "github:homebrew/homebrew-cask/d3d43ca4ae1c00166e62c22bd242943a6dbb1787";
+      url = "github:homebrew/homebrew-cask/a8292dd34f1a79c819b2ad3709b63029bb3bc2e8";
       flake = false;
     };
     omniwm = {
@@ -159,7 +159,7 @@
         pkgs:
         let
           cf = pkgs.writeShellScriptBin "cf" ''
-            exec ${pkgs.nodejs_22}/bin/npx --yes cf@1.0.0-beta.28 "$@"
+            exec ${pkgs.nodejs_22}/bin/npx --yes cf@1.0.0-beta.31 "$@"
           '';
           check = [
             pkgs.git
