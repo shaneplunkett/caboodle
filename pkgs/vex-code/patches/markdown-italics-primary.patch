@@ -1,9 +1,9 @@
 diff --git a/apps/web/src/index.css b/apps/web/src/index.css
-index 814cfa48..1dc5ac93 100644
+index 0f9942e329..53f597116f 100644
 --- a/apps/web/src/index.css
 +++ b/apps/web/src/index.css
-@@ -1956,6 +1956,11 @@ code {
-   text-decoration: none;
+@@ -2058,6 +2058,11 @@ code {
+   display: inline;
  }
  
 +/* Italics take the primary colour: mauve under Catppuccin Mocha. */

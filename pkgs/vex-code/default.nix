@@ -103,7 +103,7 @@ let
           pnpmWorkspaces
           ;
         fetcherVersion = 5;
-        hash = "sha256-bx83HgJAMjwo6IheAHMS3tZGxARBlz3aLFcBoEWI2Bg=";
+        hash = "sha256-27Ljt2lY4J1Fi3ddVIflPQ5erRqmgaZ8+YBH9fhCLzo=";
       };
 
       postPatch = ''
