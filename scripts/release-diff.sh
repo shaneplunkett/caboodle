@@ -14,8 +14,9 @@
 # the two are compared on the runner, which built it, or on this Mac for a Mac,
 # then through the cache, and when the host's system is in no store but its
 # own, by the names in the two closures, which drops the sizes and pairs
-# nothing. The Deck and the MacBook are often asleep; a host that doesn't
-# answer is reported and skipped.
+# nothing. Each host is reached as the generated SSH config names it, with the
+# user its homelab.sshUser sets. The Deck and the MacBooks are often asleep; a
+# host that can't be reached is skipped, with SSH's reason.
 set -eu
 
 merged_at="$1"
@@ -28,20 +29,13 @@ since="$(date -u -d "$merged_at" +%s 2>/dev/null || date -u -j -f '%Y-%m-%dT%H:%
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
-ssh_target() {
-  case "$1" in
-    macbook | macbook-air) echo "shane@$1" ;;
-    *) echo "root@$1" ;;
-  esac
-}
-
 run_on() {
   host="$1"
   shift
   if [ "$host" = "$me" ] || { [ "$host" = mini ] && [ "$me" = mini-server ]; }; then
     sh -c "$*"
   else
-    ssh -o BatchMode=yes -o ConnectTimeout=8 "$(ssh_target "$host")" "$*"
+    ssh -o BatchMode=yes -o ConnectTimeout=8 "$host" "$*"
   fi
 }
 
@@ -53,7 +47,7 @@ compare_on() {
     sh -c "$*"
   else
     shift
-    ssh -o BatchMode=yes root@runner "$*"
+    ssh -o BatchMode=yes runner "$*"
   fi
 }
 
@@ -74,8 +68,8 @@ names="sed 's|^/nix/store/[a-z0-9]*-||' | grep -v -e '\\.drv\$' -e '-source\$' |
 
 for host in "$@"; do
   echo "# $host"
-  if ! state="$(run_on "$host" "$(cat "$tmp/generations")" 2>/dev/null)"; then
-    echo "$host didn't answer, so no diff."
+  if ! state="$(run_on "$host" "$(cat "$tmp/generations")" 2>"$tmp/ssh-error")"; then
+    echo "$host couldn't be reached, so no diff: $(tail -n 1 "$tmp/ssh-error")"
     echo
     continue
   fi
