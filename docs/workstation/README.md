@@ -147,7 +147,8 @@ they run the same emulators against the same folder layout. Each host sets
 `homelab.emulation.root`, and `~/Emulation` links to it: the NAS's `games`
 share on the desktop, the SD card's `Emulation` folder on the Deck, so the
 Deck plays offline. Each of `roms`, `saves` and `bios` has a folder per
-system: `gb`, `gbc`, `gba`, `nds`, `psp`, `switch`, `n3ds` and `psvita`.
+system: `gb`, `gbc`, `gba`, `nds`, `psp`, `switch`, `n3ds`, `psvita` and
+`wii`.
 
 Emulators rewrite their own settings files, so Nix doesn't own those.
 Home Manager links each emulator's save folder and keys into `~/Emulation`
@@ -180,6 +181,12 @@ instead, and the rest stays settable in the emulator's menus.
   firmware over USB.
 - Azahar plays 3DS and reads `bios/n3ds/boot9.bin`. Its saves, and Vita3K's,
   aren't linked yet, since neither has been tried with these games.
+- Dolphin plays Wii. The games come off the Wii's USB Loader drive as it
+  lays them out, a folder per game named `Title [ID]`, so the Wii parser
+  takes the title from the folder, not the file. A game over 4 GB is split
+  into `.wbfs` and `.wbf1`, and Dolphin joins them as long as they share a
+  folder. Its saves stay in its own NAND for now, since it hasn't been
+  tried with these games.
 - Steam ROM Manager puts the games in Steam, with a parser per system.
   Home Manager rewrites its `userConfigurations.json` on every switch, so a
   parser change goes in the Nix, not the app. Run it after adding games,

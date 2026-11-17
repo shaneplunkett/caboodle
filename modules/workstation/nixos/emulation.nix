@@ -116,6 +116,14 @@ let
       args = "-f -g";
       extensions = ".nsp|.NSP|.xci|.XCI";
     }
+    {
+      system = "wii";
+      title = "Wii";
+      exe = "dolphin-emu";
+      args = "-b -e";
+      extensions = ".wbfs|.WBFS|.rvz|.RVZ|.iso|.ISO";
+      inFolders = true;
+    }
   ];
 in
 {
@@ -133,6 +141,7 @@ in
   config = {
     environment.systemPackages = with pkgs; [
       azahar
+      dolphin-emu
       eden
       ryubing
       vita3k
@@ -195,7 +204,11 @@ in
               startInDirectory = "";
               titleModifier = "\${/\\s*(\\(.*?\\)|\\[.*?\\])/g|\${title}|}";
               steamInputEnabled = "1";
-              parserInputs.glob = "\${title}@(${parser.extensions})";
+              parserInputs.glob =
+                if parser.inFolders or false then
+                  "\${title}/*@(${parser.extensions})"
+                else
+                  "\${title}@(${parser.extensions})";
               fuzzyMatch = {
                 replaceDiacritics = true;
                 removeCharacters = true;
