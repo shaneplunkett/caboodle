@@ -107,10 +107,6 @@ let
       };
 
       postPatch = ''
-        # Upstream's Beta rename changes the app name that safeStorage and
-        # libsecret key saved connections on, which locks existing installs out.
-        substituteInPlace apps/desktop/package.json \
-          --replace-fail '"productName": "T3 Code (Beta)"' '"productName": "T3 Code (Alpha)"'
         substituteInPlace apps/desktop/src/app/DesktopEnvironment.ts \
           --replace-fail '? "Nightly" : "Beta";' '? "Nightly" : "Alpha";'
 
@@ -139,6 +135,14 @@ let
       # the helper from the source tree's cargo output path, not resources.
       postInstall =
         (previousAttrs.postInstall or "")
+        + ''
+          # Electron names the Keychain and libsecret entries that encrypt
+          # saved connections after the app. nixpkgs renames it to t3code,
+          # but this install's entries are under the Alpha name.
+          desktop_package="$out/libexec/t3code/apps/desktop/package.json"
+          jq '.productName = "T3 Code (Alpha)"' "$desktop_package" > package.json.tmp
+          mv package.json.tmp "$desktop_package"
+        ''
         + lib.optionalString stdenv.hostPlatform.isLinux ''
           install -Dm755 ${lib.getExe hyprlandSnapShot} \
             "$out"/libexec/t3code/native/hyprland-snap-shot/target/release/t3-hyprland-snap-shot
