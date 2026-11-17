@@ -181,17 +181,27 @@ let
             --set SHELL ${lib.getExe fish}
         ''
         + lib.optionalString stdenv.hostPlatform.isDarwin ''
-          old_app="$out/Applications/T3 Code (Alpha).app"
+          # nixpkgs renames the bundle with upstream's stage label, so take
+          # whichever one it built. The identifier stays on the Alpha name
+          # because macOS keys permissions and Keychain access on it.
+          apps=("$out"/Applications/*.app)
+          if [ "''${#apps[@]}" -ne 1 ]; then
+            echo "expected one app bundle, found ''${#apps[@]}" >&2
+            exit 1
+          fi
+          old_app="''${apps[0]}"
+          old_name="$(basename "$old_app" .app)"
           vex_app="$out/Applications/Vex Code (Alpha).app"
-          old_executable="$old_app/Contents/MacOS/T3 Code (Alpha)"
-          vex_executable="$old_app/Contents/MacOS/Vex Code (Alpha)"
           info_plist="$old_app/Contents/Info.plist"
 
           substituteInPlace "$info_plist" \
             --replace-fail \
-              '<string>T3 Code (Alpha)</string>' \
+              "<string>org.nixos.$old_name</string>" \
+              '<string>org.nixos.T3 Code (Alpha)</string>' \
+            --replace-fail \
+              "<string>$old_name</string>" \
               '<string>Vex Code (Alpha)</string>'
-          mv "$old_executable" "$vex_executable"
+          mv "$old_app/Contents/MacOS/$old_name" "$old_app/Contents/MacOS/Vex Code (Alpha)"
           mv "$old_app" "$vex_app"
         '';
 
