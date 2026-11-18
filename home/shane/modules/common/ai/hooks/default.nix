@@ -69,48 +69,68 @@ let
     }
   ];
 
-  mkHook =
+  hookPackage =
     harness:
     {
       name,
-      event,
       script,
-      tool ? null,
       runtimeInputs ? [ ],
-      timeout ? 10,
+      ...
     }:
-    let
-      package = pkgs.writeShellApplication {
-        name = "${harness}-${name}";
-        runtimeInputs = [
-          pkgs.coreutils
-          pkgs.jq
-          changedFiles
-        ]
-        ++ runtimeInputs;
-        text = ''exec ${pkgs.bash}/bin/bash ${script} ${harness} "$@"'';
-      };
-    in
+    pkgs.writeShellApplication {
+      name = "${harness}-${name}";
+      runtimeInputs = [
+        pkgs.coreutils
+        pkgs.jq
+        changedFiles
+      ]
+      ++ runtimeInputs;
+      text = ''exec ${pkgs.bash}/bin/bash ${script} ${harness} "$@"'';
+    };
+
+  mkHook =
+    harness: command:
+    {
+      event,
+      tool ? null,
+      timeout ? 10,
+      ...
+    }:
     {
       inherit event;
       entry = lib.optionalAttrs (tool != null) { matcher = matchers.${harness}.${tool}; } // {
         hooks = [
           {
             type = "command";
-            command = lib.getExe package;
-            inherit timeout;
+            inherit command timeout;
           }
         ];
       };
     };
 
   hooksIn =
-    harness: hooks:
+    harness: commandOf: hooks:
     lib.mapAttrs (_: map (hook: hook.entry)) (
-      lib.groupBy (hook: hook.event) (map (mkHook harness) hooks)
+      lib.groupBy (hook: hook.event) (map (hook: mkHook harness (commandOf hook) hook) hooks)
     );
+
+  storeCommand = harness: hook: lib.getExe (hookPackage harness hook);
+
+  linkedHooksIn =
+    harness: hooks:
+    { homeDirectory, dir }:
+    let
+      linkPath = hook: "${dir}/${harness}-${hook.name}";
+    in
+    {
+      hooks = hooksIn harness (hook: "${homeDirectory}/${linkPath hook}") hooks;
+      files = lib.listToAttrs (
+        map (hook: lib.nameValuePair (linkPath hook) { source = storeCommand harness hook; }) hooks
+      );
+    };
 in
 {
-  hooksFor = harness: hooksIn harness sharedHooks;
-  vexHooksFor = harness: hooksIn harness (sharedHooks ++ vexHooks);
+  vexHooksFor = harness: hooksIn harness (storeCommand harness) (sharedHooks ++ vexHooks);
+  linkedHooksFor = harness: linkedHooksIn harness sharedHooks;
+  linkedVexHooksFor = harness: linkedHooksIn harness (sharedHooks ++ vexHooks);
 }

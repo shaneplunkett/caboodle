@@ -56,9 +56,14 @@ let
     lib.mapAttrs codexMcpServer config.programs.mcp.servers
   );
 
-  sharedCodexHooks = aiHelpers.hooksFor "codex";
+  hookLinks = {
+    inherit homeDirectory;
+    dir = ".local/share/codex-hooks";
+  };
 
-  codexHooks = aiHelpers.vexHooksFor "codex";
+  sharedCodexHooks = aiHelpers.linkedHooksFor "codex" hookLinks;
+
+  codexHooks = aiHelpers.linkedVexHooksFor "codex" hookLinks;
 
   codexSettings = {
     model = "gpt-5.6-sol";
@@ -131,7 +136,7 @@ let
 
     projects."/home/shane/Projects/personal/caboodle".trust_level = "trusted";
 
-    hooks = codexHooks;
+    inherit (codexHooks) hooks;
   }
   // lib.optionalAttrs (transformedMcpServers != { }) {
     mcp_servers = transformedMcpServers;
@@ -140,7 +145,7 @@ let
   codexConfigSeed = tomlFormat.generate "codex-config.toml" codexSettings;
 
   codeGirlySettings = codexSettings // {
-    hooks = sharedCodexHooks;
+    inherit (sharedCodexHooks) hooks;
     skills.config =
       map
         (path: {
@@ -339,6 +344,8 @@ in
           dir = "${codexCodeConfigDir}/skills";
           inherit (aiHelpers) skills;
         })
+        // codexHooks.files
+        // sharedCodexHooks.files
         // {
           "${codexCodeConfigDir}/AGENTS.md".text = aiHelpers.prompts.personal;
         };

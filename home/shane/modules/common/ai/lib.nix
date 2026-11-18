@@ -18,7 +18,7 @@
     fi
   '';
 
-  inherit (import ./hooks { inherit pkgs lib; }) hooksFor vexHooksFor;
+  inherit (import ./hooks { inherit pkgs lib; }) vexHooksFor linkedHooksFor linkedVexHooksFor;
 
   mkSkillTree =
     {
