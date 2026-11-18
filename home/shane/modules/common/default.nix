@@ -4,6 +4,7 @@
     inputs.nix-config-private.homeManagerModules.default
     ./ai
     ./btop.nix
+    ./claude-work.nix
     ./git.nix
     ./lazygit.nix
     ./nh.nix

@@ -372,6 +372,12 @@ in
     };
 
     programs = {
+      fish.shellAliases = {
+        cx = "codex";
+        cxr = "codex resume --last";
+        cxb = "CODEX_HOME=$HOME/${codexBareConfigDir} codex";
+      };
+
       codex = {
         enable = true;
         package = codexPackage;

@@ -3,8 +3,6 @@ _: {
   homebrew = {
 
     casks = [
-      "codex-app"
-      "chatgpt"
       "claude"
       "elgato-camera-hub"
       "linear"

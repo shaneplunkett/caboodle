@@ -220,6 +220,9 @@ instead, and the rest stays settable in the emulator's menus.
   stay put. `nix develop` applies its environment after the rc file, so
   handing over would lose it. A direnv environment is already exported
   (`DIRENV_DIR`) and survives the exec, so that one does hand over.
+- Home Manager merges vex-code's settings into `~/.t3/userdata/settings.json`
+  instead of replacing the file, so a provider taken out of the Nix stays
+  there until it's deleted by hand.
 - The SSH aliases reach each machine by its MagicDNS name and set
   `HostKeyAlias` to the short name, so `known_hosts` keeps one key per
   machine however `HostName` is spelt.

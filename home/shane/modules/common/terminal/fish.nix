@@ -47,11 +47,6 @@ in
 
     fish = {
       enable = true;
-      shellAliases = {
-        cx = "codex";
-        cxr = "codex resume --last";
-        cxb = "CODEX_HOME=$HOME/.codex-bare codex";
-      };
       shellAbbrs = {
         cat = "bat";
         ngc = "nh clean all --keep 3 --keep-since 7d --ask";
