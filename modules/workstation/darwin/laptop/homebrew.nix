@@ -3,16 +3,12 @@ _: {
   homebrew = {
 
     casks = [
-      "ferdium"
       "codex-app"
       "chatgpt"
       "claude"
       "elgato-camera-hub"
       "linear"
       "yt-music"
-      "moonlight"
-      "steam"
-      "vesktop"
     ];
 
     brews = [

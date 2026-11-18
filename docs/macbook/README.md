@@ -25,12 +25,21 @@ Use the recipe in
 
 ## The MacBook Air
 
-`macbook-air` is Shane's work laptop, and it runs the same setup as the
-MacBook, because work doesn't manage its Macs. Everything here applies to it,
-with `-H macbook-air`. Its hostname is `Shanes-MacBook-Air`, and no secret is
-encrypted to it, so its first switch doesn't need a host key.
+`macbook-air` is Shane's work laptop. Work manages it with a device profile,
+so it runs the MacBook's setup without the personal parts. Everything here
+applies to it, with `-H macbook-air`. Its hostname is `Shanes-MacBook-Air`,
+and no secret is encrypted to it, so its first switch doesn't need a host key.
 
-Git is the one difference. vex-code can't juggle two GitHub accounts, so the
+`hosts/macbook-air.nix` lists what it leaves out:
+
+- The two `personal.nix` modules, one in `modules/workstation/darwin/laptop`
+  and one in `home/shane/modules/common`, and Vesktop's settings. Anything
+  the MacBook should have and a work laptop shouldn't goes in one of those.
+- Work chats. `vex sync-cc` and `vex sync-codex` also read `~/.claude-work`
+  and `~/.codex-work` unless told otherwise, so the Air's sync agents name
+  the personal folders and work sessions stay on the laptop.
+
+Git differs too. vex-code can't juggle two GitHub accounts, so the
 Air only uses the work one, and personal repos get worked on from the other
 machines through vex-code. The `work` module in `nix-config-private` sets its
 identity, signing key and GitHub SSH key, and globally ignores the Nix files

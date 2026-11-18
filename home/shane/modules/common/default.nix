@@ -1,7 +1,6 @@
 { inputs, ... }:
 {
   imports = [
-    ./account-tools.nix
     inputs.nix-config-private.homeManagerModules.default
     ./ai
     ./btop.nix
@@ -12,6 +11,7 @@
     ./nix-index.nix
     ./nixvim
     ./packages.nix
+    ./personal.nix
     ./rbw.nix
     ./ssh.nix
     ./terraform.nix
