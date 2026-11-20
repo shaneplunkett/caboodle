@@ -144,6 +144,7 @@ in
       dolphin-emu
       eden
       ryubing
+      ukmm
       vita3k
       steam-rom-manager
       (retroarch-bare.wrapper {

@@ -30,5 +30,16 @@ in
   (final: prev: mkProjectPackages prev.stdenv.hostPlatform.system final)
   (final: prev: {
     sesh = prev.sesh.override { buildGo127Module = final.buildGo126Module; };
+    ukmm =
+      if prev.ukmm ? postPatch then
+        prev.ukmm
+      else
+        prev.ukmm.overrideAttrs (old: {
+          buildInputs = old.buildInputs ++ [ final.zstd ];
+          postPatch = ''
+            substituteInPlace ../ukmm-*-vendor/*/zarchive-*/build.rs \
+              --replace-fail cargo:rustc-link-lib=static=zstd cargo:rustc-link-lib=zstd
+          '';
+        });
   })
 ]
