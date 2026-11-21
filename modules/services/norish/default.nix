@@ -107,7 +107,7 @@ in
     };
 
     obscura = {
-      image = "docker.io/norishapp/obscura:0.2.5-norish.1";
+      image = "docker.io/norishapp/obscura:0.2.7-norish.1";
       ports = [ "127.0.0.1:9222:9222" ];
       environmentFiles = [ secrets.norish-obscura-env.path ];
     };
