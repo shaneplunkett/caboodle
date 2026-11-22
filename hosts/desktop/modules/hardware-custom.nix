@@ -24,8 +24,16 @@
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="0070", ATTR{power/autosuspend}="-1", ATTR{power/control}="on"
     ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="0094", ATTR{power/autosuspend}="-1", ATTR{power/control}="on"
-    KERNEL=="hidraw*", ATTRS{idVendor}=="320f", ATTRS{idProduct}=="5044", TAG+="uaccess"
   '';
+  services.udev.packages = [
+    (pkgs.writeTextFile {
+      name = "gmmk-pro-udev-rules";
+      destination = "/lib/udev/rules.d/70-gmmk-pro.rules";
+      text = ''
+        KERNEL=="hidraw*", ATTRS{idVendor}=="320f", ATTRS{idProduct}=="5044", TAG+="uaccess"
+      '';
+    })
+  ];
   systemd.services.usb-hub-reset = {
     description = "Reset USB hub chain for monitor KVM";
     after = [ "multi-user.target" ];
