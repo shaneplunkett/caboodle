@@ -29,7 +29,7 @@ in
   };
 
   virtualisation.oci-containers.containers.music-assistant = {
-    image = "ghcr.io/music-assistant/server:2.10.6";
+    image = "ghcr.io/music-assistant/server:2.10.13";
     volumes = [ "${dataDir}:/data" ];
     environment.TZ = "Australia/Melbourne";
     extraOptions = [ "--network=host" ];

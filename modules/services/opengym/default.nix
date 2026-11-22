@@ -18,7 +18,7 @@ in
 
   virtualisation.oci-containers.containers = {
     opengym-api = {
-      image = "ghcr.io/duartesantos8/opengym-api:1.4.1";
+      image = "ghcr.io/duartesantos8/opengym-api:1.4.5";
       volumes = [ "${dataDir}/data:/data" ];
       environment = {
         PORT = toString apiPort;
@@ -34,7 +34,7 @@ in
     };
 
     opengym-web = {
-      image = "ghcr.io/duartesantos8/opengym-web:1.4.1";
+      image = "ghcr.io/duartesantos8/opengym-web:1.4.5";
       dependsOn = [ "opengym-api" ];
       volumes = [
         "${media}/img:/usr/share/nginx/html/img:ro"

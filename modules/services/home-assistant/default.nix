@@ -31,7 +31,7 @@ in
   };
 
   virtualisation.oci-containers.containers.homeassistant = {
-    image = "ghcr.io/home-assistant/home-assistant:2026.10.1";
+    image = "ghcr.io/home-assistant/home-assistant:2026.11.2";
     volumes = [
       "${dataDir}:/config"
       "${./dyson-fan-card.js}:/config/www/dyson-fan-card.js:ro"

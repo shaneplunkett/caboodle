@@ -17,7 +17,7 @@ in
   };
 
   virtualisation.oci-containers.containers.shelfarr = {
-    image = "ghcr.io/pedro-revez-silva/shelfarr@sha256:b4bbdf278cfe6aa4773b102c192ad9c79263c573fc8b51c5861d1a093f9e9092";
+    image = "ghcr.io/pedro-revez-silva/shelfarr@sha256:97270513a75354d1b8cf2fa68f22cd31f021d03c3695186437e448f2a9255d9e";
     ports = [ "${toString port}:3000" ];
     volumes = [
       "${dataDir}:/rails/storage"
