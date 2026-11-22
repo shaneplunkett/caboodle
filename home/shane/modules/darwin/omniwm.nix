@@ -180,6 +180,8 @@ in
           "resizeFocusedWindow.shrink" = "Option+Minus";
           "resizeFocusedWindow.grow" = "Option+Equal";
 
+          "openCommandPalette" = "Unassigned";
+
           # Defaults that collide with the bindings above.
           "toggleColumnTabbed" = "Unassigned";
           "balanceSizes" = "Unassigned";
