@@ -52,7 +52,15 @@ from any of that, so `nrs` keeps working.
 ## Gotchas
 
 - Spotlight's Command+Space (symbolic hotkey 64) is off so vicinae can have
-  it.
+  it. A change to these shortcuts waits for the next login, since macOS only
+  rereads them then or when `activateSettings -u` runs.
+- OmniWM's command palette has no shortcut, since vicinae is the launcher
+  and its default, Control+Option+Space, is macOS's "Select next source in
+  Input menu".
+- OmniWM keeps a settings file it can't parse as `settings.toml.corrupt`
+  beside the live one and warns about it in Health until the file is gone.
+  The warning says nothing about the live file, so check the dates before
+  chasing it.
 - Slack is `pkgs/slack-themed`, patched and re-signed ad hoc, so it loses
   Slack's own entitlements. Sign in through the browser, since passkeys in
   the app and `slack.com` links opening it depend on those entitlements. The
