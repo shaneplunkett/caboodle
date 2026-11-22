@@ -13,7 +13,7 @@ in
   };
 
   virtualisation.oci-containers.containers.maintainerr = {
-    image = "ghcr.io/maintainerr/maintainerr:3.30.1";
+    image = "ghcr.io/maintainerr/maintainerr:3.33.0";
     ports = [ "${toString port}:${toString port}" ];
     volumes = [ "${dataDir}:/opt/data" ];
     environment.TZ = "Australia/Melbourne";

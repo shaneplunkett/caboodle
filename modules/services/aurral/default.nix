@@ -46,7 +46,7 @@ in
   };
 
   virtualisation.oci-containers.containers.aurral = {
-    image = "ghcr.io/lklynet/aurral:2.12.0";
+    image = "ghcr.io/lklynet/aurral:3.0.1";
     ports = [ "${toString port}:3001" ];
     volumes = [
       "${dataDir}:/config"

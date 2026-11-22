@@ -46,14 +46,14 @@
       url = "github:shaneplunkett/vex-code";
       flake = false;
     };
-    llm-agents.url = "github:numtide/llm-agents.nix/a59764a6424689d67c1bd9070fd48afa44a47ee0";
+    llm-agents.url = "github:numtide/llm-agents.nix/91fde7b18469fbc0938d6ab04566463bc3ba3395";
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     homebrew-core = {
-      url = "github:homebrew/homebrew-core/408f11eaf8d5fdb566540955912c20e71ea2c8c0";
+      url = "github:homebrew/homebrew-core/7afb77d35cc4c0fac5f0bc20abb44b370bea3975";
       flake = false;
     };
     homebrew-cask = {
-      url = "github:homebrew/homebrew-cask/89c3ddd568b9deadd8865df6f84033912bec8327";
+      url = "github:homebrew/homebrew-cask/35af16d52a1195b63378ee163ccc0a334e7f99fb";
       flake = false;
     };
     omniwm = {

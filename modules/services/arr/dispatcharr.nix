@@ -17,7 +17,7 @@ in
   };
 
   virtualisation.oci-containers.containers.dispatcharr = {
-    image = "ghcr.io/dispatcharr/dispatcharr:0.33.0";
+    image = "ghcr.io/dispatcharr/dispatcharr:0.34.1";
     ports = [ "${toString port}:${toString port}" ];
     volumes = [ "${dataDir}:/data" ];
     environment = {
