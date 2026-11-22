@@ -112,6 +112,15 @@ in
         (bind "${mod} + N" (exec "noctalia msg panel-toggle control-center"))
         (bind "${mod} + SHIFT + 4" (exec "noctalia msg screenshot-region"))
         (bind "${mod} + SHIFT + 5" (exec "noctalia msg plugin noctalia/screen_recorder:service all toggle"))
+        (bindOpts "XF86AudioRaiseVolume" (exec "noctalia msg volume-up") {
+          locked = true;
+          repeating = true;
+        })
+        (bindOpts "XF86AudioLowerVolume" (exec "noctalia msg volume-down") {
+          locked = true;
+          repeating = true;
+        })
+        (bindOpts "XF86AudioMute" (exec "noctalia msg volume-mute") { locked = true; })
       ];
 
       curve = [
