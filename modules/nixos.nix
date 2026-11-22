@@ -17,7 +17,7 @@ in
 
   programs.nh.clean = {
     enable = true;
-    extraArgs = "--keep 2";
+    extraArgs = lib.mkDefault "--keep 2";
   };
 
   services.prometheus = {
