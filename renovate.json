@@ -74,6 +74,13 @@
         "nix"
       ],
       "minimumReleaseAge": null
+    },
+    {
+      "description": "Only Docker Hub gives image release dates, so the wait would hold every image on ghcr.io forever. Images with no date skip the wait and Docker Hub's keep it",
+      "matchDatasources": [
+        "docker"
+      ],
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
     }
   ]
 }

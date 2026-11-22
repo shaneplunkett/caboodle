@@ -102,6 +102,12 @@ these, then run `nix flake lock`:
 `minimumReleaseAge` is off for pinned inputs, because `git-refs` has no
 release dates and the wait would hold every input forever.
 
+Container images need the same kind of rule: only
+Docker Hub gives Renovate a release date, so images on `ghcr.io` skip the
+wait (`minimumReleaseAgeBehaviour`), and Docker Hub's keep it. Without that
+rule a `ghcr.io` image never moves and nothing says so: Home Assistant sat on
+2026.10.1 for six weekly runs.
+
 Only the fast movers are pinned: `llm-agents` and the Homebrew taps.
 Everything else moves with the lock file, and nixpkgs can't be pinned
 anyway, because another input locks its own `nixpkgs` node.
