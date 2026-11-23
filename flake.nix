@@ -388,7 +388,10 @@
             memory = 8192;
             disk = 100;
             mac = "BC:24:11:AA:D1:7C";
-            mounts."/mnt/media" = "/mnt/media";
+            mounts = {
+              "/mnt/media" = "/mnt/media";
+              "/data" = "/mnt/media";
+            };
             devices = [
               {
                 path = "/dev/dri/renderD128";

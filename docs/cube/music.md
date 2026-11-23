@@ -21,6 +21,20 @@ database, is `/var/lib/aurral`.
   Everything in the library can be found again, and a restored database
   re-searches whatever went missing.
 
+## Plex
+
+Shane listens in Plexamp. Aurral writes an M3U for every playlist and flow
+to `_playlists` in the library, and with **Send playlists** on in
+**Settings > Listening > Plex** it hands each file to Plex by its path.
+Plex opens that path on its own disk and matches the tracks by path too,
+and Aurral 3 has no path mapping for it. So the Plex guest mounts the NAS
+at `/data` as well as `/mnt/media`, and Plex's Aurral library reads
+`/data/downloads/aurral`, the same paths Aurral writes.
+
+Aurral 2 synced playlists through Plex's API with its own path setting.
+The upgrade to 3 deleted those playlists from Plex and dropped the
+connection, so it took a reconnect to bring them back.
+
 ## Sign-in
 
 Aurral's own OIDC login with Pocket ID, at `https://aurral.shaneplunkett.com`.
