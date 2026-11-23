@@ -390,7 +390,7 @@
             mac = "BC:24:11:AA:D1:7C";
             mounts = {
               "/mnt/media" = "/mnt/media";
-              "/data" = "/mnt/media";
+              "/data/downloads/aurral" = "/mnt/media/downloads/aurral";
             };
             devices = [
               {
