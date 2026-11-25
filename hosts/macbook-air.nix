@@ -35,7 +35,6 @@
       disabledModules = [
         ../home/shane/modules/common/ai
         ../home/shane/modules/common/personal.nix
-        ../home/shane/modules/vesktop.nix
       ];
 
       programs.vex-cli.enable = lib.mkForce false;

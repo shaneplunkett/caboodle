@@ -33,8 +33,8 @@ and no secret is encrypted to it, so its first switch doesn't need a host key.
 `hosts/macbook-air.nix` lists what it leaves out:
 
 - The two `personal.nix` modules, one in `modules/workstation/darwin/laptop`
-  and one in `home/shane/modules/common`, and Vesktop's settings. Anything
-  the MacBook should have and a work laptop shouldn't goes in one of those.
+  and one in `home/shane/modules/common`. Anything the MacBook should have
+  and a work laptop shouldn't goes in one of those.
 - The personal agents. `home/shane/modules/common/ai` and the `vex` CLI are
   off, so the Air has no personal `CLAUDE.md`, skills, hooks, Codex or MCP
   servers, and nothing from the brain lands on its disk. `claude-work.nix`

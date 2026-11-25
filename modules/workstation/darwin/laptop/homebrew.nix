@@ -5,7 +5,9 @@ _: {
     casks = [
       "claude"
       "elgato-camera-hub"
+      "ferdium"
       "linear"
+      "vesktop"
       "yt-music"
     ];
 
