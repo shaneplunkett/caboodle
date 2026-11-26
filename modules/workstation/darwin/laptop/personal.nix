@@ -1,8 +1,6 @@
 { pkgs, ... }:
 {
   homebrew.casks = [
-    "chatgpt"
-    "codex-app"
     "moonlight"
     "steam"
   ];

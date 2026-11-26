@@ -35,12 +35,9 @@ and no secret is encrypted to it, so its first switch doesn't need a host key.
 - The two `personal.nix` modules, one in `modules/workstation/darwin/laptop`
   and one in `home/shane/modules/common`. Anything the MacBook should have
   and a work laptop shouldn't goes in one of those.
-- The personal agents. `home/shane/modules/common/ai` and the `vex` CLI are
-  off, so the Air has no personal `CLAUDE.md`, skills, hooks, Codex or MCP
-  servers, and nothing from the brain lands on its disk. `claude-work.nix`
-  still gives it the work Claude, which is vex-code's only provider there.
-  Personal threads run on the other machines, and the desktop sends work
-  tasks to the Air's Work provider.
+- Work chats. `vex sync-cc` and `vex sync-codex` also read `~/.claude-work`
+  and `~/.codex-work` unless told otherwise, so the Air's sync agents name
+  the personal folders and work sessions stay on the laptop.
 
 Git differs too. vex-code can't juggle two GitHub accounts, so the
 Air only uses the work one, and personal repos get worked on from the other

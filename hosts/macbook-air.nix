@@ -25,19 +25,32 @@
   };
 
   home-manager.users.shane =
-    { lib, ... }:
+    { config, lib, ... }:
+    let
+      vex = "${config.home.profileDirectory}/bin/vex";
+    in
     {
       imports = [
         ../home/shane/homemac.nix
         inputs.nix-config-private.homeManagerModules.work
       ];
 
-      disabledModules = [
-        ../home/shane/modules/common/ai
-        ../home/shane/modules/common/personal.nix
-      ];
+      disabledModules = [ ../home/shane/modules/common/personal.nix ];
 
-      programs.vex-cli.enable = lib.mkForce false;
+      launchd.agents = {
+        vex-sync-cc.config.ProgramArguments = lib.mkForce [
+          vex
+          "sync-cc"
+          "--projects-dir"
+          "${config.home.homeDirectory}/.claude/projects"
+        ];
+        vex-sync-codex.config.ProgramArguments = lib.mkForce [
+          vex
+          "sync-codex"
+          "--sessions-dir"
+          "${config.home.homeDirectory}/.codex/sessions"
+        ];
+      };
     };
 
   system.stateVersion = 6;
