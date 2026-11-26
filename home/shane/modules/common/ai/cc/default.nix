@@ -1,29 +1,21 @@
-{ aiHelpers, ... }:
+{ aiHelpers, inputs, ... }:
 {
   programs = {
     claude-code = {
       context = aiHelpers.prompts.personal;
       enableMcpIntegration = true;
       inherit (aiHelpers) skills;
+      plugins.paper-desktop = "${inputs.paper-plugins}/plugins/paper-desktop";
 
       settings = {
         feedbackSurveyRate = 0;
         autoMemoryEnabled = false;
         model = "opus";
-        extraKnownMarketplaces = {
-          openai-codex.source = {
-            source = "github";
-            repo = "openai/codex-plugin-cc";
-          };
-          paper.source = {
-            source = "github";
-            repo = "paper-design/agent-plugins";
-          };
+        extraKnownMarketplaces.openai-codex.source = {
+          source = "github";
+          repo = "openai/codex-plugin-cc";
         };
-        enabledPlugins = {
-          "codex@openai-codex" = true;
-          "paper-desktop@paper" = true;
-        };
+        enabledPlugins."codex@openai-codex" = true;
         hooks = aiHelpers.vexHooksFor "claude";
       };
     };

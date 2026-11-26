@@ -120,10 +120,18 @@ have to keep the same one. Home Manager creates `CLAUDE.md` empty and then
 leaves it alone, because this repo is public and work instructions don't
 belong in it.
 
-Its plugins are listed in `claude-work.nix`, separately from the personal
-Claude's in `ai/cc`. Each switch merges that list into
-`~/.claude-work/settings.json` and keeps whatever else is in the file, so a
-plugin taken out of the Nix stays enabled there until it's deleted by hand.
+## Claude Code plugins
+
+A plugin is a flake input linked into `skills/` in the config directory:
+`programs.claude-code.plugins` in `ai/cc` for the personal Claude, and a
+`home.file` in `claude-work.nix` for the work one. Paper's comes in that way,
+and Saturday night's lock file update moves it.
+
+Don't declare a new one with `extraKnownMarketplaces` and `enabledPlugins`.
+A vex-code session clones the marketplace and records the plugin as
+installed, but never copies its files into `plugins/cache`, so the plugin
+looks enabled and nothing loads. `claude plugin install` does the copy. The
+Codex plugin is still declared that way.
 
 ## Homebrew on the Macs
 

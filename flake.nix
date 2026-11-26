@@ -75,6 +75,10 @@
       url = "github:shaneplunkett/noctalia-plugins";
       flake = false;
     };
+    paper-plugins = {
+      url = "github:paper-design/agent-plugins";
+      flake = false;
+    };
     wallpapers = {
       url = "github:shaneplunkett/wallpapers";
       flake = false;

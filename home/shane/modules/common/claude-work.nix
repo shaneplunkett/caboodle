@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -9,21 +10,7 @@ let
   workConfigPath = "${config.home.homeDirectory}/${workConfigDir}";
   workSettings = lib.escapeShellArg "${workConfigPath}/settings.json";
   personalInstructions = lib.escapeShellArg "${config.home.homeDirectory}/.claude/**";
-  plugins = lib.escapeShellArg (
-    builtins.toJSON {
-      extraKnownMarketplaces.paper.source = {
-        source = "github";
-        repo = "paper-design/agent-plugins";
-      };
-      enabledPlugins."paper-desktop@paper" = true;
-    }
-  );
-  merge = lib.escapeShellArg ''
-    . * $plugins
-    | .claudeMdExcludes = ((.claudeMdExcludes // []) | if index($p) then . else . + [$p] end)
-  '';
   jq = lib.getExe pkgs.jq;
-  cmp = lib.getExe' pkgs.diffutils "cmp";
 in
 {
   options.vex.ai.claude.workConfigDir = lib.mkOption {
@@ -34,6 +21,9 @@ in
   config = {
     vex.ai.claude = { inherit workConfigDir; };
 
+    home.file."${workConfigDir}/skills/paper-desktop".source =
+      "${inputs.paper-plugins}/plugins/paper-desktop";
+
     home.activation.claudeWorkHome = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run mkdir -p ${lib.escapeShellArg workConfigPath}
       if [ ! -e ${lib.escapeShellArg "${workConfigPath}/CLAUDE.md"} ]; then
@@ -41,13 +31,15 @@ in
       fi
       if [ -z "''${DRY_RUN:-}" ]; then
         [ -s ${workSettings} ] || echo '{}' > ${workSettings}
-        tmp="$(mktemp)"
-        if ! ${jq} --arg p ${personalInstructions} --argjson plugins ${plugins} ${merge} ${workSettings} > "$tmp"; then
-          echo "Couldn't update "${workSettings} >&2
-        elif ! ${cmp} -s "$tmp" ${workSettings}; then
-          mv "$tmp" ${workSettings}
+        if ! ${jq} -e --arg p ${personalInstructions} '(.claudeMdExcludes // []) | index($p)' ${workSettings} > /dev/null; then
+          tmp="$(mktemp)"
+          if ${jq} --arg p ${personalInstructions} '.claudeMdExcludes = ((.claudeMdExcludes // []) + [$p])' ${workSettings} > "$tmp"; then
+            mv "$tmp" ${workSettings}
+          else
+            rm -f "$tmp"
+            echo "Couldn't add claudeMdExcludes to "${workSettings} >&2
+          fi
         fi
-        rm -f "$tmp"
       fi
     '';
 
