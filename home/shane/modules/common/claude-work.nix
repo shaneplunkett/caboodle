@@ -11,6 +11,9 @@ let
   workSettings = lib.escapeShellArg "${workConfigPath}/settings.json";
   personalInstructions = lib.escapeShellArg "${config.home.homeDirectory}/.claude/**";
   jq = lib.getExe pkgs.jq;
+  princessSkills =
+    lib.intersectAttrs (builtins.readDir "${inputs.ai-skills}/princess")
+      inputs.ai-skills.lib.skills.${pkgs.stdenv.hostPlatform.system};
 in
 {
   options.vex.ai.claude.workConfigDir = lib.mkOption {
@@ -21,8 +24,12 @@ in
   config = {
     vex.ai.claude = { inherit workConfigDir; };
 
-    home.file."${workConfigDir}/skills/paper-desktop".source =
-      "${inputs.paper-plugins}/plugins/paper-desktop";
+    home.file = {
+      "${workConfigDir}/skills/paper-desktop".source = "${inputs.paper-plugins}/plugins/paper-desktop";
+    }
+    // lib.mapAttrs' (
+      name: source: lib.nameValuePair "${workConfigDir}/skills/${name}" { inherit source; }
+    ) princessSkills;
 
     home.activation.claudeWorkHome = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run mkdir -p ${lib.escapeShellArg workConfigPath}
