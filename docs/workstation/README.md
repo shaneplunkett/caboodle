@@ -114,11 +114,14 @@ Three things make `nrs` compile anyway, and only the first costs real time:
 
 `ccw` and vex-code's Work provider both run Claude Code with `~/.claude-work`
 as its config directory, so work has its own login, `CLAUDE.md` and history.
-None of the personal context, skills or hooks live there. On a Mac the login
-sits in a keychain entry named after that path, so the alias and the provider
-have to keep the same one. Home Manager creates `CLAUDE.md` empty and then
-leaves it alone, because this repo is public and work instructions don't
-belong in it.
+None of the personal context or hooks live there. On a Mac the login sits in
+a keychain entry named after that path, so the alias and the provider have to
+keep the same one. Home Manager creates `CLAUDE.md` empty and then leaves it
+alone, because this repo is public and work instructions don't belong in it.
+
+Its skills are the `princess` folder of `ai-skills`. A skill added there
+reaches the work Claude with the next bump, and one in `personal` or from
+upstream doesn't.
 
 ## Claude Code plugins
 
