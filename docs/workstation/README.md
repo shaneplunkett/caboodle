@@ -120,6 +120,11 @@ have to keep the same one. Home Manager creates `CLAUDE.md` empty and then
 leaves it alone, because this repo is public and work instructions don't
 belong in it.
 
+Its plugins are listed in `claude-work.nix`, separately from the personal
+Claude's in `ai/cc`. Each switch merges that list into
+`~/.claude-work/settings.json` and keeps whatever else is in the file, so a
+plugin taken out of the Nix stays enabled there until it's deleted by hand.
+
 ## Homebrew on the Macs
 
 nix-homebrew owns `/opt/homebrew`, and `onActivation.cleanup = "uninstall"`
