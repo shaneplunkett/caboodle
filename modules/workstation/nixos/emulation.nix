@@ -144,6 +144,7 @@ in
       dolphin-emu
       eden
       ryubing
+      tkmm
       ukmm
       vita3k
       steam-rom-manager
